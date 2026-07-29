@@ -22,8 +22,8 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             alt={avatar.id}
             className="relative w-56 sm:w-64 h-56 sm:h-64 mx-auto mb-1 object-contain flex items-center justify-center text-8xl drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]"
           />
-          <h1 className="font-display gold-text text-4xl font-extrabold mt-2 tracking-wide">Королівство Множення</h1>
-          <p className="text-violet-200 mt-1.5 text-base">Мандруй, розв'язуй, підкорюй королівство</p>
+          <h1 className="font-display gold-text text-4xl font-extrabold mt-2 tracking-wide">Королівство Математики</h1>
+          <p className="text-violet-200 mt-1.5 text-base">Мандруй, розв'язуй, опановуй магію чисел</p>
         </div>
 
         <div className="flex gap-3 justify-center">
