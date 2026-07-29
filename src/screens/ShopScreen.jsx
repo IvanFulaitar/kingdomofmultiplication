@@ -28,7 +28,7 @@ function StatusBadge({ children, tone = "gold" }) {
 
 export default function ShopScreen({ progress, onBuyAvatar, onBack }) {
   return (
-    <div className="relative overflow-hidden min-h-screen screen-in">
+    <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
 
       <div className="relative z-10 max-w-md mx-auto px-6 py-8 pb-16">

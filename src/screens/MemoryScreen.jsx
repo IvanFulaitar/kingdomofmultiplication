@@ -55,26 +55,26 @@ export default function MemoryScreen({ onBack, onComplete }) {
   }
 
   return (
-    <div className="relative overflow-hidden min-h-screen screen-in">
+    <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
 
-      <div className="relative z-10 max-w-md mx-auto px-4 py-8 pb-10 min-h-screen flex flex-col">
-        <div className="flex items-start gap-2.5">
+      <div className="relative z-10 max-w-md mx-auto px-4 py-8 pb-10 min-h-dvh flex flex-col">
+        <div className="flex items-start gap-2 w-full min-w-0">
           <button onClick={onBack} className="rpg-panel rpg-panel-gold rounded-xl w-11 h-11 flex items-center justify-center text-xl text-amber-100 active:scale-95 transition shrink-0 mt-2">←</button>
 
-          <div className="flex-1 relative mt-6">
+          <div className="flex-1 min-w-0 relative mt-6">
             <div className="modal-ornament absolute -top-9 left-1/2 -translate-x-1/2 z-10" style={{ width: "3.25rem", height: "3.25rem", fontSize: "1.5rem", background: "linear-gradient(180deg, #fbcfe8, #f472b6 60%, #db2777)" }}>
               <ArtImage src="/assets/icons/achievements/brain.png" fallback="🧠" alt="" className="w-8 h-8 object-contain" />
             </div>
             <div className="rpg-panel rpg-panel-gold rounded-2xl px-4 py-3 text-center">
-              <h2 className="font-display gold-text font-extrabold text-lg tracking-wide truncate">✦ Математична пам'ять ✦</h2>
+              <h2 className="font-display gold-text font-extrabold text-base sm:text-lg tracking-wide truncate">✦ Математична пам'ять ✦</h2>
             </div>
           </div>
 
           <button
             onClick={giveHint}
             disabled={hints <= 0}
-            className="rpg-panel rpg-panel-gold rounded-xl w-16 py-2 flex flex-col items-center gap-0.5 shrink-0 mt-2 relative active:scale-95 transition disabled:opacity-40"
+            className="rpg-panel rpg-panel-gold rounded-xl w-14 sm:w-16 py-2 flex flex-col items-center gap-0.5 shrink-0 mt-2 relative active:scale-95 transition disabled:opacity-40"
           >
             <span className="hint-count-badge absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white">{hints}</span>
             <ArtImage src="/assets/icons/ui/hint_lightbulb.png" fallback="💡" alt="" className="w-6 h-6 object-contain" />

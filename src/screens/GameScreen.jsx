@@ -83,7 +83,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   const enemyHealthPct = Math.max(0, 100 - (correctCount / QUESTIONS_PER_LEVEL) * 100);
 
   return (
-    <div className="relative overflow-hidden min-h-screen flex flex-col screen-in">
+    <div className="relative overflow-hidden min-h-dvh flex flex-col screen-in">
       {region && (
         <div
           className="absolute inset-0"
@@ -92,7 +92,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
       )}
       <div className="battle-vignette" />
 
-      <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-screen flex flex-col w-full">
+      <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-dvh flex flex-col w-full">
         <div className="flex items-center gap-3">
           <button
             onClick={onExit}

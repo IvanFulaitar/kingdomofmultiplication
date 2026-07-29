@@ -112,7 +112,7 @@ export default function App() {
 
   if (!progress) {
     return (
-      <div className="min-h-screen bg-indigo-950 flex items-center justify-center">
+      <div className="min-h-dvh bg-indigo-950 flex items-center justify-center">
         <div className="font-body text-amber-300 text-lg animate-pulse">Відчиняємо ворота королівства…</div>
       </div>
     );
@@ -120,7 +120,7 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-indigo-950 via-indigo-900 to-indigo-950 font-body text-white bg-cover bg-center bg-fixed"
+      className="min-h-dvh bg-gradient-to-b from-indigo-950 via-indigo-900 to-indigo-950 font-body text-white bg-cover bg-center"
       style={{ backgroundImage: "url(/assets/backgrounds/app_bg.png), linear-gradient(180deg, #1e1b4b, #312e81, #1e1b4b)" }}
     >
       {screen === "menu" && (

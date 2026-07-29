@@ -10,7 +10,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry }
     const region = REGIONS.find((r) => r.levels.includes(outcome.levelId));
 
     return (
-      <div className="relative overflow-hidden min-h-screen screen-in">
+      <div className="relative overflow-hidden min-h-dvh screen-in">
         {region && (
           <div
             className="absolute inset-0"
@@ -19,7 +19,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry }
         )}
         <div className="battle-vignette" />
 
-        <div className="relative z-10 max-w-md mx-auto px-6 py-8 min-h-screen flex flex-col items-center text-center">
+        <div className="relative z-10 max-w-md mx-auto px-6 py-8 min-h-dvh flex flex-col items-center text-center">
           <div className="relative w-32 h-32 sm:w-40 sm:h-40 mt-2 mb-3 shrink-0">
             <div className="enemy-stand-glow" />
             <ArtImage
@@ -97,7 +97,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry }
   }
 
   return (
-    <div className="max-w-md mx-auto px-6 py-10 min-h-screen flex flex-col items-center screen-in">
+    <div className="max-w-md mx-auto px-6 py-10 min-h-dvh flex flex-col items-center screen-in">
       <div className="text-6xl mb-2">{meta.enemy.icon} 💫</div>
       <h2 className="font-display font-bold text-2xl text-amber-300 mb-1">Перемога!</h2>
       <p className="text-white/60 mb-6">{meta.enemy.name} переможено</p>

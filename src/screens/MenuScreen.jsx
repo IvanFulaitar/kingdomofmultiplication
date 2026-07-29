@@ -9,7 +9,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   const { level, into, need } = heroLevelFromXp(progress.xp);
 
   return (
-    <div className="relative overflow-hidden min-h-screen screen-in">
+    <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
 
       <div className="relative z-10 max-w-md mx-auto px-6 py-10 flex flex-col items-center gap-6 pb-14">

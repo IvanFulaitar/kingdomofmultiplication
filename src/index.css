@@ -9,6 +9,12 @@ html, body, #root {
   min-height: 100%;
   background: #1e1338; /* запасний темний фон — щоб сторінка ніколи не була білою */
 }
+html, body {
+  overflow-x: hidden;
+}
+#root {
+  min-height: 100dvh;
+}
 .font-display { font-family: 'Cinzel', serif; letter-spacing: 0.02em; }
 .font-body { font-family: 'Baloo 2', sans-serif; }
 
