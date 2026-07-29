@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BADGES } from "../data/rewards.js";
 import LockBadge from "./LockBadge.jsx";
 import ArtImage from "./ArtImage.jsx";
@@ -14,6 +15,13 @@ const BADGE_ICON_FILE = {
 };
 
 export default function BadgesModal({ progress, onClose }) {
+  // Поки модалка відкрита, сайт позаду не повинен прокручуватись.
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = original; };
+  }, []);
+
   return (
     <div className="modal-backdrop fixed inset-0 flex items-end sm:items-center justify-center z-50 p-4" onClick={onClose}>
       <div

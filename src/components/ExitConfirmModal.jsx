@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ArtImage from "./ArtImage.jsx";
 
 const MODE_COPY = {
@@ -37,6 +37,14 @@ export default function ExitConfirmModal({
   onExit,
 }) {
   const [exiting, setExiting] = useState(false);
+
+  // Поки модалка відкрита, сайт позаду не повинен прокручуватись.
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = original; };
+  }, []);
+
   const copy = MODE_COPY[modeType] ?? MODE_COPY.story;
   const hasTotal = typeof totalProgress === "number";
   const exitLabel = currentProgress > 0 ? destinationLabel : "Вийти";
