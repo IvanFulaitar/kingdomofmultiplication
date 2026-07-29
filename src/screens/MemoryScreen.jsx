@@ -28,10 +28,16 @@ export default function MemoryScreen({ onBack, onComplete }) {
       const first = cards.find((c) => c.id === next[0]);
       const second = cards.find((c) => c.id === next[1]);
       const isMatch = first.matchId === second.matchId && first.kind !== second.kind;
-      setResultMsg(isMatch ? "match" : "miss");
-      if (!isMatch) setLastWrong(true);
+      if (isMatch) {
+        setResultMsg("match");
+        setMatched((m) => [...m, first.id, second.id]);
+      } else {
+        setTimeout(() => {
+          setLastWrong(true);
+          setResultMsg("miss");
+        }, 550);
+      }
       setTimeout(() => {
-        if (isMatch) setMatched((m) => [...m, first.id, second.id]);
         setFlipped([]);
         setLastWrong(false);
         setResultMsg(null);
@@ -104,42 +110,52 @@ export default function MemoryScreen({ onBack, onComplete }) {
           ))}
         </div>
 
-        <div className="grid grid-cols-3 gap-2.5 mt-5">
+        <div className="h-7 text-center mt-4 feedback-pop" key={resultMsg ?? "none"}>
+          {resultMsg === "match" && <span className="text-emerald-300 font-display font-bold text-sm">Пара знайдена!</span>}
+          {resultMsg === "miss" && <span className="text-rose-300 font-display font-bold text-sm">Спробуй запам'ятати їх</span>}
+        </div>
+
+        <div className="grid grid-cols-3 gap-2.5 mt-1">
           {cards.map((card) => {
             const isFaceUp = flipped.includes(card.id) || matched.includes(card.id) || hintIds.includes(card.id);
             const isMatched = matched.includes(card.id);
             const isWrong = lastWrong && flipped.includes(card.id);
             const isHinted = hintIds.includes(card.id);
+            const isWaiting = isFaceUp && !isMatched && !isWrong && flipped.length === 1 && flipped.includes(card.id);
+            const isChecking = flipped.length === 2 || hintIds.length > 0;
+            const disabled = isMatched || isChecking || busyRef.current;
 
-            let faceClass = "memory-card-back text-violet-200/60";
-            if (isMatched) faceClass = "memory-card-matched text-emerald-950";
-            else if (isWrong) faceClass = "memory-card-wrong text-white shake-hit";
-            else if (isFaceUp) faceClass = card.kind === "expr" ? "memory-card-front-expr text-indigo-950" : "memory-card-front-num text-indigo-950";
+            let faceClass = "memory-card-back";
+            if (isMatched) faceClass = `memory-card-face memory-card-${card.kind} memory-card-matched`;
+            else if (isWrong) faceClass = `memory-card-face memory-card-${card.kind} memory-card-wrong`;
+            else if (isFaceUp) faceClass = `memory-card-face memory-card-${card.kind} ${isWaiting ? "memory-card-waiting" : ""}`;
 
             return (
               <button
                 key={`${card.id}-${isFaceUp}`}
                 onClick={() => handleFlip(card)}
-                className={`card-flip relative aspect-square rounded-2xl flex items-center justify-center font-display font-extrabold transition-colors ${faceClass} ${
+                disabled={disabled}
+                className={`memory-card card-flip relative aspect-square rounded-2xl flex items-center justify-center font-display font-extrabold ${faceClass} ${
                   isHinted ? "ring-2 ring-amber-300" : ""
-                } ${isFaceUp ? "text-xl" : "text-3xl"}`}
+                }`}
               >
                 {!isFaceUp && (
                   <>
-                    <span className="absolute top-1.5 left-2 text-[10px] opacity-30">×</span>
-                    <span className="absolute bottom-1.5 right-2 text-[10px] opacity-30">=</span>
+                    <span className="memory-card-symbol memory-card-symbol-top">×</span>
+                    <span className="memory-card-symbol memory-card-symbol-left">7</span>
+                    <span className="memory-card-symbol memory-card-symbol-right">+</span>
+                    <span className="memory-card-symbol memory-card-symbol-bottom">=</span>
+                    <span className="memory-card-diamond" />
+                    <span className="memory-card-spark" />
                   </>
                 )}
-                {isMatched && <span className="absolute top-1 right-1.5 text-emerald-500 text-xs">✓</span>}
-                {isFaceUp ? card.label : "?"}
+                {isFaceUp && <span className={`memory-card-type-icon ${card.kind === "expr" ? "memory-card-type-book" : "memory-card-type-crystal"}`} />}
+                {(isMatched || isWrong) && <span className={`memory-card-status ${isMatched ? "memory-card-status-ok" : "memory-card-status-bad"}`}>{isMatched ? "✓" : "×"}</span>}
+                <span className="memory-card-value">{isFaceUp ? card.label : "?"}</span>
+                {isMatched && <span className="memory-card-match-line" />}
               </button>
             );
           })}
-        </div>
-
-        <div className="h-6 text-center mt-3 feedback-pop" key={resultMsg ?? "none"}>
-          {resultMsg === "match" && <span className="text-emerald-300 font-display font-bold text-sm">✦ Пара знайдена! ✦</span>}
-          {resultMsg === "miss" && <span className="text-rose-300 font-display font-bold text-sm">Спробуй запам'ятати їх</span>}
         </div>
 
         {!done && (
