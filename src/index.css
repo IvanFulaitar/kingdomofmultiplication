@@ -27,6 +27,13 @@ html, body {
 /* Поява екрана */
 @keyframes screen-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .screen-in { animation: screen-in 0.3s ease; }
+.attempt-paused * {
+  animation-play-state: paused !important;
+}
+.attempt-paused .exit-modal-backdrop,
+.attempt-paused .exit-modal-backdrop * {
+  animation-play-state: running !important;
+}
 
 /* Перевертання картки в "Математичній пам'яті" */
 @keyframes card-flip { 0% { transform: scaleX(1); } 50% { transform: scaleX(0); } 100% { transform: scaleX(1); } }
@@ -333,6 +340,85 @@ html, body {
     0 0 40px rgba(147, 90, 255, 0.25),
     0 20px 50px -12px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.exit-modal-backdrop {
+  background: rgba(6, 5, 20, 0.72);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+.exit-modal-panel {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.24), transparent 38%),
+    linear-gradient(180deg, rgba(74, 56, 132, 0.98), rgba(25, 18, 55, 0.99));
+  border: 2px solid rgba(245, 185, 66, 0.82);
+  box-shadow:
+    0 0 0 1px rgba(245, 185, 66, 0.38),
+    0 0 34px rgba(245, 185, 66, 0.18),
+    0 24px 52px -16px rgba(0, 0, 0, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 26px rgba(139, 92, 246, 0.18);
+}
+.exit-modal-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0.65rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(245, 185, 66, 0.22);
+  pointer-events: none;
+}
+.exit-modal-ornament {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #ffe28a, #f5b93f 58%, #d98f1e);
+  border: 2px solid rgba(255, 246, 210, 0.9);
+  box-shadow: 0 0 20px rgba(245, 185, 66, 0.58), 0 8px 16px -6px rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.exit-modal-shield {
+  width: 1.65rem;
+  height: 1.9rem;
+  background: linear-gradient(180deg, #7c3aed, #3b1a78);
+  clip-path: polygon(50% 0%, 88% 14%, 78% 72%, 50% 100%, 22% 72%, 12% 14%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.24), 0 0 9px rgba(76,29,149,0.55);
+}
+.exit-progress-panel {
+  background: linear-gradient(180deg, rgba(34, 25, 74, 0.86), rgba(17, 12, 42, 0.9));
+  border: 1px solid rgba(245, 185, 66, 0.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.exit-continue-button {
+  background: linear-gradient(180deg, #fff08a 0%, #ffc83d 46%, #f59e0b 78%, #d97706 100%);
+  border: 3px solid #6f3f08;
+  box-shadow:
+    0 0 0 2px rgba(255, 236, 150, 0.88),
+    0 0 24px rgba(245, 185, 66, 0.36),
+    0 12px 22px -10px rgba(0,0,0,0.78),
+    inset 0 2px 0 rgba(255,255,255,0.58);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.exit-continue-button:active,
+.exit-confirm-button:active {
+  transform: translateY(2px) scale(0.99);
+}
+.exit-continue-shield {
+  width: 1.15rem;
+  height: 1.3rem;
+  background: linear-gradient(180deg, #4c1d95, #25104f);
+  clip-path: polygon(50% 0%, 88% 14%, 78% 72%, 50% 100%, 22% 72%, 12% 14%);
+  box-shadow: 0 0 8px rgba(76,29,149,0.5);
+}
+.exit-confirm-button {
+  color: #f5f3ff;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255,255,255,0.1), transparent 24%),
+    linear-gradient(180deg, rgba(70, 50, 122, 0.94), rgba(27, 19, 59, 0.98));
+  border: 1.5px solid rgba(251, 146, 60, 0.5);
+  box-shadow: 0 8px 18px -10px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: transform 0.12s ease, filter 0.14s ease;
 }
 
 /* Маленький декоративний кристал/герб зверху модалки */

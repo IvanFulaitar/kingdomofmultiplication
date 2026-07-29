@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { buildMemoryCards } from "../game/memory.js";
 import ArtImage from "../components/ArtImage.jsx";
+import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
 export default function MemoryScreen({ onBack, onComplete }) {
   const [cards] = useState(() => buildMemoryCards());
@@ -11,14 +12,34 @@ export default function MemoryScreen({ onBack, onComplete }) {
   const [resultMsg, setResultMsg] = useState(null); // "match" | "miss" | null
   const [hints, setHints] = useState(3);
   const [hintIds, setHintIds] = useState([]);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const busyRef = useRef(false);
+  const exitConfirmRef = useRef(false);
 
   const done = matched.length === cards.length;
   const pairsTotal = cards.length / 2;
   const pairsFound = matched.length / 2;
 
+  useEffect(() => {
+    exitConfirmRef.current = showExitConfirm;
+  }, [showExitConfirm]);
+
+  useEffect(() => {
+    window.history.pushState({ activeAttempt: "memory" }, "");
+    function handlePopState() {
+      if (exitConfirmRef.current) {
+        setShowExitConfirm(false);
+      } else {
+        setShowExitConfirm(true);
+      }
+      window.history.pushState({ activeAttempt: "memory" }, "");
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   function handleFlip(card) {
-    if (busyRef.current || flipped.includes(card.id) || matched.includes(card.id) || hintIds.length) return;
+    if (showExitConfirm || busyRef.current || flipped.includes(card.id) || matched.includes(card.id) || hintIds.length) return;
     const next = [...flipped, card.id];
     setFlipped(next);
 
@@ -47,7 +68,7 @@ export default function MemoryScreen({ onBack, onComplete }) {
   }
 
   function giveHint() {
-    if (hints <= 0 || busyRef.current || hintIds.length) return;
+    if (showExitConfirm || hints <= 0 || busyRef.current || hintIds.length) return;
     const pool = cards.filter((c) => !matched.includes(c.id));
     const byMatch = {};
     pool.forEach((c) => { (byMatch[c.matchId] ??= []).push(c.id); });
@@ -61,12 +82,12 @@ export default function MemoryScreen({ onBack, onComplete }) {
   }
 
   return (
-    <div className="relative overflow-hidden min-h-dvh screen-in">
+    <div className={`relative overflow-hidden min-h-dvh screen-in ${showExitConfirm ? "attempt-paused" : ""}`}>
       <div className="center-vignette" />
 
       <div className="relative z-10 max-w-md mx-auto px-4 py-8 pb-10 min-h-dvh flex flex-col">
         <div className="flex items-start gap-2 w-full min-w-0">
-          <button onClick={onBack} className="rpg-panel rpg-panel-gold rounded-xl w-11 h-11 flex items-center justify-center text-xl text-amber-100 active:scale-95 transition shrink-0 mt-2">←</button>
+          <button onClick={() => setShowExitConfirm(true)} className="rpg-panel rpg-panel-gold rounded-xl w-11 h-11 flex items-center justify-center text-xl text-amber-100 active:scale-95 transition shrink-0 mt-2">←</button>
 
           <div className="flex-1 min-w-0 relative mt-6">
             <div className="modal-ornament absolute -top-9 left-1/2 -translate-x-1/2 z-10" style={{ width: "3.25rem", height: "3.25rem", fontSize: "1.5rem", background: "linear-gradient(180deg, #fbcfe8, #f472b6 60%, #db2777)" }}>
@@ -188,6 +209,18 @@ export default function MemoryScreen({ onBack, onComplete }) {
           </div>
         )}
       </div>
+      {showExitConfirm && (
+        <ExitConfirmModal
+          modeType="training"
+          levelName="Математична пам'ять"
+          currentProgress={pairsFound}
+          totalProgress={pairsTotal}
+          destination="training"
+          destinationLabel="Вийти до тренувань"
+          onContinue={() => setShowExitConfirm(false)}
+          onExit={onBack}
+        />
+      )}
     </div>
   );
 }

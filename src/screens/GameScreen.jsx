@@ -3,6 +3,7 @@ import { AVATARS } from "../data/cosmetics.js";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel } from "../game/generateQuestion.js";
 import ArtImage from "../components/ArtImage.jsx";
+import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
 function LifeHeart({ filled }) {
   return (
@@ -33,16 +34,36 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   const [correctCount, setCorrectCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(timeLimit);
   const [feedback, setFeedback] = useState(null); // {correct: bool, chosen}
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const lastPairRef = useRef(question.pair);
   const answeredRef = useRef(false);
+  const exitConfirmRef = useRef(false);
 
   useEffect(() => {
-    if (feedback) return;
+    if (feedback || showExitConfirm) return;
     if (timeLeft <= 0) { handleAnswer(null); return; }
     const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft, feedback]);
+  }, [timeLeft, feedback, showExitConfirm]);
+
+  useEffect(() => {
+    exitConfirmRef.current = showExitConfirm;
+  }, [showExitConfirm]);
+
+  useEffect(() => {
+    window.history.pushState({ activeAttempt: "game" }, "");
+    function handlePopState() {
+      if (exitConfirmRef.current) {
+        setShowExitConfirm(false);
+      } else {
+        setShowExitConfirm(true);
+      }
+      window.history.pushState({ activeAttempt: "game" }, "");
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   function nextQuestion() {
     const nq = generateQuestion(levelId, lastPairRef.current, weakFacts);
@@ -83,7 +104,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   const enemyHealthPct = Math.max(0, 100 - (correctCount / QUESTIONS_PER_LEVEL) * 100);
 
   return (
-    <div className="relative overflow-hidden min-h-dvh flex flex-col screen-in">
+    <div className={`relative overflow-hidden min-h-dvh flex flex-col screen-in ${showExitConfirm ? "attempt-paused" : ""}`}>
       {region && (
         <div
           className="absolute inset-0"
@@ -95,7 +116,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
       <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-dvh flex flex-col w-full">
         <div className="flex items-center gap-3">
           <button
-            onClick={onExit}
+            onClick={() => setShowExitConfirm(true)}
             aria-label="Назад"
             className="rpg-panel rpg-panel-gold shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
           >
@@ -200,6 +221,18 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
           </div>
         </div>
       </div>
+      {showExitConfirm && (
+        <ExitConfirmModal
+          modeType="story"
+          levelName={meta.title}
+          currentProgress={qIndex}
+          totalProgress={QUESTIONS_PER_LEVEL}
+          destination="map"
+          destinationLabel="Вийти до карти"
+          onContinue={() => setShowExitConfirm(false)}
+          onExit={onExit}
+        />
+      )}
     </div>
   );
 }
