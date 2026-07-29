@@ -48,6 +48,36 @@ html, body {
 @keyframes level-flash { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.7); } }
 .level-flash { animation: level-flash 0.7s ease 2; }
 
+/* Декор перемоги без системних emoji-гліфів, щоб Android не показував порожні квадрати */
+.victory-orbit {
+  position: absolute;
+  inset: 18% 8%;
+  border: 6px solid rgba(56, 189, 248, 0.9);
+  border-top-color: rgba(245, 185, 66, 0.95);
+  border-radius: 9999px;
+  transform: rotate(-12deg);
+  filter: drop-shadow(0 0 8px rgba(56,189,248,0.45));
+}
+.victory-spark {
+  position: absolute;
+  width: 1.65rem;
+  height: 1.65rem;
+  background: linear-gradient(180deg, #fff6a8, #facc15 65%, #d98f1e);
+  clip-path: polygon(50% 0%, 62% 36%, 100% 50%, 62% 64%, 50% 100%, 38% 64%, 0% 50%, 38% 36%);
+  filter: drop-shadow(0 0 6px rgba(245,185,66,0.75));
+  z-index: 11;
+}
+.victory-spark-a {
+  top: 0.25rem;
+  right: 1.55rem;
+}
+.victory-spark-b {
+  left: 1.5rem;
+  bottom: 1rem;
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
 /* ===== Візуальний "преміум" шар: зоряне небо, орнаментальні панелі ===== */
 
 .starfield {

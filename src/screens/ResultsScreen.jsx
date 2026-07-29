@@ -77,7 +77,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry }
           </div>
 
           <p className="text-violet-200 text-xs mb-6 flex items-center gap-1.5 justify-center">
-            <span className="text-amber-300">⭐</span>
+            <ArtImage src="/assets/icons/ui/star.png" fallback="" alt="" className="w-4 h-4 object-contain" />
             Правильних відповідей: {outcome.correctCount}. Наступного разу буде ще краще!
           </p>
 
@@ -98,26 +98,40 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry }
 
   return (
     <div className="max-w-md mx-auto px-6 py-10 min-h-dvh flex flex-col items-center screen-in">
-      <div className="text-6xl mb-2">{meta.enemy.icon} 💫</div>
+      <div className="relative w-28 h-28 mb-3 shrink-0">
+        <div className="victory-orbit" />
+        <div className="victory-spark victory-spark-a" />
+        <div className="victory-spark victory-spark-b" />
+        <ArtImage
+          src={`/assets/monsters/${outcome.levelId}.png`}
+          fallback=""
+          alt={meta.enemy.name}
+          className="relative z-10 w-full h-full object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.55)]"
+        />
+      </div>
       <h2 className="font-display font-bold text-2xl text-amber-300 mb-1">Перемога!</h2>
       <p className="text-white/60 mb-6">{meta.enemy.name} переможено</p>
 
       <div className="flex gap-2 mb-6">
         {[0, 1, 2].map((i) => (
-          <span
+          <ArtImage
             key={i}
-            className={i < outcome.newStars ? "text-5xl star-pop" : "text-5xl opacity-20"}
+            src="/assets/icons/ui/star.png"
+            fallback=""
+            alt=""
+            className={`w-14 h-14 object-contain ${i < outcome.newStars ? "star-pop" : "opacity-20 grayscale"}`}
             style={i < outcome.newStars ? { animationDelay: `${i * 0.15}s` } : undefined}
-          >
-            ⭐
-          </span>
+          />
         ))}
       </div>
 
       <div className="w-full rpg-panel rounded-2xl p-4 mb-4">
         <div className="flex justify-between text-sm mb-2">
           <span className="text-white/60">Монети</span>
-          <span className="font-bold text-amber-300">+{outcome.coinGain} 🪙</span>
+          <span className="font-bold text-amber-300 flex items-center gap-1.5">
+            +{outcome.coinGain}
+            <ArtImage src="/assets/icons/ui/coin.png" fallback="" alt="" className="w-5 h-5 object-contain" />
+          </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-white/60">Досвід</span>
@@ -127,7 +141,10 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry }
 
       <div className="w-full mb-8">
         <div className="flex justify-between text-xs text-white/50 mb-1">
-          <span>🎖️ Рівень героя {heroInfo.level}</span>
+          <span className="flex items-center gap-1.5">
+            <ArtImage src="/assets/icons/ui/trophy.png" fallback="" alt="" className="w-4 h-4 object-contain" />
+            Рівень героя {heroInfo.level}
+          </span>
           {outcome.leveledUp && <span className="text-amber-300 font-bold">Новий рівень!</span>}
         </div>
         <div className={`h-2 bg-black/30 rounded-full overflow-hidden border border-white/5 ${outcome.leveledUp ? "level-flash" : ""}`}>
