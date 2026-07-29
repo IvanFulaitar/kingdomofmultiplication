@@ -226,6 +226,96 @@ html, body {
     0 4px 10px -4px rgba(122, 45, 0, 0.6),
     inset 0 2px 8px rgba(0, 0, 0, 0.35);
 }
+.next-challenge-button {
+  background: linear-gradient(180deg, #fff08a 0%, #ffc83d 42%, #f59e0b 72%, #d97706 100%);
+  border: 3px solid #6f3f08;
+  box-shadow:
+    0 0 0 2px rgba(255, 236, 150, 0.95),
+    0 0 26px rgba(245, 185, 66, 0.42),
+    0 14px 26px -9px rgba(22, 13, 55, 0.95),
+    inset 0 2px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -4px 8px rgba(122, 63, 8, 0.22);
+  transition: transform 0.14s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+.next-challenge-button:active {
+  transform: translateY(2px) scale(0.985);
+  box-shadow:
+    0 0 0 2px rgba(255, 236, 150, 0.95),
+    0 0 18px rgba(245, 185, 66, 0.5),
+    0 7px 14px -8px rgba(22, 13, 55, 0.9),
+    inset 0 2px 10px rgba(87, 45, 7, 0.35);
+}
+.next-challenge-shine {
+  position: absolute;
+  inset: -40% auto -40% -35%;
+  width: 35%;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  animation: button-shine 2.8s ease-in-out infinite;
+}
+.next-challenge-arrow {
+  position: relative;
+  justify-self: end;
+  width: 2.6rem;
+  height: 2.1rem;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #4c1d95, #25104f);
+  border: 2px solid rgba(255, 244, 190, 0.88);
+  box-shadow: 0 0 12px rgba(76, 29, 149, 0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.next-challenge-arrow::before {
+  content: "";
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  width: 1.15rem;
+  height: 0.28rem;
+  border-radius: 9999px;
+  background: #ffe28a;
+  transform: translateY(-50%);
+  box-shadow: 0 0 6px rgba(245,185,66,0.72);
+}
+.next-challenge-arrow::after {
+  content: "";
+  position: absolute;
+  right: 0.58rem;
+  top: 50%;
+  width: 0.78rem;
+  height: 0.78rem;
+  border-top: 0.28rem solid #ffe28a;
+  border-right: 0.28rem solid #ffe28a;
+  transform: translateY(-50%) rotate(45deg);
+  filter: drop-shadow(0 0 4px rgba(245,185,66,0.72));
+}
+.retry-button {
+  color: white;
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255,255,255,0.11), transparent 24%),
+    linear-gradient(180deg, rgba(73, 55, 130, 0.96), rgba(31, 22, 68, 0.98));
+  border: 1.5px solid rgba(245, 185, 66, 0.58);
+  box-shadow: 0 9px 18px -9px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: transform 0.14s ease, filter 0.18s ease;
+}
+.retry-button:active,
+.map-ghost-button:active {
+  transform: translateY(2px) scale(0.99);
+}
+.map-ghost-button {
+  color: #ddd6fe;
+  background: linear-gradient(180deg, rgba(38, 29, 78, 0.72), rgba(17, 12, 42, 0.8));
+  border: 1px solid rgba(196, 181, 253, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: transform 0.14s ease, background 0.18s ease, border-color 0.18s ease;
+}
+.map-ghost-button:hover {
+  border-color: rgba(245, 185, 66, 0.35);
+  background: linear-gradient(180deg, rgba(49, 38, 94, 0.82), rgba(21, 15, 48, 0.9));
+}
+@keyframes button-shine {
+  0%, 35% { left: -40%; opacity: 0; }
+  50% { opacity: 1; }
+  78%, 100% { left: 110%; opacity: 0; }
+}
 
 /* Затемнений і трохи розмитий фон позаду модальних вікон */
 .modal-backdrop {

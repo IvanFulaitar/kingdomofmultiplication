@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BADGES } from "./data/rewards.js";
+import { LEVEL_META } from "./data/regions.js";
 import { getWeakFacts } from "./game/generateQuestion.js";
 import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
@@ -110,6 +111,15 @@ export default function App() {
     };
   }
 
+  function startNextChallenge(levelId) {
+    if (levelId && LEVEL_META[levelId]) {
+      setActiveLevel(levelId);
+      setScreen("game");
+    } else {
+      setScreen("map");
+    }
+  }
+
   if (!progress) {
     return (
       <div className="min-h-dvh bg-indigo-950 flex items-center justify-center">
@@ -171,6 +181,7 @@ export default function App() {
         <ResultsScreen
           outcome={outcome}
           progress={progress}
+          onNextChallenge={startNextChallenge}
           onRetry={() => setScreen("game")}
           onContinue={() => setScreen("map")}
         />

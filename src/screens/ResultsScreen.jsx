@@ -2,7 +2,42 @@ import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import ArtImage from "../components/ArtImage.jsx";
 
-export default function ResultsScreen({ outcome, progress, onContinue, onRetry }) {
+const levelIds = Object.keys(LEVEL_META).map(Number).sort((a, b) => a - b);
+
+function regionForLevel(levelId) {
+  return REGIONS.find((r) => r.levels.includes(levelId));
+}
+
+function victoryActionFor(levelId) {
+  const currentIndex = levelIds.indexOf(levelId);
+  const nextLevelId = levelIds[currentIndex + 1];
+  if (!nextLevelId) {
+    return {
+      label: "До карти королівства",
+      subtitle: "Уся доступна карта завершена",
+      targetLevelId: null,
+    };
+  }
+
+  const currentRegion = regionForLevel(levelId);
+  const nextRegion = regionForLevel(nextLevelId);
+  const nextMeta = LEVEL_META[nextLevelId];
+  if (currentRegion?.id !== nextRegion?.id) {
+    return {
+      label: "Відкрити новий регіон",
+      subtitle: `${nextRegion.name}: ${nextMeta.title}`,
+      targetLevelId: nextLevelId,
+    };
+  }
+
+  return {
+    label: "Наступний виклик",
+    subtitle: `${nextMeta.title} — виклик ${nextLevelId}/${levelIds.length}`,
+    targetLevelId: nextLevelId,
+  };
+}
+
+export default function ResultsScreen({ outcome, progress, onContinue, onRetry, onNextChallenge }) {
   const meta = LEVEL_META[outcome.levelId];
   const heroInfo = heroLevelFromXp(progress.xp);
 
@@ -96,6 +131,8 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry }
     );
   }
 
+  const victoryAction = victoryActionFor(outcome.levelId);
+
   return (
     <div className="max-w-md mx-auto px-6 py-10 min-h-dvh flex flex-col items-center screen-in">
       <div className="relative w-28 h-28 mb-3 shrink-0">
@@ -153,10 +190,27 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry }
       </div>
 
       <div className="w-full flex flex-col gap-3">
-        <button onClick={onRetry} className="w-full rpg-panel hover:brightness-125 transition rounded-2xl py-3 font-semibold">
-          Ще раз
+        <button
+          onClick={() => onNextChallenge(victoryAction.targetLevelId)}
+          className="next-challenge-button relative w-full rounded-2xl px-4 py-4 text-indigo-950 font-display overflow-hidden"
+        >
+          <span className="next-challenge-shine" />
+          <span className="relative z-10 grid grid-cols-[1fr_3rem] items-center gap-3">
+            <span className="min-w-0 text-left">
+              <span className="block text-xl font-extrabold leading-tight">{victoryAction.label}</span>
+              <span className="block text-xs sm:text-sm font-body font-extrabold text-amber-950/75 mt-0.5 truncate">{victoryAction.subtitle}</span>
+            </span>
+            <span className="next-challenge-arrow" aria-hidden="true" />
+          </span>
         </button>
-        <button onClick={onContinue} className="w-full bg-gradient-to-b from-amber-300 to-amber-500 hover:brightness-110 active:scale-95 transition text-indigo-950 font-display font-bold py-4 rounded-2xl">
+
+        <button onClick={onRetry} className="retry-button w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
+          <span className="retry-arrow-badge w-8 h-8 rounded-full flex items-center justify-center text-base text-amber-100 shrink-0">↻</span>
+          Зіграти ще раз
+        </button>
+
+        <button onClick={onContinue} className="map-ghost-button w-full rounded-2xl py-3 font-display font-bold text-base flex items-center justify-center gap-2.5">
+          <ArtImage src="/assets/icons/ui/map_scroll.png" fallback="" alt="" className="w-5 h-5 object-contain" />
           До карти
         </button>
       </div>
