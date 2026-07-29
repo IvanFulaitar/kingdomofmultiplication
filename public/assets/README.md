@@ -12,6 +12,16 @@
 - archer.png
 - sorceress.png
 - paladin.png
+- ninja.png
+- barbarian.png
+- necromancer.png
+- monk.png
+- pirate.png
+- beastmaster.png
+- alchemist.png
+- samurai.png
+- fairy.png
+- golem.png
 
 ## monsters/ — ілюстрація ворога на екрані бою (квадратна, ~256×256)
 - 1.png … 12.png (номер рівня, напр. monsters/7.png — Вартовий замку)
