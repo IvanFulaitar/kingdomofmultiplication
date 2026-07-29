@@ -18,6 +18,31 @@ html, body {
 .font-display { font-family: 'Cinzel', serif; letter-spacing: 0.02em; }
 .font-body { font-family: 'Baloo 2', sans-serif; }
 
+/* Верхня панель бою: грід замість flex, щоб середній блок (назва) реально
+   стискався (min-width:0), а блок сердець ніколи не вилазив за viewport. */
+.battle-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(6px, 3vw, 12px);
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: max(0px, env(safe-area-inset-left));
+  padding-right: max(0px, env(safe-area-inset-right));
+}
+.battle-title { min-width: 0; }
+.battle-lives {
+  display: flex;
+  align-items: center;
+  gap: clamp(3px, 1.2vw, 6px);
+  flex-shrink: 0;
+}
+.battle-heart-icon {
+  width: clamp(20px, 6vw, 28px);
+  height: clamp(20px, 6vw, 28px);
+  flex-shrink: 0;
+}
+
 /* Битва: удар по монстру / контрудар по герою */
 @keyframes pop-hit { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }
 @keyframes shake-hit { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }

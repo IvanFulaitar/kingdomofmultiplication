@@ -11,7 +11,7 @@ function LifeHeart({ filled }) {
       src={filled ? "/assets/icons/ui/heart_full.png" : "/assets/icons/ui/heart_empty.png"}
       fallback={filled ? "❤️" : "🖤"}
       alt=""
-      className={`w-7 h-7 object-contain flex items-center justify-center text-xl ${filled ? "drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]" : "opacity-50"}`}
+      className={`battle-heart-icon object-contain flex items-center justify-center text-xl ${filled ? "drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]" : "opacity-50"}`}
     />
   );
 }
@@ -114,19 +114,19 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
       <div className="battle-vignette" />
 
       <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-dvh flex flex-col w-full">
-        <div className="flex items-center gap-3">
+        <div className="battle-header">
           <button
             onClick={() => setShowExitConfirm(true)}
             aria-label="Назад"
-            className="rpg-panel rpg-panel-gold shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
+            className="rpg-panel rpg-panel-gold w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
           >
             ←
           </button>
-          <div className="rpg-panel rpg-panel-gold flex-1 rounded-xl px-4 py-2 text-center">
+          <div className="rpg-panel rpg-panel-gold battle-title rounded-xl px-4 py-2 text-center">
             <div className="font-display gold-text font-extrabold text-base leading-tight truncate">{meta.title}</div>
-            <div className="text-[11px] text-violet-200 font-semibold mt-0.5">Завдання {qIndex + 1} з {QUESTIONS_PER_LEVEL}</div>
+            <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">Завдання {qIndex + 1} з {QUESTIONS_PER_LEVEL}</div>
           </div>
-          <div className="rpg-panel shrink-0 rounded-xl px-2.5 py-2 flex gap-1.5">
+          <div className="rpg-panel battle-lives rounded-xl px-2.5 py-2">
             {[0, 1, 2].map((i) => <LifeHeart key={i} filled={i < lives} />)}
           </div>
         </div>
