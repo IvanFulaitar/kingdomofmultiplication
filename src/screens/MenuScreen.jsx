@@ -100,14 +100,20 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           </div>
         </div>
 
-        <button onClick={() => { playClick(); onPlay(); }} className="play-button relative w-full text-indigo-950 font-display font-extrabold text-xl py-4 rounded-2xl" style={{ clipPath: "polygon(2% 0%, 98% 0%, 100% 50%, 98% 100%, 2% 100%, 0% 50%)" }}>
-          <span className="absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-white/25 pointer-events-none" />
-          <span className="relative grid grid-cols-[2rem_1fr_2rem] items-center px-2">
-            <span className="sparkle-spin justify-self-start text-amber-900">✦</span>
-            <span>ГРАТИ</span>
-            <span className="sparkle-spin justify-self-end text-amber-900">✦</span>
-          </span>
-        </button>
+        <div className="relative w-full">
+          <button onClick={() => { playClick(); onPlay(); }} className="hero-play-button relative w-full min-h-[72px]">
+            <span className="hero-play-shine" aria-hidden="true" />
+            <span className="relative z-10 grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2 px-8 h-full">
+              <span className="hero-play-diamond justify-self-start" aria-hidden="true" />
+              <span className="hero-play-text font-display font-extrabold text-3xl tracking-wide justify-self-center">ГРАТИ</span>
+              <span className="hero-play-diamond justify-self-end" aria-hidden="true" />
+            </span>
+          </button>
+          <span className="hero-play-sparkle hero-play-sparkle-tl" aria-hidden="true" />
+          <span className="hero-play-sparkle hero-play-sparkle-tr" aria-hidden="true" />
+          <span className="hero-play-sparkle hero-play-sparkle-bl" aria-hidden="true" />
+          <span className="hero-play-sparkle hero-play-sparkle-br" aria-hidden="true" />
+        </div>
 
         <div className="w-full grid grid-cols-3 gap-3">
           <button onClick={() => { playClick(); onBadges(); }} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
