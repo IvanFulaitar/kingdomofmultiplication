@@ -1805,3 +1805,158 @@ html, body {
     0 8px 16px -8px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
+
+/* =====================================================================
+   Екран вибору складності "Перегонів" — три картки (Тренувальний /
+   Пригодницький / Чемпіонський). Кожна складність має свій м'який
+   колірний акцент, але ту саму форму/рамку/тінь, що й решта великих
+   карток гри (rpg-panel), щоб не виглядати "чужою" на загальному фоні.
+   ===================================================================== */
+
+.race-diff-card {
+  position: relative;
+  text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.race-diff-card:active:not(:disabled) { transform: scale(0.985); }
+
+.race-diff-card-training {
+  background: linear-gradient(165deg, rgba(45, 78, 112, 0.85), rgba(19, 34, 56, 0.92));
+  border: 1.5px solid rgba(94, 234, 212, 0.38);
+  box-shadow: 0 10px 22px -10px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+.race-diff-card-adventure {
+  background: linear-gradient(165deg, rgba(76, 58, 134, 0.92), rgba(28, 21, 58, 0.96));
+  border: 1.5px solid rgba(245, 185, 66, 0.48);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.race-diff-card-champion {
+  background: linear-gradient(165deg, rgba(66, 26, 88, 0.94), rgba(20, 10, 36, 0.97));
+  border: 1.5px solid rgba(245, 158, 11, 0.42);
+  box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.65), 0 0 20px rgba(245, 158, 11, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.race-diff-card-selected {
+  border-color: rgba(245, 185, 66, 0.95) !important;
+  box-shadow:
+    0 0 0 2px rgba(245, 185, 66, 0.55),
+    0 0 26px rgba(245, 185, 66, 0.4),
+    0 12px 24px -8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+.race-diff-card-locked {
+  filter: grayscale(0.55) brightness(0.6);
+}
+
+.race-diff-check {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 27px;
+  height: 27px;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #6ee7b7, #10b981 60%, #047857);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 13px;
+  z-index: 2;
+}
+
+.race-diff-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.race-diff-icon-training {
+  background: radial-gradient(circle at 35% 30%, #7dd3fc, #0369a1 75%);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.race-diff-icon-adventure {
+  background: linear-gradient(180deg, #c4b5fd, #7c3aed 65%, #4c1d95);
+  box-shadow: 0 0 14px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.race-diff-icon-champion {
+  background: linear-gradient(180deg, #fde68a, #f59e0b 55%, #b45309);
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.race-diff-shield {
+  width: 46%;
+  height: 50%;
+  clip-path: polygon(50% 0%, 88% 14%, 78% 72%, 50% 100%, 22% 72%, 12% 14%);
+  background: linear-gradient(180deg, #f0f9ff, #bae6fd);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+.race-diff-flag {
+  width: 42%;
+  height: 46%;
+  background-image: conic-gradient(#f8fafc 90deg, #1e293b 90deg 180deg, #f8fafc 180deg 270deg, #1e293b 270deg);
+  background-size: 8px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  transform: rotate(-8deg);
+}
+.race-diff-bolt {
+  width: 48%;
+  height: 52%;
+  clip-path: polygon(55% 0%, 20% 55%, 45% 55%, 30% 100%, 80% 40%, 52% 40%);
+  background: linear-gradient(180deg, #fff7d6, #fde68a);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.race-diff-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.race-diff-badge-training {
+  background: rgba(56, 189, 248, 0.16);
+  color: #bae6fd;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+.race-diff-badge-recommended {
+  background: linear-gradient(180deg, #ffe28a, #f5b93f 55%, #d98f1e);
+  color: #4a2c02;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+.race-diff-badge-risk {
+  background: linear-gradient(180deg, rgba(159, 18, 57, 0.9), rgba(76, 5, 25, 0.95));
+  color: #fecdd3;
+  border: 1px solid rgba(251, 113, 133, 0.55);
+}
+
+.race-diff-hint-banner {
+  background: linear-gradient(180deg, rgba(98, 76, 160, 0.92), rgba(42, 32, 84, 0.94));
+  border: 1px solid rgba(245, 185, 66, 0.5);
+  color: #fde68a;
+}
+
+.race-diff-reco-pill {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #a7f3d0, #34d399 55%, #047857);
+  color: #022c22;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 4px 10px -3px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}

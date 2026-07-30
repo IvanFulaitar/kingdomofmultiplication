@@ -11,37 +11,31 @@ import { rand } from "./random.js";
 // швидко й правильно, перевага зберігається.
 // ---------------------------------------------------------------------
 
-export const MAX_ROUNDS = 7;
-export const TIME_LIMIT = 6;
+// FINISH лишається фіксованим "довжиною траси" незалежно від складності —
+// довшу/коротшу гонку дають не інші фінішні 100%, а інша кількість раундів
+// і інший приріст за раунд (обидва тепер задаються в data/raceDifficulties.js).
 export const FINISH = 100;
 const MIN_OPPONENT_GAIN = 3;
 
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-// Складність росте з кількістю вже пройдених перегонів (як і в "Лабіринті"),
-// але обирається ОДИН РАЗ на старті заїзду — усередині одного забігу вона
-// ніколи не змінюється різко.
-export function tierForCompletions(n = 0) {
-  if (n >= 6) return "hard";
-  if (n >= 2) return "normal";
-  return "easy";
-}
-
-export const TIER_LABEL = { easy: "Легкий заїзд", normal: "Звичайний заїзд", hard: "Складний заїзд" };
-
-// Межі "гумового" бонусу — звужуються на складному рівні (щоб виклик
-// лишався чесним, а не штучним) і слабшають на легкому.
-const CATCHUP_BOUNDS = {
-  easy: { min: -2, max: 2 },
-  normal: { min: -3, max: 4 },
-  hard: { min: -3, max: 3 },
+// Складність тепер обирає сам гравець на окремому екрані (RaceDifficultyScreen)
+// — раніше вона підвищувалась автоматично від кількості пройдених заїздів,
+// але це робило гру передбачуваною й не давало дитині керувати викликом.
+// Три складності: "training" (Тренувальний), "adventure" (Пригодницький),
+// "champion" (Чемпіонський) — повний опис кожної в data/raceDifficulties.js.
+export const TIER_LABEL = {
+  training: "Тренувальний заїзд",
+  adventure: "Пригодницький заїзд",
+  champion: "Чемпіонський заїзд",
 };
 
 // --- Прогрес гравця -----------------------------------------------------
 
-// Три швидкісні пороги в межах TIME_LIMIT (6 c) — приблизно по 2 секунди
-// кожен: дуже швидко / нормально / повільно.
-export function speedTierFor(timeLeft, timeLimit = TIME_LIMIT) {
+// Три швидкісні пороги в межах ліміту часу конкретної складності (значення
+// timeLimit тепер завжди приходить із data/raceDifficulties.js) — трасса
+// ділиться на три рівні відрізки: дуже швидко / нормально / повільно.
+export function speedTierFor(timeLeft, timeLimit = 6) {
   if (timeLeft >= (timeLimit * 2) / 3) return "veryFast";
   if (timeLeft >= timeLimit / 3) return "normal";
   return "slow";
@@ -71,10 +65,12 @@ export function streakBonus(streakAfter) {
 
 // opponentGain = baseGain (власний діапазон рівня) + randomVariation(-2..2)
 // + catchUpBonus, де
-// catchUpBonus = clamp((playerProgress - opponentProgress) × 0.12, tierMin, tierMax).
-// Гравець ніколи не бачить цих чисел — ззовні це має виглядати просто як
-// "природний" темп суперника, не як технічний механізм.
-export function opponentGain({ tierConfig, tier, playerProgress, opponentProgress, isFinalStretch }) {
+// catchUpBonus = clamp((playerProgress - opponentProgress) × 0.12, catchupBounds.min, catchupBounds.max).
+// catchupBounds приходить прямо з обраної складності (data/raceDifficulties.js
+// -> cfg.catchup) — єдине джерело правди для меж "гумового" наздоганяння,
+// без дублювання в двох файлах. Гравець ніколи не бачить цих чисел — ззовні
+// це має виглядати просто як "природний" темп суперника, не як механізм.
+export function opponentGain({ tierConfig, catchupBounds, playerProgress, opponentProgress, isFinalStretch }) {
   const [lo, hi] = tierConfig.base;
   let gain = rand(lo, hi);
   gain += rand(-2, 2); // невелика випадковість, щоб заїзди не повторювались однаково
@@ -85,8 +81,7 @@ export function opponentGain({ tierConfig, tier, playerProgress, opponentProgres
   }
 
   const gap = playerProgress - opponentProgress;
-  const bounds = CATCHUP_BOUNDS[tier];
-  gain += clamp(Math.round(gap * 0.12), bounds.min, bounds.max);
+  gain += clamp(Math.round(gap * 0.12), catchupBounds.min, catchupBounds.max);
 
   if (isFinalStretch) gain += rand(0, 1); // останні 2 раунди: максимум +1 додатково
 
@@ -109,7 +104,7 @@ const RANDOM_EVENT_CHANCE = 0.45;
 // Один випадковий (або жодного) на раунд. Перший раунд завжди спокійний —
 // щоб дитина спершу відчула базову гру без додаткових умов. Останній раунд
 // завжди "Фінішний ривок" (сама природа події прив'язана до фінішу).
-export function pickRaceEvent(roundIndex, maxRounds = MAX_ROUNDS) {
+export function pickRaceEvent(roundIndex, maxRounds = 7) {
   if (roundIndex === 0) return null;
   if (roundIndex === maxRounds - 1) return RACE_EVENTS.dash;
   if (Math.random() < RANDOM_EVENT_CHANCE) {
@@ -147,4 +142,83 @@ export function starsForRace({ place, accuracy, missedCount }) {
   if (place !== 1) return 1; // перша зірка — за сам факт участі до фінішу
   if (accuracy >= 0.85 || missedCount === 0) return 3;
   return 2;
+}
+
+// --- Нагорода за заїзд ---------------------------------------------------
+//
+// "Базова нагорода" картки складності (напр. 40 монет/65 XP на чемпіонському)
+// — це вже ПОВНА нагорода за 1 місце З урахуванням множника складності
+// (base * multiplier). У розбивці на екрані результату показуємо це двома
+// рядками — "Базова нагорода" (base) і "Бонус складності ×M" (base*(M-1)) —
+// саме так, як просив бриф у прикладі "20 + бонус ×2: +20 = 40".
+// Місце змінює вже цю повну суму (100%/65%/35%), а бонуси за точність/серію/
+// рекорд додаються зверху, без знижки за місце.
+const PLACE_FACTOR = { 1: 1, 2: 0.65, 3: 0.35 };
+const PERFECT_ACCURACY_COIN_BONUS = 5;
+const FLAWLESS_XP_BONUS = 10;
+const PERSONAL_BEST_COIN_BONUS = 5;
+
+export function computeRaceReward({
+  reward, // { coins, xp, multiplier, bonusChestChance }
+  place,
+  accuracy,
+  flawless, // жодної помилки й жодного тайм-ауту за весь заїзд
+  isPersonalBest,
+  trainingWinsToday = 0, // скільки ПОВНИХ перемог тренувального заїзду вже було сьогодні (до цієї)
+  isTraining = false,
+}) {
+  const placeFactor = PLACE_FACTOR[place] ?? 0.35;
+
+  const difficultyCoinBonus = Math.round(reward.coins * (reward.multiplier - 1));
+  const difficultyXpBonus = Math.round(reward.xp * (reward.multiplier - 1));
+
+  const fullCoins = reward.coins + difficultyCoinBonus; // = base * multiplier
+  const fullXp = reward.xp + difficultyXpBonus;
+
+  let placedCoins = Math.round(fullCoins * placeFactor);
+  const placedXp = Math.round(fullXp * placeFactor);
+
+  // Захист від фарму: перші 3 перемоги тренувального заїзду на день дають
+  // повну нагороду монетами, далі — трохи менше (XP не зменшується, і
+  // складніші заїзди завжди вигідніші — обмеження навмисно м'яке).
+  let farmReduced = false;
+  if (isTraining && place === 1 && trainingWinsToday >= 3) {
+    placedCoins = Math.round(placedCoins * 0.6);
+    farmReduced = true;
+  }
+
+  const accuracyBonusCoins = accuracy >= 0.999 ? PERFECT_ACCURACY_COIN_BONUS : 0;
+  const flawlessBonusXp = flawless ? FLAWLESS_XP_BONUS : 0;
+  const personalBestBonusCoins = isPersonalBest ? PERSONAL_BEST_COIN_BONUS : 0;
+
+  const totalCoins = Math.max(1, placedCoins + accuracyBonusCoins + personalBestBonusCoins);
+  const totalXp = Math.max(1, placedXp + flawlessBonusXp);
+
+  return {
+    baseCoins: reward.coins,
+    baseXp: reward.xp,
+    multiplier: reward.multiplier,
+    difficultyCoinBonus,
+    difficultyXpBonus,
+    placeFactor,
+    placedCoins,
+    placedXp,
+    accuracyBonusCoins,
+    flawlessBonusXp,
+    personalBestBonusCoins,
+    farmReduced,
+    totalCoins,
+    totalXp,
+  };
+}
+
+// "Особистий рекорд" для складності — проста композитна оцінка, що
+// монотонно зростає з кращим місцем, вищою точністю й швидшою середньою
+// відповіддю. Не показується гравцю напряму, лише порівнюється з
+// попереднім найкращим результатом на цій самій складності.
+export function raceScoreFor({ place, accuracy, avgResponseTime, timeLimit }) {
+  const placeScore = place === 1 ? 300 : place === 2 ? 180 : 60;
+  const accScore = Math.round(accuracy * 100);
+  const speedScore = Math.max(0, Math.round((timeLimit - avgResponseTime) * 10));
+  return placeScore + accScore + speedScore;
 }

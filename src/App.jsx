@@ -8,6 +8,7 @@ import { preloadCoreSfx, playAchievementSfx } from "./game/sfx.js";
 import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
   starsForMistakes, heroLevelFromXp,
+  recordRaceResult, todaysTrainingWins,
 } from "./game/progress.js";
 
 // MenuScreen — перше, що бачить гравець, тому вантажиться одразу.
@@ -19,6 +20,7 @@ const ShopScreen = lazy(() => import("./screens/ShopScreen.jsx"));
 const TrainingScreen = lazy(() => import("./screens/TrainingScreen.jsx"));
 const MemoryScreen = lazy(() => import("./screens/MemoryScreen.jsx"));
 const MazeScreen = lazy(() => import("./screens/MazeScreen.jsx"));
+const RaceDifficultyScreen = lazy(() => import("./screens/RaceDifficultyScreen.jsx"));
 const RaceScreen = lazy(() => import("./screens/RaceScreen.jsx"));
 const MapScreen = lazy(() => import("./screens/MapScreen.jsx"));
 const GameScreen = lazy(() => import("./screens/GameScreen.jsx"));
@@ -37,6 +39,7 @@ export default function App() {
   const [progress, setProgress] = useState(null);
   const [screen, setScreen] = useState("menu");
   const [activeLevel, setActiveLevel] = useState(null);
+  const [raceDifficulty, setRaceDifficulty] = useState(null);
   const [outcome, setOutcome] = useState(null);
   const [showBadges, setShowBadges] = useState(false);
   const [newBadge, setNewBadge] = useState(null);
@@ -123,10 +126,12 @@ export default function App() {
     persist(p);
   }
 
-  // Так само рахує кількість пройдених перегонів, щоб складність суперників
-  // могла плавно рости від заїзду до заїзду (обирається ОДИН РАЗ на старті
-  // кожного заїзду — усередині одного забігу вона не змінюється).
-  function completeRace(coinGain, xpGain) {
+  // Складність тепер обирає сам гравець (RaceDifficultyScreen) — тут лише
+  // нараховуємо нагороду й ведемо бухгалтерію: історію останніх 5 заїздів
+  // (для рекомендації складності наступного разу), особисті рекорди на
+  // кожній складності, розблокування чемпіонського заїзду, і лічильник
+  // сьогоднішніх перемог тренувального заїзду (м'який захист від фарму).
+  function completeRace(coinGain, xpGain, meta) {
     let p = ensureDaily(progress);
     p = {
       ...p,
@@ -134,6 +139,10 @@ export default function App() {
       xp: (p.xp ?? 0) + xpGain,
       raceCompletions: (p.raceCompletions ?? 0) + 1,
     };
+    if (meta) {
+      const { p: nextP } = recordRaceResult(p, meta);
+      p = nextP;
+    }
     persist(p);
   }
 
@@ -211,7 +220,12 @@ export default function App() {
             onBack={() => setScreen("menu")}
           />
         )}
-        {screen === "training" && <TrainingScreen onBack={() => setScreen("menu")} onSelect={(m) => setScreen(m)} />}
+        {screen === "training" && (
+          <TrainingScreen
+            onBack={() => setScreen("menu")}
+            onSelect={(m) => setScreen(m === "race" ? "raceDifficulty" : m)}
+          />
+        )}
         {screen === "memory" && (
           <MemoryScreen
             onBack={() => setScreen("training")}
@@ -226,12 +240,21 @@ export default function App() {
             onComplete={(coins, xp) => { completeMaze(coins, xp); setScreen("training"); }}
           />
         )}
+        {screen === "raceDifficulty" && (
+          <RaceDifficultyScreen
+            progress={progress}
+            onBack={() => setScreen("training")}
+            onStart={(difficultyId) => { setRaceDifficulty(difficultyId); setScreen("race"); }}
+          />
+        )}
         {screen === "race" && (
           <RaceScreen
             avatar={progress.avatar}
-            completions={progress.raceCompletions ?? 0}
+            difficulty={raceDifficulty}
+            trainingWinsToday={todaysTrainingWins(progress)}
+            bestScore={progress.raceBest?.[raceDifficulty] ?? 0}
             onBack={() => setScreen("training")}
-            onComplete={(coins, xp) => { completeRace(coins, xp); setScreen("training"); }}
+            onComplete={(coins, xp, meta) => { completeRace(coins, xp, meta); setScreen("training"); }}
           />
         )}
         {screen === "map" && (

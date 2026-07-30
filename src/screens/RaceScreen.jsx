@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import { RIVALS } from "../data/raceRivals.js";
+import { RACE_DIFFICULTIES } from "../data/raceDifficulties.js";
 import { generatePracticeQuestion } from "../game/practice.js";
 import {
-  MAX_ROUNDS, TIME_LIMIT, FINISH,
-  tierForCompletions, TIER_LABEL, speedTierFor, playerBaseGain, streakBonus,
+  FINISH, speedTierFor, playerBaseGain, streakBonus,
   opponentGain, pickRaceEvent, rankParticipants, liveStandings, starsForRace,
+  computeRaceReward, raceScoreFor,
 } from "../game/raceEngine.js";
 import { setMusicIntensity } from "../game/music.js";
 import {
   preloadSfxGroup, playAnswerCorrect, playAnswerWrong, playModalOpen,
-  playRaceStart, playRaceBoost, playRaceOvertake, playRaceFinish,
+  playRaceStart, playRaceBoost, playRaceOvertake, playRaceFinish, playChestOpen,
 } from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
@@ -22,6 +23,7 @@ const SPEED_FEEDBACK = {
 };
 
 const NAMES = { player: "Ти", rivalA: "Їжак-бешкетник", rivalB: "Гірський яструб" };
+const DIFF_HEADER_ICON = { training: "🛡️", adventure: "🏁", champion: "⚡" };
 
 // Синтетичний "час останньої відповіді" суперника — потрібен лише як
 // детермінований запасний критерій для розбору точної нічиї (спец вимагає
@@ -62,14 +64,20 @@ function Lane({ name, imgSrc, fallback, pct, place, fillClass, highlight, dashin
   );
 }
 
-export default function RaceScreen({ avatar, completions = 0, onBack, onComplete }) {
+// difficulty — id складності, обраної на RaceDifficultyScreen ("training" /
+// "adventure" / "champion"); фіксується на весь заїзд, не змінюється
+// автоматично від кількості пройдених забігів (це тепер завжди свідомий
+// вибір гравця, а не приховане підвищення складності).
+export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, bestScore = 0, onBack, onComplete }) {
   const heroIcon = AVATARS.find((av) => av.id === avatar)?.icon ?? "🧙";
-  const [tier] = useState(() => tierForCompletions(completions)); // фіксується на весь заїзд
+  const cfg = RACE_DIFFICULTIES[difficulty] ?? RACE_DIFFICULTIES.adventure;
+  const MAX_ROUNDS = cfg.rounds;
+  const TIME_LIMIT = cfg.timeLimit;
 
   const [round, setRound] = useState(0);
   const [event, setEvent] = useState(null);
   const [positions, setPositions] = useState({ player: 0, rivalA: 0, rivalB: 0 });
-  const [question, setQuestion] = useState(() => generatePracticeQuestion(null));
+  const [question, setQuestion] = useState(() => generatePracticeQuestion(null, cfg.questionMix));
   const [feedback, setFeedback] = useState(null);
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT);
   const [streak, setStreak] = useState(0);
@@ -120,7 +128,7 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
     answeredRef.current = true;
 
     const correct = option === question.correct;
-    const speedTier = speedTierFor(timeLeft);
+    const speedTier = speedTierFor(timeLeft, TIME_LIMIT);
     const stats = statsRef.current;
     const currentEvent = event;
 
@@ -158,9 +166,9 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
     if (overtook) playRaceOvertake();
 
     for (const rival of RIVALS) {
-      const tierConfig = rival.tiers[tier];
+      const tierConfig = rival.tiers[difficulty];
       let gain = opponentGain({
-        tierConfig, tier,
+        tierConfig, catchupBounds: cfg.catchup,
         playerProgress: nextPlayerPos,
         opponentProgress: positions[rival.id],
         isFinalStretch,
@@ -187,25 +195,48 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
         const ranked = rankParticipants(entries);
         const place = ranked.findIndex((r) => r.id === "player") + 1;
         const accuracy = stats.roundsAnswered ? stats.correctCount / stats.roundsAnswered : 0;
-        setPlacement({
+        const avgResponseTime = stats.roundsAnswered ? stats.responseTimeSum / stats.roundsAnswered : 0;
+        const gapToSecond = Math.max(0, Math.round(ranked[0].rawProgress - ranked[1].rawProgress));
+        const flawless = stats.roundsAnswered > 0 && stats.correctCount === stats.roundsAnswered;
+        const score = raceScoreFor({ place, accuracy, avgResponseTime, timeLimit: TIME_LIMIT });
+        const isPersonalBest = score > bestScore;
+
+        const reward = computeRaceReward({
+          reward: cfg.reward,
           place,
-          ranked,
           accuracy,
-          avgResponseTime: stats.roundsAnswered ? stats.responseTimeSum / stats.roundsAnswered : 0,
+          flawless,
+          isPersonalBest,
+          trainingWinsToday,
+          isTraining: difficulty === "training",
+        });
+
+        let bonusChest = false;
+        let finalCoins = reward.totalCoins + stats.bonusCoins;
+        if (difficulty === "champion" && cfg.reward.bonusChestChance && Math.random() < cfg.reward.bonusChestChance) {
+          bonusChest = true;
+          finalCoins += 8;
+        }
+
+        setPlacement({
+          place, ranked, accuracy, avgResponseTime,
           bestStreak: bestStreakRef.current,
           bonusCoins: stats.bonusCoins,
-          gapToSecond: Math.max(0, Math.round(ranked[0].rawProgress - ranked[1].rawProgress)),
+          gapToSecond,
           stars: starsForRace({ place, accuracy, missedCount: stats.missedCount }),
+          flawless, isPersonalBest, score, reward, bonusChest,
+          finalCoins, finalXp: reward.totalXp,
         });
         setFinished(true);
         playRaceFinish();
+        if (bonusChest || isPersonalBest) setTimeout(playChestOpen, 350);
         return;
       }
 
       const nextRound = round + 1;
       setRound(nextRound);
       setEvent(pickRaceEvent(nextRound, MAX_ROUNDS));
-      setQuestion(generatePracticeQuestion(question.pair));
+      setQuestion(generatePracticeQuestion(question.pair, cfg.questionMix));
       setTimeLeft(TIME_LIMIT);
       setFeedback(null);
       setDashing(false);
@@ -221,7 +252,7 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
     bestStreakRef.current = 0;
     statsRef.current = { correctCount: 0, missedCount: 0, responseTimeSum: 0, roundsAnswered: 0, bonusCoins: 0 };
     answeredRef.current = false;
-    setQuestion(generatePracticeQuestion(null));
+    setQuestion(generatePracticeQuestion(null, cfg.questionMix));
     setTimeLeft(TIME_LIMIT);
     setStreak(0);
     playRaceStart();
@@ -233,8 +264,6 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
 
   const standings = liveStandings(positions);
   const placementText = placement?.place === 1 ? "🥇 Ти прийшов першим!" : placement?.place === 2 ? "🥈 Друге місце!" : "🥉 Третє місце";
-  const baseReward = placement?.place === 1 ? { coins: 40, xp: 40 } : placement?.place === 2 ? { coins: 20, xp: 20 } : { coins: 10, xp: 10 };
-  const totalCoins = baseReward.coins + (placement?.bonusCoins ?? 0);
 
   const feedbackText = feedback
     ? feedback.correct
@@ -252,10 +281,10 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
           <div className="rpg-panel rpg-panel-gold battle-title rounded-xl px-4 py-2 text-center">
             <div className="font-display gold-text font-extrabold text-base leading-tight truncate">✦ Перегони ✦</div>
             <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">
-              {finished ? TIER_LABEL[tier] : `Раунд ${Math.min(round + 1, MAX_ROUNDS)} з ${MAX_ROUNDS} · ${TIER_LABEL[tier]}`}
+              {finished ? cfg.label : `Раунд ${Math.min(round + 1, MAX_ROUNDS)} з ${MAX_ROUNDS} · ${cfg.label}`}
             </div>
           </div>
-          <div className="rpg-panel rounded-xl px-2.5 py-2 flex items-center justify-center text-lg shrink-0">🏁</div>
+          <div className="rpg-panel rounded-xl px-2.5 py-2 flex items-center justify-center text-lg shrink-0">{DIFF_HEADER_ICON[difficulty] ?? "🏁"}</div>
         </div>
 
         <div className={`race-arena rounded-3xl p-4 mt-4 ${isFinalStretch && !finished ? "race-arena-urgent" : ""}`}>
@@ -343,7 +372,8 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
 
         {finished && placement && (
           <div className="rpg-panel rpg-panel-gold rounded-3xl p-5 mt-5 text-center screen-in">
-            <div className="font-display gold-text font-extrabold text-xl mb-2">{placementText}</div>
+            <div className="font-display gold-text font-extrabold text-xl mb-1">{placementText}</div>
+            <div className="text-[11px] text-violet-200 font-semibold mb-3">{cfg.label}</div>
 
             <div className="flex justify-center gap-2 mb-4">
               {[0, 1, 2].map((i) => (
@@ -367,11 +397,44 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
               <div>Відрив 1-го місця від 2-го: <b className="text-white">{placement.gapToSecond}%</b></div>
             </div>
 
-            <div className="text-violet-200 text-sm mb-4">
-              Нагорода: {totalCoins} монет{placement.bonusCoins ? ` (+${placement.bonusCoins} бонусних)` : ""}, {baseReward.xp} XP
+            <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-4 text-left text-sm text-violet-100 space-y-1">
+              <div className="flex justify-between"><span>Базова нагорода</span><span className="text-white font-semibold">{placement.reward.baseCoins} монет</span></div>
+              {placement.reward.multiplier > 1 && (
+                <div className="flex justify-between"><span>Бонус складності ×{placement.reward.multiplier}</span><span className="text-emerald-300 font-semibold">+{placement.reward.difficultyCoinBonus}</span></div>
+              )}
+              {placement.place !== 1 && (
+                <div className="flex justify-between"><span>Місце {placement.place} (×{Math.round(placement.reward.placeFactor * 100)}%)</span><span className="text-white font-semibold">{placement.reward.placedCoins} монет</span></div>
+              )}
+              {placement.reward.accuracyBonusCoins > 0 && (
+                <div className="flex justify-between"><span>Ідеальна точність</span><span className="text-emerald-300 font-semibold">+{placement.reward.accuracyBonusCoins}</span></div>
+              )}
+              {placement.reward.flawlessBonusXp > 0 && (
+                <div className="flex justify-between"><span>Серія без помилок</span><span className="text-emerald-300 font-semibold">+{placement.reward.flawlessBonusXp} XP</span></div>
+              )}
+              {placement.reward.personalBestBonusCoins > 0 && (
+                <div className="flex justify-between"><span>✨ Новий особистий рекорд</span><span className="text-emerald-300 font-semibold">+{placement.reward.personalBestBonusCoins}</span></div>
+              )}
+              {placement.bonusChest && (
+                <div className="flex justify-between"><span>🎁 Бонусна скриня</span><span className="text-emerald-300 font-semibold">+8</span></div>
+              )}
+              {placement.reward.farmReduced && (
+                <div className="text-[11px] text-amber-200/80 pt-1">Сьогодні вже було кілька перемог у тренувальному заїзді — монети трохи менші</div>
+              )}
+              <div className="flex justify-between pt-2 mt-1 border-t border-white/10 font-display font-bold text-base">
+                <span className="text-amber-200">Разом</span>
+                <span className="text-amber-200">{placement.finalCoins} монет, {placement.finalXp} XP</span>
+              </div>
             </div>
+
             <div className="flex flex-col gap-3">
-              <button onClick={() => onComplete(totalCoins, baseReward.xp)} className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl">
+              <button
+                onClick={() => onComplete(placement.finalCoins, placement.finalXp, {
+                  difficulty, place: placement.place, accuracy: placement.accuracy,
+                  avgResponseTime: placement.avgResponseTime, bestStreak: placement.bestStreak,
+                  gapToSecond: placement.gapToSecond, score: placement.score,
+                })}
+                className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl"
+              >
                 Забрати нагороду
               </button>
               <button onClick={retry} className="rpg-panel rounded-2xl py-3 text-white/80 font-semibold text-sm">
