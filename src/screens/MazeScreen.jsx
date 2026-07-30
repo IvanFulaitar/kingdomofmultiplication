@@ -310,7 +310,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     applyCellEffect(targetKey);
   }
 
-  function resolveAttempt(correct, targetKey, chosenValue) {
+  function resolveAttempt(correct, targetKey, chosenValue, harsh = false) {
     if (feedback || showExitConfirm || phase !== "playing") return;
     const targetIsTrap = maze.cells[targetKey]?.type === CELL.TRAP;
 
@@ -323,7 +323,10 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
 
     playWrong();
     const nextStrikes = wrongStrikes + 1;
-    if (nextStrikes >= 2) {
+    // На розвилці "ризикована" (пастка) дверь по-справжньому ризикована:
+    // помилка там одразу коштує життя, без безкоштовної першої спроби —
+    // інакше значок блискавки був би просто прикрасою без сенсу.
+    if (harsh || nextStrikes >= 2) {
       setFeedback({ correct: false, chosenValue, trap: targetIsTrap, lifeLost: true });
       setLives((l) => l - 1);
       setMistakes((m) => m + 1);
@@ -343,7 +346,8 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     resolveAttempt(value === activeQuestion.question.correct, activeQuestion.target, value);
   }
   function handleDoorTap(door) {
-    resolveAttempt(door.isCorrect, door.neighborKey, door.value);
+    const isTrapDoor = maze.cells[door.neighborKey]?.type === CELL.TRAP;
+    resolveAttempt(door.isCorrect, door.neighborKey, door.value, isTrapDoor);
   }
   function handleBacktrack(targetKey) {
     if (feedback || showExitConfirm || phase !== "playing" || inTreasure) return;
@@ -547,11 +551,14 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                 </>
               )}
 
-              {!inTreasure && activeQuestion?.mode === "fork" && (
+              {!inTreasure && activeQuestion?.mode === "fork" && (() => {
+                const visibleDoors = activeQuestion.doors.filter((d) => !eliminated.has(d.value));
+                const wide = visibleDoors.length <= 2 ? "w-[46%]" : "w-[30%] min-w-[84px]";
+                return (
                 <>
                   <QuestCard title={taskCardTitle(activeQuestion, maze)} prompt={activeQuestion.question.prompt} />
                   <div className="flex flex-wrap justify-center gap-3 w-full">
-                    {activeQuestion.doors.filter((d) => !eliminated.has(d.value)).map((door) => {
+                    {visibleDoors.map((door) => {
                       const badge = doorBadge(maze, door.neighborKey);
                       let style = `maze-door-btn ${doorRiskClass(maze, door.neighborKey)}`;
                       let mark = null;
@@ -560,7 +567,6 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                         else if (door.value === feedback.chosenValue) { style = feedback.trap ? "maze-trap-flash text-white" : "answer-btn-wrong"; mark = "✕"; }
                         else style = "answer-btn-dim opacity-50";
                       }
-                      const wide = activeQuestion.doors.length <= 2 ? "w-[46%]" : "w-[30%] min-w-[84px]";
                       return (
                         <button key={door.neighborKey} disabled={!!feedback} onClick={() => handleDoorTap(door)} className={`relative font-display font-extrabold text-white text-2xl py-7 rounded-2xl transition active:scale-95 ${wide} ${style}`}>
                           {badge && !feedback && (
@@ -574,7 +580,8 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                     })}
                   </div>
                 </>
-              )}
+                );
+              })()}
 
               {!inTreasure && activeQuestion?.mode === "deadend" && (
                 <div className="rpg-panel rounded-2xl p-4 text-center text-violet-100 text-sm max-w-xs">
