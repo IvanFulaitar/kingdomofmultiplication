@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { buildMemoryCards } from "../game/memory.js";
+import { playCorrect, playWrong, playWin } from "../game/sound.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
@@ -23,6 +24,11 @@ export default function MemoryScreen({ onBack, onComplete }) {
   useEffect(() => {
     exitConfirmRef.current = showExitConfirm;
   }, [showExitConfirm]);
+
+  useEffect(() => {
+    if (done) playWin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
 
   useEffect(() => {
     window.history.pushState({ activeAttempt: "memory" }, "");
@@ -52,10 +58,12 @@ export default function MemoryScreen({ onBack, onComplete }) {
       if (isMatch) {
         setResultMsg("match");
         setMatched((m) => [...m, first.id, second.id]);
+        playCorrect();
       } else {
         setTimeout(() => {
           setLastWrong(true);
           setResultMsg("miss");
+          playWrong();
         }, 550);
       }
       setTimeout(() => {

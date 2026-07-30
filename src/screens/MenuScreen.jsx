@@ -1,16 +1,34 @@
+import { useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import { QUESTS } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
+import { isSoundEnabled, setSoundEnabled, playClick } from "../game/sound.js";
 import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 
 export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining }) {
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
+  const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
+
+  function toggleSound() {
+    const next = !soundOn;
+    setSoundOn(next);
+    setSoundEnabled(next);
+    if (next) playClick();
+  }
 
   return (
     <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
+
+      <button
+        onClick={toggleSound}
+        aria-label={soundOn ? "Вимкнути звук" : "Увімкнути звук"}
+        className="absolute top-4 right-4 z-20 rpg-panel rpg-panel-gold w-10 h-10 rounded-xl flex items-center justify-center text-lg active:scale-95 transition"
+      >
+        {soundOn ? "🔊" : "🔇"}
+      </button>
 
       <div className="relative z-10 max-w-md mx-auto px-6 py-10 flex flex-col items-center gap-6 pb-14">
         <div className="text-center relative">
@@ -77,7 +95,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           </div>
         </div>
 
-        <button onClick={onPlay} className="play-button relative w-full text-indigo-950 font-display font-extrabold text-xl py-4 rounded-2xl" style={{ clipPath: "polygon(2% 0%, 98% 0%, 100% 50%, 98% 100%, 2% 100%, 0% 50%)" }}>
+        <button onClick={() => { playClick(); onPlay(); }} className="play-button relative w-full text-indigo-950 font-display font-extrabold text-xl py-4 rounded-2xl" style={{ clipPath: "polygon(2% 0%, 98% 0%, 100% 50%, 98% 100%, 2% 100%, 0% 50%)" }}>
           <span className="absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-white/25 pointer-events-none" />
           <span className="relative grid grid-cols-[2rem_1fr_2rem] items-center px-2">
             <span className="sparkle-spin justify-self-start text-amber-900">✦</span>
@@ -87,15 +105,15 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         </button>
 
         <div className="w-full grid grid-cols-3 gap-3">
-          <button onClick={onBadges} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
+          <button onClick={() => { playClick(); onBadges(); }} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/trophy.png" fallback="🏆" alt="" className="text-3xl w-8 h-8 object-contain flex items-center justify-center" />
             <span className="font-semibold text-xs text-white">Досягнення</span>
           </button>
-          <button onClick={onShop} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
+          <button onClick={() => { playClick(); onShop(); }} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/shop.png" fallback="🛍️" alt="" className="text-3xl w-8 h-8 object-contain flex items-center justify-center" />
             <span className="font-semibold text-xs text-white">Магазин</span>
           </button>
-          <button onClick={onTraining} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
+          <button onClick={() => { playClick(); onTraining(); }} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/target.png" fallback="🎯" alt="" className="text-3xl w-8 h-8 object-contain flex items-center justify-center" />
             <span className="font-semibold text-xs text-white">Тренування</span>
           </button>

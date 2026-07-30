@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel } from "../game/generateQuestion.js";
+import { playCorrect, playWrong, playWin } from "../game/sound.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
@@ -81,6 +82,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
     setFeedback({ correct, chosen: option });
     if (correct) setCorrectCount((c) => c + 1);
     onAnswer(question.pair, correct, question.kind);
+    if (correct) playCorrect(); else playWrong();
 
     setTimeout(() => {
       if (!correct) {
@@ -92,6 +94,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
       }
       const nextIndex = qIndex + 1;
       if (nextIndex >= QUESTIONS_PER_LEVEL) {
+        if (correct) playWin();
         onFinish(correct ? mistakes : mistakes + 1);
       } else {
         setQIndex(nextIndex);

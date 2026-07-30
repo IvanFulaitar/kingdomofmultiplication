@@ -2,6 +2,7 @@ import { useEffect, useState, Suspense, lazy } from "react";
 import { BADGES } from "./data/rewards.js";
 import { LEVEL_META } from "./data/regions.js";
 import { getWeakFacts } from "./game/generateQuestion.js";
+import { playBadge } from "./game/sound.js";
 import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
   starsForMistakes, heroLevelFromXp,
@@ -110,6 +111,7 @@ export default function App() {
     if (earned.length) {
       next.badges = [...p.badges, ...earned.map((b) => b.id)];
       setNewBadge(earned[0]);
+      playBadge();
     }
     next = checkQuests(next);
     const newHero = heroLevelFromXp(next.xp);
