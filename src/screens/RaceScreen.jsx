@@ -8,6 +8,7 @@ import {
   opponentGain, pickRaceEvent, rankParticipants, liveStandings, starsForRace,
 } from "../game/raceEngine.js";
 import { playCorrect, playWrong, playWin, playFinalStretch } from "../game/sound.js";
+import { setMusicIntensity } from "../game/music.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
@@ -82,6 +83,12 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
   const finalStretchSoundRef = useRef(false);
 
   const isFinalStretch = round >= MAX_ROUNDS - 2;
+
+  // Той самий головний мотив грає й тут — лише трохи енергійніше (перегони).
+  useEffect(() => {
+    setMusicIntensity("active");
+    return () => setMusicIntensity("calm");
+  }, []);
 
   useEffect(() => { exitConfirmRef.current = showExitConfirm; }, [showExitConfirm]);
 

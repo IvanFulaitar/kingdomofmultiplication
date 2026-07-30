@@ -16,6 +16,12 @@ function getCtx() {
   return ctx;
 }
 
+// Той самий AudioContext віддається й фоновій музиці (music.js), щоб на
+// сторінці існував лише один спільний контекст, а не два незалежних.
+export function getSharedAudioContext() {
+  return getCtx();
+}
+
 export function isSoundEnabled() {
   try {
     return localStorage.getItem(SOUND_KEY) !== "off";

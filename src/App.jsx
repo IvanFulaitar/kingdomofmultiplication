@@ -4,6 +4,7 @@ import { AVATARS } from "./data/cosmetics.js";
 import { LEVEL_META } from "./data/regions.js";
 import { getWeakFacts } from "./game/generateQuestion.js";
 import { playBadge } from "./game/sound.js";
+import { initMusic } from "./game/music.js";
 import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
   starsForMistakes, heroLevelFromXp,
@@ -44,6 +45,13 @@ export default function App() {
   // не потребує async/await (на відміну від артефактної версії).
   useEffect(() => {
     setProgress(loadProgress());
+  }, []);
+
+  // Фонова тема стартує один раз на весь час життя застосунку — вона не
+  // перезапускається під час навігації між екранами (лише трохи змінює
+  // гучність/темп, див. setMusicIntensity у GameScreen/MazeScreen/RaceScreen).
+  useEffect(() => {
+    initMusic();
   }, []);
 
   // Без цього перехід між екранами лишає стару прокрутку сторінки,

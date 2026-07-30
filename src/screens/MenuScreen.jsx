@@ -3,6 +3,7 @@ import { AVATARS } from "../data/cosmetics.js";
 import { QUESTS } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { isSoundEnabled, setSoundEnabled, playClick } from "../game/sound.js";
+import { setMusicEnabled } from "../game/music.js";
 import { APP_VERSION, LAST_UPDATE } from "../version.js";
 import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
@@ -17,6 +18,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     const next = !soundOn;
     setSoundOn(next);
     setSoundEnabled(next);
+    setMusicEnabled(next);
     if (next) playClick();
   }
 

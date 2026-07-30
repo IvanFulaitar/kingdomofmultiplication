@@ -4,6 +4,7 @@ import { CELL, generateMaze, tierForCompletions, cellNeighbors, mainPathAnchorIn
 import { generateMazeQuestion, pickKind } from "../game/mazeQuestions.js";
 import { shuffle } from "../game/random.js";
 import { playCorrect, playWrong, playWin } from "../game/sound.js";
+import { setMusicIntensity } from "../game/music.js";
 import ArtImage from "../components/ArtImage.jsx";
 import MazeIcon from "../components/MazeIcon.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
@@ -194,6 +195,12 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
   const cellRefs = useRef(new Map());
   const inTreasure = !!treasureRound;
   const inTrap = !!trapCellKey;
+
+  // Той самий головний мотив грає й тут — лише трохи енергійніше (лабіринт).
+  useEffect(() => {
+    setMusicIntensity("active");
+    return () => setMusicIntensity("calm");
+  }, []);
 
   useEffect(() => { exitConfirmRef.current = showExitConfirm; }, [showExitConfirm]);
 

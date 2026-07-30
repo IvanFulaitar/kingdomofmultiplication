@@ -3,6 +3,7 @@ import { AVATARS } from "../data/cosmetics.js";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel } from "../game/generateQuestion.js";
 import { playCorrect, playWrong, playWin } from "../game/sound.js";
+import { setMusicIntensity } from "../game/music.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
@@ -39,6 +40,12 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   const lastPairRef = useRef(question.pair);
   const answeredRef = useRef(false);
   const exitConfirmRef = useRef(false);
+
+  // Той самий головний мотив грає й тут — лише трохи енергійніше (бій).
+  useEffect(() => {
+    setMusicIntensity("active");
+    return () => setMusicIntensity("calm");
+  }, []);
 
   useEffect(() => {
     if (feedback || showExitConfirm) return;
