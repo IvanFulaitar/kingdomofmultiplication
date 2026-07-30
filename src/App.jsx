@@ -16,6 +16,8 @@ import BadgeToast from "./components/BadgeToast.jsx";
 const ShopScreen = lazy(() => import("./screens/ShopScreen.jsx"));
 const TrainingScreen = lazy(() => import("./screens/TrainingScreen.jsx"));
 const MemoryScreen = lazy(() => import("./screens/MemoryScreen.jsx"));
+const MazeScreen = lazy(() => import("./screens/MazeScreen.jsx"));
+const RaceScreen = lazy(() => import("./screens/RaceScreen.jsx"));
 const MapScreen = lazy(() => import("./screens/MapScreen.jsx"));
 const GameScreen = lazy(() => import("./screens/GameScreen.jsx"));
 const ResultsScreen = lazy(() => import("./screens/ResultsScreen.jsx"));
@@ -158,6 +160,20 @@ export default function App() {
         {screen === "training" && <TrainingScreen onBack={() => setScreen("menu")} onSelect={(m) => setScreen(m)} />}
         {screen === "memory" && (
           <MemoryScreen
+            onBack={() => setScreen("training")}
+            onComplete={(coins, xp) => { rewardPractice(coins, xp); setScreen("training"); }}
+          />
+        )}
+        {screen === "maze" && (
+          <MazeScreen
+            avatar={progress.avatar}
+            onBack={() => setScreen("training")}
+            onComplete={(coins, xp) => { rewardPractice(coins, xp); setScreen("training"); }}
+          />
+        )}
+        {screen === "race" && (
+          <RaceScreen
+            avatar={progress.avatar}
             onBack={() => setScreen("training")}
             onComplete={(coins, xp) => { rewardPractice(coins, xp); setScreen("training"); }}
           />

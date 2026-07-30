@@ -42,23 +42,29 @@ export default function TrainingScreen({ onBack, onSelect }) {
             <span className="play-button rounded-xl px-4 py-2 text-sm font-display font-bold text-indigo-950 shrink-0">Грати</span>
           </button>
 
-          <div className="badge-card-locked rounded-2xl p-4 flex items-center gap-4">
-            <ModeIcon>🌀</ModeIcon>
+          <button
+            onClick={() => onSelect("maze")}
+            className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition rounded-2xl p-4 flex items-center gap-4 text-left"
+          >
+            <ModeIcon active>🌀</ModeIcon>
             <div className="flex-1">
-              <div className="font-display font-semibold text-base text-white/75">Лабіринт</div>
-              <div className="text-xs text-white/45 mt-0.5">Розв'язуй приклади та знаходь вихід</div>
+              <div className="font-display font-bold text-base">Лабіринт</div>
+              <div className="text-xs text-white/60 mt-0.5">Розв'язуй приклади та знаходь вихід</div>
             </div>
-            <span className="rpg-panel rounded-full px-3 py-1.5 text-xs font-semibold text-white/60 shrink-0">Скоро</span>
-          </div>
+            <span className="play-button rounded-xl px-4 py-2 text-sm font-display font-bold text-indigo-950 shrink-0">Грати</span>
+          </button>
 
-          <div className="badge-card-locked rounded-2xl p-4 flex items-center gap-4">
-            <ModeIcon>🏁</ModeIcon>
+          <button
+            onClick={() => onSelect("race")}
+            className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition rounded-2xl p-4 flex items-center gap-4 text-left"
+          >
+            <ModeIcon active>🏁</ModeIcon>
             <div className="flex-1">
-              <div className="font-display font-semibold text-base text-white/75">Перегони</div>
-              <div className="text-xs text-white/45 mt-0.5">Відповідай швидко і стань першим</div>
+              <div className="font-display font-bold text-base">Перегони</div>
+              <div className="text-xs text-white/60 mt-0.5">Відповідай швидко і стань першим</div>
             </div>
-            <span className="rpg-panel rounded-full px-3 py-1.5 text-xs font-semibold text-white/60 shrink-0">Скоро</span>
-          </div>
+            <span className="play-button rounded-xl px-4 py-2 text-sm font-display font-bold text-indigo-950 shrink-0">Грати</span>
+          </button>
         </div>
       </div>
     </div>
