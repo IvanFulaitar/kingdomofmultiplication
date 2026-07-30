@@ -1,45 +1,45 @@
-# Куди класти справжню графіку
+# Довідник по графіці й звуку
 
-Коли згенеруєш або замовиш реальні ілюстрації — просто поклади файл
-із ТОЧНО такою назвою в потрібну папку. Код підхопить його сам,
-без жодних правок у коді. Поки файлу немає — показується emoji-заміна,
-нічого не зламається.
+Усі файли нижче вже на місці — це радше довідник "що є і за що відповідає",
+ніж список на майбутнє. Компонент `ArtImage` (`src/components/ArtImage.jsx`)
+все одно тихо замінить будь-який файл на emoji, якщо його раптом не буде —
+нічого не зламається, якщо колись знадобиться перегенерувати щось одне.
 
-## avatars/ — портрет героя (квадратний, добре з прозорим фоном, ~256×256)
-- wizard.png
-- knight.png
-- dragon.png
-- archer.png
-- sorceress.png
-- paladin.png
-- ninja.png
-- barbarian.png
-- necromancer.png
-- monk.png
-- pirate.png
-- beastmaster.png
-- alchemist.png
-- samurai.png
-- fairy.png
-- golem.png
+## avatars/ — портрет героя (квадрат, прозорий фон, ~256×256)
+`wizard, knight, dragon, archer, sorceress, paladin, ninja, barbarian,
+necromancer, monk, pirate, beastmaster, alchemist, samurai, fairy, golem` — 16 аватарів магазину.
 
-## monsters/ — ілюстрація ворога на екрані бою (квадратна, ~256×256)
-- 1.png … 12.png (номер рівня, напр. monsters/7.png — Вартовий замку)
+## monsters/ — ілюстрація ворога на екрані бою (квадрат, ~256×256)
+`1.png … 12.png` — номер = ID рівня (напр. `monsters/7.png` — Вартовий замку);
+`2.png`/`4.png` також перевикористані як суперники в "Перегонах".
 
-## backgrounds/ — фонова ілюстрація регіону на карті (широка, ~1200×400)
-- A.png — Ліс Новачків
-- B.png — Гори Хоробрих
-- C.png — Замок Майстра
-- D.png — Вежа Мудреця
+## backgrounds/ — фонові ілюстрації (широкі)
+- `app_bg.png` — фон усього застосунку (позаду кожного екрана).
+- `A.png`, `B.png`, `C.png`, `D.png` — фон регіону на карті (Ліс Новачків /
+  Гори Хоробрих / Замок Майстра / Вежа Мудреця).
 
-## icons/ui/ — дрібні іконки інтерфейсу (квадратні, прозорий фон, ~128×128)
-- star.png, coin.png, flame.png, lock.png
-- trophy.png, shop.png, target.png — нижнє меню головного екрана
-- chest.png — статус регіону на карті
-- heart_full.png, heart_empty.png — життя в бою
-- map_scroll.png — кнопка "До карти" на екрані результатів
-- hint_lightbulb.png — кнопка підказки в грі "Пам'ять"
+## frames/ — рамка профілю навколо аватара
+Зарезервовано на майбутнє — зараз рамка малюється CSS (`.avatar-medallion`
+в `index.css`), файлів тут поки немає.
 
-## icons/achievements/ — іконки бейджів (квадратні, прозорий фон, ~128×128)
-- medal.png, diamond.png, tree.png, mountains.png, castle.png, brain.png,
-  crown.png, streak_fire.png
+## icons/ui/ — дрібні іконки інтерфейсу (квадрат, прозорий фон, ~128×128)
+`star, coin, flame, lock, trophy, shop, target, chest, heart_full,
+heart_empty, map_scroll, hint_lightbulb`.
+
+## icons/achievements/ — іконки бейджів досягнень
+`medal, diamond, tree, mountains, castle, brain, crown, streak_fire`.
+
+## icons/maze/ — об'єкти й позначки в режимі "Лабіринт"
+`key, trap, portal, shield, lightning` — ключ/пастка/портал і два кутові
+значки безпечного/ризикованого шляху на розвилках.
+
+## audio/music/ — фонова тема
+`main_theme.mp3` + `main_theme.ogg` (той самий трек у двох форматах для
+сумісності) — безшовний луп ~77с через Web Audio (`src/game/music.js`).
+
+## audio/sfx/ — бібліотека коротких звукових ефектів (36 файлів)
+Повний список і призначення кожного — у `src/game/sfx.js` (група `CORE` +
+`GROUPS.rewards/combat/maze/race/memory`). Приклади: `ui_click, ui_primary,
+ui_back, answer_correct, answer_wrong, coin, star, xp_gain, level_up,
+victory, defeat, card_flip, pair_match, maze_move, key_pickup, race_start,
+race_finish` тощо.
