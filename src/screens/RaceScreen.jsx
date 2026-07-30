@@ -6,7 +6,7 @@ import { generatePracticeQuestion } from "../game/practice.js";
 import {
   FINISH, speedTierFor, playerBaseGain, streakBonus,
   opponentGain, pickRaceEvent, rankParticipants, liveStandings, starsForRace,
-  computeRaceReward, raceScoreFor,
+  computeRaceReward, raceScoreFor, PLACE_HEADLINE, raceMoodPhrase, raceResultHint,
 } from "../game/raceEngine.js";
 import { setMusicIntensity } from "../game/music.js";
 import {
@@ -68,7 +68,7 @@ function Lane({ name, imgSrc, fallback, pct, place, fillClass, highlight, dashin
 // "adventure" / "champion"); фіксується на весь заїзд, не змінюється
 // автоматично від кількості пройдених забігів (це тепер завжди свідомий
 // вибір гравця, а не приховане підвищення складності).
-export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, bestScore = 0, onBack, onComplete }) {
+export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, bestScore = 0, onBack, onComplete, onChangeDifficulty }) {
   const heroIcon = AVATARS.find((av) => av.id === avatar)?.icon ?? "🧙";
   const cfg = RACE_DIFFICULTIES[difficulty] ?? RACE_DIFFICULTIES.adventure;
   const MAX_ROUNDS = cfg.rounds;
@@ -223,7 +223,7 @@ export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, 
           bestStreak: bestStreakRef.current,
           bonusCoins: stats.bonusCoins,
           gapToSecond,
-          stars: starsForRace({ place, accuracy, missedCount: stats.missedCount }),
+          stars: starsForRace({ place, accuracy }),
           flawless, isPersonalBest, score, reward, bonusChest,
           finalCoins, finalXp: reward.totalXp,
         });
@@ -263,7 +263,6 @@ export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, 
   }
 
   const standings = liveStandings(positions);
-  const placementText = placement?.place === 1 ? "🥇 Ти прийшов першим!" : placement?.place === 2 ? "🥈 Друге місце!" : "🥉 Третє місце";
 
   const feedbackText = feedback
     ? feedback.correct
@@ -372,32 +371,54 @@ export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, 
 
         {finished && placement && (
           <div className="rpg-panel rpg-panel-gold rounded-3xl p-5 mt-5 text-center screen-in">
-            <div className="font-display gold-text font-extrabold text-xl mb-1">{placementText}</div>
-            <div className="text-[11px] text-violet-200 font-semibold mb-3">{cfg.label}</div>
+            {/* 2.2 Підсумок результату */}
+            <div className="font-display gold-text font-extrabold text-xl mb-1">{PLACE_HEADLINE[placement.place]}</div>
+            <div className="text-[11px] text-violet-200 font-semibold mb-2">{cfg.label}</div>
 
-            <div className="flex justify-center gap-2 mb-4">
+            <div className="flex justify-center gap-2 mb-2">
               {[0, 1, 2].map((i) => (
                 <ArtImage key={i} src="/assets/icons/ui/star.png" fallback="⭐" alt="" className={`w-9 h-9 object-contain ${i < placement.stars ? "" : "opacity-20 grayscale"}`} />
               ))}
             </div>
+            <div className="race-result-mood text-sm mb-4">{raceMoodPhrase({ place: placement.place, accuracy: placement.accuracy })}</div>
 
+            {/* 2.3 Таблиця учасників */}
             <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-4 text-left space-y-1.5">
               {placement.ranked.map((r, i) => (
-                <div key={r.id} className={`flex items-center justify-between text-sm ${r.id === "player" ? "text-amber-200 font-bold" : "text-violet-100"}`}>
+                <div
+                  key={r.id}
+                  className={`flex items-center justify-between text-sm py-0.5 ${
+                    r.id === "player" ? "race-participant-me text-amber-200 font-bold" : "text-violet-100"
+                  }`}
+                >
                   <span className="flex items-center gap-2"><PlaceBadge place={i + 1} /> {NAMES[r.id]}</span>
                   <span>{Math.min(100, Math.round(r.rawProgress))}%</span>
                 </div>
               ))}
             </div>
 
-            <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-4 text-left text-sm text-violet-100 space-y-1">
-              <div>Точність: <b className="text-white">{Math.round(placement.accuracy * 100)}%</b></div>
-              <div>Середній час відповіді: <b className="text-white">{(placement.avgResponseTime).toFixed(1)} с</b></div>
-              <div>Найкраща серія: <b className="text-white">{placement.bestStreak}</b></div>
-              <div>Відрив 1-го місця від 2-го: <b className="text-white">{placement.gapToSecond}%</b></div>
+            {/* 2.4 Статистика гравця — охайна сітка 2×2 */}
+            <div className="race-stat-grid mb-4">
+              <div className="race-stat-cell text-left">
+                <div className="race-stat-cell-label">Точність</div>
+                <div className="race-stat-cell-value">{Math.round(placement.accuracy * 100)}%</div>
+              </div>
+              <div className="race-stat-cell text-left">
+                <div className="race-stat-cell-label">Середній час відповіді</div>
+                <div className="race-stat-cell-value">{placement.avgResponseTime.toFixed(1)} с</div>
+              </div>
+              <div className="race-stat-cell text-left">
+                <div className="race-stat-cell-label">Найкраща серія</div>
+                <div className="race-stat-cell-value">{placement.bestStreak}</div>
+              </div>
+              <div className="race-stat-cell text-left">
+                <div className="race-stat-cell-label">Відрив 1-го місця від 2-го</div>
+                <div className="race-stat-cell-value">{placement.gapToSecond}%</div>
+              </div>
             </div>
 
-            <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-4 text-left text-sm text-violet-100 space-y-1">
+            {/* 2.5 Блок нагород */}
+            <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-3 text-left text-sm text-violet-100 space-y-1">
               <div className="flex justify-between"><span>Базова нагорода</span><span className="text-white font-semibold">{placement.reward.baseCoins} монет</span></div>
               {placement.reward.multiplier > 1 && (
                 <div className="flex justify-between"><span>Бонус складності ×{placement.reward.multiplier}</span><span className="text-emerald-300 font-semibold">+{placement.reward.difficultyCoinBonus}</span></div>
@@ -420,12 +441,22 @@ export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, 
               {placement.reward.farmReduced && (
                 <div className="text-[11px] text-amber-200/80 pt-1">Сьогодні вже було кілька перемог у тренувальному заїзді — монети трохи менші</div>
               )}
-              <div className="flex justify-between pt-2 mt-1 border-t border-white/10 font-display font-bold text-base">
-                <span className="text-amber-200">Разом</span>
-                <span className="text-amber-200">{placement.finalCoins} монет, {placement.finalXp} XP</span>
-              </div>
             </div>
 
+            {/* Фінальна сума — окремий акцентний рядок з золотою підсвіткою */}
+            <div className="race-reward-total rounded-2xl px-4 py-3 mb-4 flex items-center justify-between">
+              <span className="font-display font-bold text-sm text-amber-100">Разом</span>
+              <span className="font-display font-extrabold text-lg text-amber-200">{placement.finalCoins} монет • {placement.finalXp} XP</span>
+            </div>
+
+            {/* 4. UX-підказка на екрані результату — лише порада */}
+            {raceResultHint({ place: placement.place, accuracy: placement.accuracy, difficulty }) && (
+              <div className="race-diff-hint-banner rounded-xl px-3 py-2 mb-4 text-xs font-semibold">
+                {raceResultHint({ place: placement.place, accuracy: placement.accuracy, difficulty })}
+              </div>
+            )}
+
+            {/* 2.6 Кнопки дій */}
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => onComplete(placement.finalCoins, placement.finalXp, {
@@ -437,9 +468,14 @@ export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, 
               >
                 Забрати нагороду
               </button>
-              <button onClick={retry} className="rpg-panel rounded-2xl py-3 text-white/80 font-semibold text-sm">
+              <button onClick={retry} className="map-ghost-button w-full rounded-2xl py-3 font-display font-bold text-sm">
                 Спробувати ще раз (без нагороди)
               </button>
+              {onChangeDifficulty && (
+                <button onClick={onChangeDifficulty} className="race-tertiary-link text-xs text-center mt-0.5">
+                  До вибору складності
+                </button>
+              )}
             </div>
           </div>
         )}

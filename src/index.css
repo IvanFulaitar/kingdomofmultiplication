@@ -1960,3 +1960,137 @@ html, body {
   box-shadow: 0 4px 10px -3px rgba(0, 0, 0, 0.5);
   z-index: 2;
 }
+
+/* --- Стани картки складності: hover / selected (розділ "Стани карток") --- */
+@media (hover: hover) {
+  .race-diff-card:not(:disabled):not(.race-diff-card-selected):hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+  }
+}
+/* Вибрана картка: трохи піднімається, золота рамка вже "загорається" через
+   .race-diff-card-selected (border/box-shadow), тут додаємо ще легке
+   освітлення фону (::before, окремий шар — не чіпає сам градієнт картки). */
+.race-diff-card-selected {
+  transform: translateY(-3px);
+}
+.race-diff-card-selected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 55%);
+  pointer-events: none;
+}
+
+/* Бейдж "Обрано" у лівому верхньому куті вибраної картки — текстовий
+   дублікат зеленої галочки (діти можуть не одразу зчитати саму іконку). */
+.race-diff-selected-badge {
+  position: absolute;
+  top: -9px;
+  left: 14px;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #ffe28a, #f5b93f 55%, #d98f1e);
+  color: #4a2c02;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 10px -3px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+@keyframes race-diff-check-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.race-diff-check {
+  animation: race-diff-check-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Рядок параметрів — тепер завжди видимий (не лише для вибраної картки),
+   щоб усі три картки мали однакову висоту незалежно від вибору. */
+.race-diff-params {
+  background: linear-gradient(180deg, rgba(20, 16, 40, 0.55), rgba(12, 10, 26, 0.6));
+  border: 1px solid rgba(245, 185, 66, 0.22);
+  color: rgba(221, 214, 254, 0.85);
+}
+
+/* Плавне оновлення підпису під кнопкою запуску при зміні вибору. */
+@keyframes race-diff-btn-fade {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.race-diff-btn-fade {
+  animation: race-diff-btn-fade 0.22s ease both;
+}
+
+/* =====================================================================
+   Екран результатів "Перегонів" — 5 секцій одного цілісного підсумку,
+   у тій самій візуальній мові, що й екран вибору складності вище.
+   ===================================================================== */
+
+.race-result-mood {
+  color: #fde68a;
+  font-weight: 700;
+}
+
+/* Рядок гравця в таблиці учасників — золотий відтінок фону + ліва
+   акцентна смуга, а не лише інший колір тексту. */
+.race-participant-me {
+  background: linear-gradient(90deg, rgba(245, 185, 66, 0.16), rgba(245, 185, 66, 0.03));
+  border-left: 3px solid rgba(245, 185, 66, 0.85);
+  margin-left: -0.5rem;
+  padding-left: calc(0.5rem - 3px);
+  border-radius: 0.5rem;
+}
+
+/* Статистика гравця — охайна сітка 2×2 замість вертикального списку. */
+.race-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.race-stat-cell {
+  background: linear-gradient(180deg, rgba(34, 25, 74, 0.7), rgba(17, 12, 42, 0.75));
+  border: 1px solid rgba(245, 185, 66, 0.22);
+  border-radius: 0.85rem;
+  padding: 0.55rem 0.7rem;
+}
+.race-stat-cell-label {
+  font-size: 10.5px;
+  color: rgba(221, 214, 254, 0.7);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.race-stat-cell-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1.25;
+  margin-top: 0.1rem;
+}
+
+/* Фінальна сума нагороди — окрема акцентна панель з м'якою золотою
+   підсвіткою, винесена ЗА межі звичайної розбивки, щоб її не можна було
+   пропустити. */
+.race-reward-total {
+  background: linear-gradient(180deg, rgba(255, 226, 138, 0.16), rgba(217, 143, 30, 0.1));
+  border: 1.5px solid rgba(245, 185, 66, 0.65);
+  box-shadow: 0 0 22px rgba(245, 185, 66, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Найслабша, третя дія ("До вибору складності") — простий текстовий лінк,
+   свідомо без панелі/рамки, щоб не конкурувати з головною й другорядною
+   кнопками. */
+.race-tertiary-link {
+  color: rgba(196, 181, 253, 0.75);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+.race-tertiary-link:active {
+  color: rgba(245, 185, 66, 0.9);
+}

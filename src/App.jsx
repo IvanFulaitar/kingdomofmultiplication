@@ -255,6 +255,7 @@ export default function App() {
             bestScore={progress.raceBest?.[raceDifficulty] ?? 0}
             onBack={() => setScreen("training")}
             onComplete={(coins, xp, meta) => { completeRace(coins, xp, meta); setScreen("training"); }}
+            onChangeDifficulty={() => setScreen("raceDifficulty")}
           />
         )}
         {screen === "map" && (

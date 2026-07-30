@@ -138,10 +138,43 @@ export function liveStandings(positions) {
   return place;
 }
 
-export function starsForRace({ place, accuracy, missedCount }) {
-  if (place !== 1) return 1; // перша зірка — за сам факт участі до фінішу
-  if (accuracy >= 0.85 || missedCount === 0) return 3;
-  return 2;
+// Зірки прямо прив'язані до зайнятого місця (просто й зрозуміло дитині):
+// 1 місце = 3, 2 місце = 2, 3 місце = 1. Виняток — зовсім слабкий результат
+// на 3-му місці (дуже низька точність): 0 зірок, але текст/тон екрана все
+// одно лишається теплим і мотивуючим, не караючим.
+export function starsForRace({ place, accuracy }) {
+  if (place === 1) return 3;
+  if (place === 2) return 2;
+  if (accuracy < 0.25) return 0;
+  return 1;
+}
+
+export const PLACE_HEADLINE = {
+  1: "🥇 Перше місце!",
+  2: "🥈 Друге місце",
+  3: "🥉 Третє місце",
+};
+
+// Емоційна фраза під підсумком місця — завжди тепла, ніколи не карає за
+// програш (лише м'яко підбадьорює спробувати ще раз).
+export function raceMoodPhrase({ place, accuracy }) {
+  if (place === 1) return accuracy >= 0.85 ? "Чудовий результат!" : "Гарна спроба!";
+  if (place === 2) return "Гарна спроба!";
+  return "Ще трохи — і буде перемога!";
+}
+
+// Контекстна підказка на екрані результату (розділ "UX-покращення" брифу).
+// Лише порада — ніколи не перемикає складність примусово, гравець завжди
+// обирає сам на наступному екрані вибору.
+export function raceResultHint({ place, accuracy, difficulty }) {
+  if (place === 1 && accuracy >= 0.85 && difficulty !== "champion") {
+    return "Готовий до складнішого заїзду?";
+  }
+  if (place !== 1) {
+    if (accuracy < 0.5 && difficulty !== "training") return "Спробуй складність нижче";
+    return "Ще раз? Є шанс відігратися!";
+  }
+  return null;
 }
 
 // --- Нагорода за заїзд ---------------------------------------------------
