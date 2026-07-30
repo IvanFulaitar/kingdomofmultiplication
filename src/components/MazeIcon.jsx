@@ -22,6 +22,8 @@ const SHAPES = {
   trap: <span className="maze-icon maze-icon-trap" />,
   portal: <span className="maze-icon maze-icon-portal" />,
   exit: <span className="maze-icon maze-icon-exit" />,
+  shield: <span className="maze-icon maze-icon-shield" />,
+  lightning: <span className="maze-icon maze-icon-lightning" />,
 };
 
 export default function MazeIcon({ type, className = "" }) {

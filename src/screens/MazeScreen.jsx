@@ -563,7 +563,11 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                       const wide = activeQuestion.doors.length <= 2 ? "w-[46%]" : "w-[30%] min-w-[84px]";
                       return (
                         <button key={door.neighborKey} disabled={!!feedback} onClick={() => handleDoorTap(door)} className={`relative font-display font-extrabold text-white text-2xl py-7 rounded-2xl transition active:scale-95 ${wide} ${style}`}>
-                          {badge && !feedback && <span className={`maze-door-badge maze-door-badge-${badge}`} />}
+                          {badge && !feedback && (
+                            <span className="maze-door-badge">
+                              <MazeIcon type={badge} className="w-full h-full" />
+                            </span>
+                          )}
                           {door.value}{mark && <span className="absolute top-1.5 right-2.5 text-base">{mark}</span>}
                         </button>
                       );
