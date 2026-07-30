@@ -19,6 +19,66 @@ html, body {
 .font-display { font-family: 'Cinzel', serif; letter-spacing: 0.02em; }
 .font-body { font-family: 'Baloo 2', sans-serif; }
 
+/* Підпис автора внизу головного екрана — під навігацією, щоб не заважав грі */
+.creator-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin: 18px auto max(16px, env(safe-area-inset-bottom));
+  padding: 10px 16px;
+
+  color: #d9d1ff;
+  font-size: 13px;
+  line-height: 1.2;
+  text-decoration: none;
+
+  background: rgba(30, 27, 75, 0.72);
+  border: 1px solid rgba(245, 185, 66, 0.55);
+  border-radius: 999px;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  backdrop-filter: blur(8px);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.creator-link strong {
+  color: #f5b942;
+  font-weight: 700;
+}
+
+.creator-link__icon {
+  display: grid;
+  place-items: center;
+
+  width: 24px;
+  height: 24px;
+
+  color: #f5b942;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.creator-link:hover,
+.creator-link:focus-visible {
+  background: rgba(67, 42, 133, 0.9);
+  border-color: #f5b942;
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.creator-link:active {
+  transform: scale(0.97);
+}
+
 /* Верхня панель бою: грід замість flex, щоб середній блок (назва) реально
    стискався (min-width:0), а блок сердець ніколи не вилазив за viewport. */
 .battle-header {

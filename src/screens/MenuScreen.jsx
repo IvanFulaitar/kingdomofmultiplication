@@ -100,6 +100,17 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             <span className="font-semibold text-xs text-white">Тренування</span>
           </button>
         </div>
+
+        <a
+          className="creator-link"
+          href="https://www.instagram.com/ivan_stepanowich"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram автора гри Ivan Stepanowich"
+        >
+          <span className="creator-link__icon" aria-hidden="true">◎</span>
+          <span>Автор гри <strong>@ivan_stepanowich</strong></span>
+        </a>
       </div>
     </div>
   );
