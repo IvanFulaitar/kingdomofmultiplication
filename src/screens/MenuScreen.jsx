@@ -1,38 +1,93 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import { QUESTS } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { isSoundEnabled, setSoundEnabled, playClick } from "../game/sound.js";
-import { setMusicEnabled } from "../game/music.js";
+import { isMusicEnabled, setMusicEnabled } from "../game/music.js";
 import { APP_VERSION, LAST_UPDATE } from "../version.js";
 import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 
+function ToggleSwitch({ checked, onChange, label }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={`relative w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${checked ? "bg-emerald-500/90" : "bg-white/15"}`}
+    >
+      <span
+        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200 ${checked ? "left-[22px]" : "left-0.5"}`}
+      />
+    </button>
+  );
+}
+
 export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining }) {
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
-  const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
+  const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
+  const [musicOn, setMusicOn] = useState(() => isMusicEnabled());
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsRef = useRef(null);
   const xpPct = (into / need) * 100;
 
-  function toggleSound() {
-    const next = !soundOn;
-    setSoundOn(next);
+  function toggleSfx(next) {
+    setSfxOn(next);
     setSoundEnabled(next);
-    setMusicEnabled(next);
     if (next) playClick();
   }
+
+  function toggleMusic(next) {
+    setMusicOn(next);
+    setMusicEnabled(next);
+    if (sfxOn) playClick();
+  }
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    function onOutside(e) {
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) setSettingsOpen(false);
+    }
+    function onKey(e) {
+      if (e.key === "Escape") setSettingsOpen(false);
+    }
+    document.addEventListener("pointerdown", onOutside, true);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onOutside, true);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [settingsOpen]);
 
   return (
     <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
 
-      <button
-        onClick={toggleSound}
-        aria-label={soundOn ? "Вимкнути звук" : "Увімкнути звук"}
-        className="absolute top-4 right-4 z-20 rpg-panel rpg-panel-gold w-10 h-10 rounded-xl flex items-center justify-center text-lg active:scale-95 transition"
-      >
-        {soundOn ? "🔊" : "🔇"}
-      </button>
+      <div ref={settingsRef} className="absolute top-4 right-4 z-20">
+        <button
+          onClick={() => setSettingsOpen((o) => !o)}
+          aria-label="Налаштування звуку"
+          aria-expanded={settingsOpen}
+          className="rpg-panel rpg-panel-gold w-10 h-10 rounded-xl flex items-center justify-center text-lg active:scale-95 transition"
+        >
+          {sfxOn || musicOn ? "🔊" : "🔇"}
+        </button>
+        {settingsOpen && (
+          <div className="absolute right-0 mt-2 menu-panel rounded-2xl p-3 w-48 flex flex-col gap-2.5 shadow-xl">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-white">Музика</span>
+              <ToggleSwitch checked={musicOn} onChange={toggleMusic} label="Увімкнути/вимкнути музику" />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-white">Звуки</span>
+              <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label="Увімкнути/вимкнути звукові ефекти" />
+            </div>
+          </div>
+        )}
+      </div>
 
       <span className="app-version-tag absolute top-4 left-4 z-20 select-none leading-tight" aria-hidden="true">
         v{APP_VERSION}<br />{LAST_UPDATE}

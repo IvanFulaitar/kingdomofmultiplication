@@ -1,9 +1,33 @@
 // Прості звукові ефекти через Web Audio API — синтезуються прямо в
 // браузері, жодних аудіофайлів не потрібно. Вимкнути/увімкнути можна
 // незалежно від прогресу гри (свій ключ localStorage).
+//
+// duckMusic імпортується з music.js лише для playWin() (коротке приглушення
+// фонової теми на час фанфар перемоги). Обидва модулі посилаються один на
+// одного, але лише всередині функцій (не на верхньому рівні), тож циклічний
+// імпорт тут безпечний для ESM/Vite.
 
-const SOUND_KEY = "kingdom-multiplication-sound";
+import { duckMusic } from "./music.js";
+
+const SOUND_KEY = "sfxEnabled";
+const OLD_SOUND_KEY = "kingdom-multiplication-sound"; // старий ключ (до розділення Music/SFX)
+const SFX_VOLUME_KEY = "sfxVolume";
+const DEFAULT_SFX_VOLUME = 1.0;
+let migrated = false;
 let ctx = null;
+
+function migrateOldKey() {
+  if (migrated) return;
+  migrated = true;
+  try {
+    if (localStorage.getItem(SOUND_KEY) === null) {
+      const old = localStorage.getItem(OLD_SOUND_KEY);
+      if (old !== null) localStorage.setItem(SOUND_KEY, old);
+    }
+  } catch {
+    /* не критично */
+  }
+}
 
 function getCtx() {
   if (typeof window === "undefined") return null;
@@ -23,6 +47,7 @@ export function getSharedAudioContext() {
 }
 
 export function isSoundEnabled() {
+  migrateOldKey();
   try {
     return localStorage.getItem(SOUND_KEY) !== "off";
   } catch {
@@ -38,6 +63,27 @@ export function setSoundEnabled(enabled) {
   }
 }
 
+// Загальний множник гучності ефектів (0..1) — окремий від Music, свій ключ
+// localStorage ("sfxVolume"), відновлюється при наступному відкритті гри.
+export function getSfxVolume() {
+  try {
+    const raw = localStorage.getItem(SFX_VOLUME_KEY);
+    if (raw === null) return DEFAULT_SFX_VOLUME;
+    const v = parseFloat(raw);
+    return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : DEFAULT_SFX_VOLUME;
+  } catch {
+    return DEFAULT_SFX_VOLUME;
+  }
+}
+
+export function setSfxVolume(v) {
+  try {
+    localStorage.setItem(SFX_VOLUME_KEY, String(Math.min(1, Math.max(0, v))));
+  } catch {
+    /* не збереглось цього разу — не критично */
+  }
+}
+
 // Один тон: частота (Гц), зсув старту (с), тривалість (с), форма хвилі, гучність.
 function tone(freq, start, duration, type, gain) {
   const audioCtx = getCtx();
@@ -47,8 +93,9 @@ function tone(freq, start, duration, type, gain) {
   osc.type = type;
   osc.frequency.value = freq;
   const t0 = audioCtx.currentTime + start;
+  const scaledGain = gain * getSfxVolume();
   g.gain.setValueAtTime(0.0001, t0);
-  g.gain.linearRampToValueAtTime(gain, t0 + 0.012);
+  g.gain.linearRampToValueAtTime(scaledGain, t0 + 0.012);
   g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
   osc.connect(g);
   g.connect(audioCtx.destination);
@@ -83,7 +130,9 @@ export function playWrong() {
   ]);
 }
 
-// Фанфари на завершення рівня / перемогу.
+// Фанфари на завершення рівня / перемогу. Фонову музику на цей час коротко
+// приглушуємо (duckMusic), щоб фанфари прозвучали чітко, і плавно
+// повертаємо гучність назад, коли вони стихнуть.
 export function playWin() {
   play([
     [523.25, 0, 0.12, "triangle", 0.16],
@@ -91,6 +140,7 @@ export function playWin() {
     [783.99, 0.2, 0.12, "triangle", 0.16],
     [1046.5, 0.3, 0.3, "triangle", 0.2],
   ]);
+  if (isSoundEnabled()) duckMusic(0.9);
 }
 
 // Іскристий передзвін на здобутий бейдж.
