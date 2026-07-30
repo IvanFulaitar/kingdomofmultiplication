@@ -1401,3 +1401,58 @@ html, body {
   font-weight: 700;
   font-size: 0.8125rem;
 }
+
+/* ===== Модалка підтвердження покупки аватара ===== */
+
+/* Круглий медальйон-рамка навколо портрета — золота облямівка й фіолетове
+   світіння, сам PNG аватара всередині лишається без обрізки (object-contain). */
+.avatar-modal-portrait {
+  background: radial-gradient(circle at 50% 38%, rgba(139, 92, 246, 0.4), rgba(46, 22, 90, 0.12) 62%, transparent 78%);
+  box-shadow:
+    0 0 0 3px rgba(245, 185, 66, 0.85),
+    0 0 0 6px rgba(139, 92, 246, 0.28),
+    0 0 26px rgba(245, 185, 66, 0.45),
+    inset 0 0 22px rgba(139, 92, 246, 0.35);
+}
+@keyframes avatar-success-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(110, 231, 183, 0.85), 0 0 0 6px rgba(52, 211, 153, 0.25),
+      0 0 26px rgba(52, 211, 153, 0.5), inset 0 0 22px rgba(52, 211, 153, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(167, 243, 208, 1), 0 0 0 8px rgba(52, 211, 153, 0.4),
+      0 0 40px rgba(52, 211, 153, 0.75), inset 0 0 30px rgba(52, 211, 153, 0.45);
+  }
+}
+.avatar-modal-portrait-success { animation: avatar-success-glow 1.4s ease-in-out infinite; }
+
+/* Дрібні золоті іскри навколо медальйона */
+@keyframes avatar-sparkle-twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.avatar-modal-sparkle {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #fff6d8 0%, #f5b93f 55%, transparent 75%);
+  filter: drop-shadow(0 0 4px rgba(245,185,66,0.8));
+  animation: avatar-sparkle-twinkle 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Зелена галочка успішної покупки */
+.avatar-modal-check {
+  background: linear-gradient(180deg, #6ee7b7, #10b981 60%, #047857);
+  border: 2px solid rgba(255,255,255,0.75);
+  box-shadow: 0 0 14px rgba(16,185,129,0.6);
+}
+
+/* Кнопка X у верхньому правому куті модалки */
+.modal-x-button {
+  background: rgba(26, 19, 56, 0.85);
+  border: 1.5px solid rgba(245, 185, 66, 0.55);
+  color: #fde68a;
+  box-shadow: 0 4px 10px -4px rgba(0,0,0,0.6);
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+.modal-x-button:active { transform: scale(0.92); }

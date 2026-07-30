@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import TopBar from "../components/TopBar.jsx";
 import Coin from "../components/Coin.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 import LockBadge from "../components/LockBadge.jsx";
+import AvatarPurchaseModal from "../components/AvatarPurchaseModal.jsx";
 
 function SectionTitle({ children }) {
   return (
@@ -26,7 +28,20 @@ function StatusBadge({ children, tone = "gold" }) {
   );
 }
 
-export default function ShopScreen({ progress, onBuyAvatar, onBack }) {
+export default function ShopScreen({ progress, onPurchaseAvatar, onSelectAvatar, onBack }) {
+  const [purchaseTarget, setPurchaseTarget] = useState(null);
+
+  // Заблокований аватар відкриває підтвердження покупки; уже придбаний, але
+  // не обраний — стає активним одразу (монети тут узагалі не витрачаються,
+  // тож зайве підтвердження тільки заважало б); активний — не реагує.
+  function handleCardClick(av) {
+    const owned = progress.ownedAvatars.includes(av.id);
+    const selected = progress.avatar === av.id;
+    if (selected) return;
+    if (owned) { onSelectAvatar(av.id); return; }
+    setPurchaseTarget(av);
+  }
+
   return (
     <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
@@ -52,7 +67,8 @@ export default function ShopScreen({ progress, onBuyAvatar, onBack }) {
               return (
                 <button
                   key={av.id}
-                  onClick={() => onBuyAvatar(av)}
+                  onClick={() => handleCardClick(av)}
+                  disabled={selected}
                   className={`relative rounded-2xl p-3.5 pt-4 flex flex-col items-center gap-2 transition ${
                     selected ? "rpg-panel rpg-panel-gold" : owned ? "rpg-panel" : "badge-card-locked"
                   }`}
@@ -61,12 +77,12 @@ export default function ShopScreen({ progress, onBuyAvatar, onBack }) {
                   <ArtImage
                     src={`/assets/avatars/${av.id}.png`}
                     fallback={av.icon}
-                    alt={av.id}
+                    alt={av.name}
                     className={`text-5xl w-16 h-16 object-contain flex items-center justify-center ${owned ? "" : "opacity-60"}`}
                   />
                   <div className="h-5 flex items-center">
                     {owned ? (
-                      selected ? <StatusBadge>Обрано</StatusBadge> : <StatusBadge tone="neutral">є в тебе</StatusBadge>
+                      selected ? <StatusBadge>Обрано</StatusBadge> : <StatusBadge tone="neutral">Обрати</StatusBadge>
                     ) : (
                       <Coin>{av.cost}</Coin>
                     )}
@@ -78,6 +94,22 @@ export default function ShopScreen({ progress, onBuyAvatar, onBack }) {
         </div>
 
       </div>
+
+      {purchaseTarget && (
+        <AvatarPurchaseModal
+          avatarId={purchaseTarget.id}
+          avatarName={purchaseTarget.name}
+          avatarImage={`/assets/avatars/${purchaseTarget.id}.png`}
+          avatarFallback={purchaseTarget.icon}
+          price={purchaseTarget.cost}
+          currentBalance={progress.coins}
+          isOwned={progress.ownedAvatars.includes(purchaseTarget.id)}
+          isSelected={progress.avatar === purchaseTarget.id}
+          onConfirm={() => onPurchaseAvatar(purchaseTarget.id)}
+          onCancel={() => setPurchaseTarget(null)}
+          onSelect={() => { onSelectAvatar(purchaseTarget.id); setPurchaseTarget(null); }}
+        />
+      )}
     </div>
   );
 }

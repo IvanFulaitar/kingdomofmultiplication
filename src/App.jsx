@@ -1,5 +1,6 @@
 import { useEffect, useState, Suspense, lazy } from "react";
 import { BADGES } from "./data/rewards.js";
+import { AVATARS } from "./data/cosmetics.js";
 import { LEVEL_META } from "./data/regions.js";
 import { getWeakFacts } from "./game/generateQuestion.js";
 import { playBadge } from "./game/sound.js";
@@ -57,15 +58,26 @@ export default function App() {
     saveProgress(next);
   }
 
-  function buyAvatar(av) {
-    const owned = progress.ownedAvatars.includes(av.id);
-    if (!owned && progress.coins < av.cost) return;
+  // Купівля й вибір аватара — окремі дії (щоб магазин міг спершу показати
+  // модалку підтвердження, і лише після явного натискання "Придбати"
+  // списати монети — випадковий тап більше не витрачає їх одразу).
+  // Списання монет і додавання до ownedAvatars — один виклик persist(),
+  // тож це завжди єдина атомарна операція, без проміжного "напівкупленого" стану.
+  function purchaseAvatar(avatarId) {
+    if (progress.ownedAvatars.includes(avatarId)) return true; // вже куплений — вважаємо успіхом, монети не чіпаємо
+    const av = AVATARS.find((a) => a.id === avatarId);
+    if (!av || progress.coins < av.cost) return false;
     persist({
       ...progress,
-      avatar: av.id,
-      coins: owned ? progress.coins : progress.coins - av.cost,
-      ownedAvatars: owned ? progress.ownedAvatars : [...progress.ownedAvatars, av.id],
+      coins: progress.coins - av.cost,
+      ownedAvatars: [...progress.ownedAvatars, avatarId],
     });
+    return true;
+  }
+
+  function selectAvatar(avatarId) {
+    if (!progress.ownedAvatars.includes(avatarId)) return; // не можна обрати непридбаний
+    persist({ ...progress, avatar: avatarId });
   }
 
   function recordFact(pair, correct, kind) {
@@ -169,7 +181,12 @@ export default function App() {
       )}
       <Suspense fallback={<LoadingGate />}>
         {screen === "shop" && (
-          <ShopScreen progress={progress} onBuyAvatar={buyAvatar} onBack={() => setScreen("menu")} />
+          <ShopScreen
+            progress={progress}
+            onPurchaseAvatar={purchaseAvatar}
+            onSelectAvatar={selectAvatar}
+            onBack={() => setScreen("menu")}
+          />
         )}
         {screen === "training" && <TrainingScreen onBack={() => setScreen("menu")} onSelect={(m) => setScreen(m)} />}
         {screen === "memory" && (
