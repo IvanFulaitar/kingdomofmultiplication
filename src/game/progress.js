@@ -10,6 +10,7 @@ export function defaultProgress() {
     avatar: "wizard", ownedAvatars: ["wizard"],
     daily: { date: null, correctToday: 0, levelsToday: 0, perfectToday: false, claimed: [] },
     mazeCompletions: 0,
+    raceCompletions: 0,
   };
 }
 
@@ -18,7 +19,8 @@ export function defaultProgress() {
 function migrateProgress(p) {
   const ownedAvatars = p.ownedAvatars ?? Array.from(new Set(["wizard", p.avatar].filter(Boolean)));
   const mazeCompletions = p.mazeCompletions ?? 0;
-  return { ...p, ownedAvatars, mazeCompletions };
+  const raceCompletions = p.raceCompletions ?? 0;
+  return { ...p, ownedAvatars, mazeCompletions, raceCompletions };
 }
 
 export function ensureDaily(p) {

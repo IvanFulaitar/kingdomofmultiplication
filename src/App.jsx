@@ -114,6 +114,20 @@ export default function App() {
     persist(p);
   }
 
+  // Так само рахує кількість пройдених перегонів, щоб складність суперників
+  // могла плавно рости від заїзду до заїзду (обирається ОДИН РАЗ на старті
+  // кожного заїзду — усередині одного забігу вона не змінюється).
+  function completeRace(coinGain, xpGain) {
+    let p = ensureDaily(progress);
+    p = {
+      ...p,
+      coins: p.coins + coinGain,
+      xp: (p.xp ?? 0) + xpGain,
+      raceCompletions: (p.raceCompletions ?? 0) + 1,
+    };
+    persist(p);
+  }
+
   // На відміну від інших дій, тут потрібно повернути короткий підсумок
   // (скільки зірок/монет/XP отримано, чи піднявся рівень героя), щоб
   // екран результатів міг одразу його показати й анімувати.
@@ -206,8 +220,9 @@ export default function App() {
         {screen === "race" && (
           <RaceScreen
             avatar={progress.avatar}
+            completions={progress.raceCompletions ?? 0}
             onBack={() => setScreen("training")}
-            onComplete={(coins, xp) => { rewardPractice(coins, xp); setScreen("training"); }}
+            onComplete={(coins, xp) => { completeRace(coins, xp); setScreen("training"); }}
           />
         )}
         {screen === "map" && (
