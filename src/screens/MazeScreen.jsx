@@ -411,7 +411,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     lastPairRef.current = null;
   }
 
-  const starsEarned = phase === "finale" && finaleStep >= 4
+  const starsEarned = phase === "finale"
     ? [true, lives === 3, secretFound || moveCount <= maze.mainPathLength].filter(Boolean).length
     : 0;
   const totalCoins = BASE_COINS + maze.tier * TIER_BONUS + coins;
