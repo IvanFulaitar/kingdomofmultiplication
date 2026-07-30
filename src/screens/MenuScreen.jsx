@@ -3,6 +3,7 @@ import { AVATARS } from "../data/cosmetics.js";
 import { QUESTS } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { isSoundEnabled, setSoundEnabled, playClick } from "../game/sound.js";
+import { APP_VERSION, LAST_UPDATE } from "../version.js";
 import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 
@@ -29,6 +30,10 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
       >
         {soundOn ? "🔊" : "🔇"}
       </button>
+
+      <span className="app-version-tag absolute top-4 left-4 z-20 select-none leading-tight" aria-hidden="true">
+        v{APP_VERSION}<br />{LAST_UPDATE}
+      </span>
 
       <div className="relative z-10 max-w-md mx-auto px-6 py-10 flex flex-col items-center gap-6 pb-14">
         <div className="text-center relative">
