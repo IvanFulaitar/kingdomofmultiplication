@@ -5,11 +5,11 @@ import { useState } from "react";
 // нічого не ламаючи. Коли з'явиться справжня графіка — просто покласти
 // файл із правильною назвою в public/assets/, і код сам її підхопить,
 // без жодних правок компонентів.
-export default function ArtImage({ src, fallback, alt = "", className = "", fetchPriority }) {
+export default function ArtImage({ src, fallback, alt = "", className = "", fetchPriority, style }) {
   const [errored, setErrored] = useState(false);
 
   if (errored || !src) {
-    return <span className={className}>{fallback}</span>;
+    return <span className={className} style={style}>{fallback}</span>;
   }
 
   return (
@@ -17,6 +17,7 @@ export default function ArtImage({ src, fallback, alt = "", className = "", fetc
       src={src}
       alt={alt}
       className={className}
+      style={style}
       onError={() => setErrored(true)}
       draggable={false}
       fetchPriority={fetchPriority}

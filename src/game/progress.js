@@ -9,6 +9,7 @@ export function defaultProgress() {
     levels: {}, badges: [], facts: {},
     avatar: "wizard", ownedAvatars: ["wizard"],
     daily: { date: null, correctToday: 0, levelsToday: 0, perfectToday: false, claimed: [] },
+    mazeCompletions: 0,
   };
 }
 
@@ -16,7 +17,8 @@ export function defaultProgress() {
 // і рахує вже обраний аватар власним, щоб він не "замкнувся" заднім числом.
 function migrateProgress(p) {
   const ownedAvatars = p.ownedAvatars ?? Array.from(new Set(["wizard", p.avatar].filter(Boolean)));
-  return { ...p, ownedAvatars };
+  const mazeCompletions = p.mazeCompletions ?? 0;
+  return { ...p, ownedAvatars, mazeCompletions };
 }
 
 export function ensureDaily(p) {

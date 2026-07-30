@@ -996,3 +996,338 @@ html, body {
   transform: translate(-50%, -50%);
   transition: left 0.5s ease;
 }
+
+/* ===== Лабіринт: справжня мандрівка графом клітинок ===== */
+
+.maze-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Клітинки міні-карти */
+.maze-cell {
+  position: relative;
+  border-radius: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.maze-cell-fog {
+  background: linear-gradient(160deg, rgba(30,23,66,0.5), rgba(15,12,34,0.65));
+  border: 1px dashed rgba(255,255,255,0.1);
+}
+.maze-cell-known {
+  background: linear-gradient(180deg, rgba(54, 44, 92, 0.6), rgba(28, 22, 56, 0.65));
+  border: 1px solid rgba(245, 185, 66, 0.25);
+}
+.maze-cell-visited {
+  background: linear-gradient(180deg, rgba(64, 51, 110, 0.8), rgba(30, 23, 66, 0.9));
+  border: 1px solid rgba(245, 185, 66, 0.55);
+}
+.maze-cell-current {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.55), rgba(49, 24, 105, 0.9));
+  border: 2px solid rgba(245, 185, 66, 0.9);
+  box-shadow: 0 0 16px rgba(139,92,246,0.65), 0 0 0 1px rgba(245,185,66,0.5);
+  animation: next-level-glow 2.2s ease-in-out infinite;
+  z-index: 3;
+}
+.maze-cell-locked { filter: grayscale(0.6) brightness(0.6); }
+.maze-cell-start {
+  border: 1px solid rgba(163, 230, 53, 0.55);
+}
+
+/* Коридори між клітинками — самі є вузькими грід-доріжками */
+.maze-corridor {
+  background: linear-gradient(180deg, rgba(245,185,66,0.55), rgba(139,92,246,0.4));
+  border-radius: 3px;
+}
+.maze-corridor-fog { background: rgba(255,255,255,0.07); }
+
+/* Значок героя на поточній клітинці */
+.maze-hero-token { filter: drop-shadow(0 0 8px rgba(245,185,66,0.7)); }
+
+/* Мальовані (без emoji) значки об'єктів клітинок — рамка ArtImage сама
+   замінить їх на справжню графіку, щойно з'являться файли в assets/icons/maze */
+.maze-icon {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+}
+.maze-icon-key {
+  position: absolute;
+  left: 6%; top: 30%;
+  width: 46%; height: 46%;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #ffe9a8, #f5b93f 55%, #c9821a);
+  border: 2px solid rgba(120, 78, 12, 0.7);
+}
+.maze-icon-key::after {
+  content: "";
+  position: absolute;
+  left: 84%; top: 60%;
+  width: 44%; height: 18%;
+  background: linear-gradient(90deg, #f5b93f, #c9821a);
+  box-shadow: 7px 0 0 -2px #c9821a, 7px 5px 0 -2px #c9821a;
+}
+.maze-icon-trap {
+  position: absolute;
+  inset: 12%;
+  background: linear-gradient(160deg, #fecdd3, #fb7185 55%, #9f1239);
+  clip-path: polygon(50% 0%, 68% 22%, 100% 35%, 78% 55%, 88% 100%, 50% 78%, 12% 100%, 22% 55%, 0% 35%, 32% 22%);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.maze-icon-chest {
+  position: absolute;
+  left: 10%; bottom: 12%;
+  width: 80%; height: 46%;
+  background: linear-gradient(180deg, #d8b46a, #9a6b2e);
+  border-radius: 3px;
+  border: 2px solid rgba(120, 78, 12, 0.8);
+}
+.maze-icon-chest::before {
+  content: "";
+  position: absolute;
+  left: -2px; top: -34%;
+  width: calc(100% + 4px);
+  height: 40%;
+  background: linear-gradient(180deg, #f5b93f, #c9821a);
+  border-radius: 6px 6px 0 0;
+  border: 2px solid rgba(120, 78, 12, 0.8);
+  border-bottom: none;
+}
+.maze-icon-chest::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: -6%;
+  width: 16%; height: 16%;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: #6b4a1a;
+}
+.maze-icon-secret {
+  position: absolute;
+  left: 10%; bottom: 12%;
+  width: 80%; height: 46%;
+  background: linear-gradient(180deg, #c4b5fd, #6d28d9);
+  border-radius: 3px;
+  border: 2px solid rgba(76, 29, 149, 0.9);
+  box-shadow: 0 0 10px rgba(139,92,246,0.7);
+}
+.maze-icon-secret::before {
+  content: "";
+  position: absolute;
+  left: -2px; top: -34%;
+  width: calc(100% + 4px);
+  height: 40%;
+  background: linear-gradient(180deg, #ddd6fe, #7c3aed);
+  border-radius: 6px 6px 0 0;
+  border: 2px solid rgba(76, 29, 149, 0.9);
+  border-bottom: none;
+}
+.maze-icon-coin {
+  position: absolute;
+  inset: 18%;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, #fff6d8, #f5b93f 55%, #c9821a 100%);
+  border: 2px solid rgba(120, 78, 12, 0.6);
+}
+.maze-icon-fountain {
+  position: absolute;
+  inset: 14%;
+  background: linear-gradient(180deg, #a7f3d0, #34d399 55%, #047857);
+  clip-path: polygon(50% 0%, 85% 55%, 85% 78%, 50% 100%, 15% 78%, 15% 55%);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.maze-icon-hint {
+  position: absolute;
+  left: 20%; bottom: 6%;
+  width: 60%; height: 58%;
+  background: linear-gradient(180deg, #93c5fd, #2563eb 70%, #1e3a8a);
+  border-radius: 50% 50% 20% 20%;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.maze-icon-hint::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: -24%;
+  width: 46%; height: 46%;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: radial-gradient(circle, #fde68a, #f5b93f);
+  box-shadow: 0 0 6px rgba(245,185,66,0.8);
+}
+@keyframes maze-portal-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.maze-icon-portal {
+  position: absolute;
+  inset: 10%;
+  border-radius: 9999px;
+  border: 4px solid rgba(56, 189, 248, 0.9);
+  border-top-color: rgba(217, 70, 239, 0.9);
+  border-bottom-color: rgba(217, 70, 239, 0.9);
+  animation: maze-portal-spin 2.4s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(56,189,248,0.6));
+}
+.maze-icon-treasure { position: absolute; inset: 14%; }
+.maze-icon-treasure span {
+  position: absolute;
+  width: 40%; height: 40%;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, #fff6d8, #f5b93f 55%, #c9821a 100%);
+  border: 1.5px solid rgba(120, 78, 12, 0.6);
+}
+.maze-icon-treasure span:nth-child(1) { left: 30%; top: 0; }
+.maze-icon-treasure span:nth-child(2) { left: 0; bottom: 0; }
+.maze-icon-treasure span:nth-child(3) { right: 0; bottom: 0; }
+.maze-icon-exit {
+  position: absolute;
+  left: 18%; bottom: 0;
+  width: 64%; height: 84%;
+  background: linear-gradient(180deg, #fde68a, #f5b93f 55%, #c9821a);
+  border-radius: 9999px 9999px 4px 4px;
+  border: 2px solid rgba(120, 78, 12, 0.8);
+  box-shadow: 0 0 10px rgba(245,185,66,0.6);
+}
+.maze-icon-lock {
+  position: absolute;
+  left: 28%; bottom: 20%;
+  width: 44%; height: 34%;
+  background: linear-gradient(180deg, #64748b, #334155);
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.4);
+}
+.maze-icon-lock::before {
+  content: "";
+  position: absolute;
+  left: 15%; top: -70%;
+  width: 70%; height: 70%;
+  border: 3px solid #94a3b8;
+  border-bottom: none;
+  border-radius: 9999px 9999px 0 0;
+}
+
+/* Двері-розвилки: числа-відповіді, що водночас є напрямком руху */
+.maze-door-btn {
+  position: relative;
+  background: linear-gradient(180deg, rgba(90, 70, 145, 0.95), rgba(42, 32, 84, 0.97));
+  border: 2px solid rgba(196, 165, 250, 0.45);
+  box-shadow: 0 8px 18px -6px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.1);
+  border-radius: 1.25rem 1.25rem 0.5rem 0.5rem;
+}
+.maze-door-risky {
+  border-color: rgba(251, 146, 60, 0.6);
+  background: linear-gradient(180deg, rgba(146, 64, 14, 0.55), rgba(42, 32, 84, 0.97));
+}
+.maze-door-bonus {
+  border-color: rgba(52, 211, 153, 0.55);
+  background: linear-gradient(180deg, rgba(6, 95, 70, 0.5), rgba(42, 32, 84, 0.97));
+}
+.maze-door-badge {
+  position: absolute;
+  top: -9px; right: -9px;
+  width: 20px; height: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+.maze-door-badge-shield {
+  width: 100%; height: 100%;
+  background: linear-gradient(180deg, #7dd3fc, #0369a1);
+  clip-path: polygon(50% 0%, 88% 14%, 78% 72%, 50% 100%, 22% 72%, 12% 14%);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+.maze-door-badge-lightning {
+  width: 100%; height: 100%;
+  background: linear-gradient(180deg, #fde68a, #d97706);
+  clip-path: polygon(55% 0%, 20% 55%, 45% 55%, 30% 100%, 80% 40%, 52% 40%);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.maze-door-badge-coin {
+  width: 100%; height: 100%;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 30%, #fff6d8, #f5b93f 55%, #c9821a 100%);
+  border: 1px solid rgba(120,78,12,0.6);
+}
+
+/* Діамантова стежка прогресу головного шляху */
+.maze-trail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.maze-diamond {
+  width: 13px; height: 13px;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.maze-diamond-done {
+  background: linear-gradient(135deg, #ffe28a, #d98f1e);
+  box-shadow: 0 0 6px rgba(245,185,66,0.7);
+}
+@keyframes maze-diamond-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(139,92,246,0.7); }
+  50% { box-shadow: 0 0 12px rgba(139,92,246,1); }
+}
+.maze-diamond-current {
+  background: linear-gradient(135deg, #c4b5fd, #7c3aed);
+  animation: maze-diamond-glow 1.15s ease-in-out infinite;
+}
+.maze-diamond-future {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+/* Кнопка підказки */
+.maze-hint-btn {
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.25), rgba(120, 53, 15, 0.35));
+  border: 1.5px solid rgba(245, 185, 66, 0.55);
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.maze-hint-btn:active { transform: scale(0.96); }
+.maze-hint-btn:disabled { opacity: 0.35; }
+
+/* Пастка спрацювала — крижаний, не страшний спалах */
+.maze-trap-flash { background: linear-gradient(180deg, #bae6fd, #0369a1) !important; }
+
+/* Фінал рівня: магічні двері відчиняються */
+.maze-finale-doors { position: relative; height: 110px; perspective: 600px; overflow: hidden; border-radius: 1rem; }
+@keyframes maze-door-open-left { from { transform: translateX(0) rotateY(0deg); } to { transform: translateX(-8%) rotateY(-38deg); opacity: 0.35; } }
+@keyframes maze-door-open-right { from { transform: translateX(0) rotateY(0deg); } to { transform: translateX(8%) rotateY(38deg); opacity: 0.35; } }
+.maze-finale-door-leaf {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 50%;
+  background: linear-gradient(180deg, #a78bfa, #4c1d95);
+  border: 2px solid rgba(245,185,66,0.7);
+}
+.maze-finale-door-leaf.left { left: 0; border-radius: 8px 0 0 8px; transform-origin: left center; animation: maze-door-open-left 1s ease forwards; }
+.maze-finale-door-leaf.right { right: 0; border-radius: 0 8px 8px 0; transform-origin: right center; animation: maze-door-open-right 1s ease forwards; }
+
+/* Кімната скарбів: короткий бонус-раунд усередині лабіринту */
+.maze-treasure-banner {
+  background: linear-gradient(180deg, rgba(6, 95, 70, 0.55), rgba(4, 47, 46, 0.7));
+  border: 1px solid rgba(52, 211, 153, 0.5);
+}
+
+/* Секретна скриня — та сама графіка chest.png, лише з фіолетовим сяйвом */
+.maze-secret-tint {
+  filter: hue-rotate(220deg) saturate(1.7) brightness(1.05) drop-shadow(0 0 6px rgba(139,92,246,0.85));
+}
+
+/* Кімната скарбів на міні-карті — три монетки внапуск (та сама coin.png) */
+.maze-treasure-coin {
+  position: absolute;
+  width: 42%;
+  height: 42%;
+  object-fit: contain;
+}
+.maze-treasure-coin-a { left: 29%; top: 0; }
+.maze-treasure-coin-b { left: 0; bottom: 2%; }
+.maze-treasure-coin-c { right: 0; bottom: 2%; }

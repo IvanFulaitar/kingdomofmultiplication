@@ -88,6 +88,20 @@ export default function App() {
     persist(p);
   }
 
+  // Окремо від rewardPractice — рахує ще й кількість пройдених лабіринтів,
+  // щоб наступна спроба могла плавно підвищити складність (нові механіки
+  // з'являються поступово, а не всі одразу).
+  function completeMaze(coinGain, xpGain) {
+    let p = ensureDaily(progress);
+    p = {
+      ...p,
+      coins: p.coins + coinGain,
+      xp: (p.xp ?? 0) + xpGain,
+      mazeCompletions: (p.mazeCompletions ?? 0) + 1,
+    };
+    persist(p);
+  }
+
   // На відміну від інших дій, тут потрібно повернути короткий підсумок
   // (скільки зірок/монет/XP отримано, чи піднявся рівень героя), щоб
   // екран результатів міг одразу його показати й анімувати.
@@ -167,8 +181,9 @@ export default function App() {
         {screen === "maze" && (
           <MazeScreen
             avatar={progress.avatar}
+            completions={progress.mazeCompletions ?? 0}
             onBack={() => setScreen("training")}
-            onComplete={(coins, xp) => { rewardPractice(coins, xp); setScreen("training"); }}
+            onComplete={(coins, xp) => { completeMaze(coins, xp); setScreen("training"); }}
           />
         )}
         {screen === "race" && (
