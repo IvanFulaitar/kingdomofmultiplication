@@ -1212,22 +1212,7 @@ html, body {
   border-radius: 9999px 9999px 0 0;
 }
 
-/* Двері-розвилки: числа-відповіді, що водночас є напрямком руху */
-.maze-door-btn {
-  position: relative;
-  background: linear-gradient(180deg, rgba(90, 70, 145, 0.95), rgba(42, 32, 84, 0.97));
-  border: 2px solid rgba(196, 165, 250, 0.45);
-  box-shadow: 0 8px 18px -6px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.1);
-  border-radius: 1.25rem 1.25rem 0.5rem 0.5rem;
-}
-.maze-door-risky {
-  border-color: rgba(251, 146, 60, 0.6);
-  background: linear-gradient(180deg, rgba(146, 64, 14, 0.55), rgba(42, 32, 84, 0.97));
-}
-.maze-door-bonus {
-  border-color: rgba(52, 211, 153, 0.55);
-  background: linear-gradient(180deg, rgba(6, 95, 70, 0.5), rgba(42, 32, 84, 0.97));
-}
+/* Кутовий значок-бейдж на доступній клітинці (щит/блискавка/монета/ключ) */
 .maze-door-badge {
   position: absolute;
   top: -9px; right: -9px;
@@ -1330,3 +1315,89 @@ html, body {
 .maze-treasure-coin-a { left: 29%; top: 0; }
 .maze-treasure-coin-b { left: 0; bottom: 2%; }
 .maze-treasure-coin-c { right: 0; bottom: 2%; }
+
+/* ===== Рух тапом по карті: підсвічування доступних клітинок ===== */
+@keyframes maze-cell-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(245,185,66,0.55), 0 0 0 2px rgba(245,185,66,0.65) inset; }
+  50% { box-shadow: 0 0 18px rgba(245,185,66,0.95), 0 0 0 2px rgba(255,214,120,0.9) inset; }
+}
+.maze-cell.maze-cell-tappable {
+  cursor: pointer;
+  border: 2px solid rgba(245, 185, 66, 0.85);
+  animation: maze-cell-pulse 1.3s ease-in-out infinite;
+}
+.maze-cell.maze-cell-tappable:active { transform: scale(0.93); }
+
+@keyframes maze-cell-pulse-risky {
+  0%, 100% { box-shadow: 0 0 8px rgba(251,146,60,0.5), 0 0 0 2px rgba(251,146,60,0.6) inset; }
+  50% { box-shadow: 0 0 18px rgba(251,146,60,0.9), 0 0 0 2px rgba(253,186,116,0.9) inset; }
+}
+.maze-cell.maze-cell-tappable.maze-cell-risky {
+  border-color: rgba(251, 146, 60, 0.85);
+  animation-name: maze-cell-pulse-risky;
+}
+
+@keyframes maze-cell-pulse-bonus {
+  0%, 100% { box-shadow: 0 0 8px rgba(52,211,153,0.5), 0 0 0 2px rgba(52,211,153,0.6) inset; }
+  50% { box-shadow: 0 0 18px rgba(52,211,153,0.9), 0 0 0 2px rgba(110,231,183,0.9) inset; }
+}
+.maze-cell.maze-cell-tappable.maze-cell-bonus {
+  border-color: rgba(52, 211, 153, 0.85);
+  animation-name: maze-cell-pulse-bonus;
+}
+
+/* Єдиний доступний шлях — за 1с пульс підсилюється, але без авто-переходу */
+@keyframes maze-cell-pulse-strong {
+  0%, 100% { box-shadow: 0 0 10px rgba(245,185,66,0.7), 0 0 0 3px rgba(245,185,66,0.85) inset; transform: scale(1); }
+  50% { box-shadow: 0 0 24px rgba(255,214,120,1), 0 0 0 3px rgba(255,231,168,1) inset; transform: scale(1.03); }
+}
+.maze-cell.maze-cell-tappable.maze-cell-strong-pulse {
+  animation: maze-cell-pulse-strong 0.9s ease-in-out infinite;
+}
+
+/* Маленька стрілка від героя до доступної клітинки */
+@keyframes maze-arrow-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+.maze-cell-arrow {
+  position: absolute;
+  font-size: 10px;
+  line-height: 1;
+  color: rgba(255, 231, 168, 0.95);
+  filter: drop-shadow(0 0 3px rgba(245,185,66,0.9));
+  animation: maze-arrow-pulse 1.3s ease-in-out infinite;
+  pointer-events: none;
+}
+.maze-cell-arrow-up { top: 3px; left: 50%; transform: translateX(-50%); }
+.maze-cell-arrow-down { bottom: 3px; left: 50%; transform: translateX(-50%); }
+.maze-cell-arrow-left { left: 3px; top: 50%; transform: translateY(-50%); }
+.maze-cell-arrow-right { right: 3px; top: 50%; transform: translateY(-50%); }
+
+/* "Живий" коридор — веде до клітинки, куди зараз можна перейти */
+@keyframes maze-corridor-pulse {
+  0%, 100% { opacity: 0.75; box-shadow: 0 0 4px rgba(245,185,66,0.5); }
+  50% { opacity: 1; box-shadow: 0 0 10px rgba(245,185,66,0.95); }
+}
+.maze-corridor-active {
+  background: linear-gradient(180deg, #ffe28a, #f5b93f) !important;
+  animation: maze-corridor-pulse 1.3s ease-in-out infinite;
+}
+
+/* Герой — окремий шар над картою, плавно "їде" між клітинками */
+.maze-hero-overlay {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition: left 0.42s cubic-bezier(0.34, 1.2, 0.64, 1), top 0.42s cubic-bezier(0.34, 1.2, 0.64, 1);
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Короткий підказковий текст над/під картою */
+.maze-move-hint {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.28), rgba(49, 24, 105, 0.4));
+  border: 1px solid rgba(245, 185, 66, 0.45);
+  color: #fde68a;
+  font-weight: 700;
+  font-size: 0.8125rem;
+}

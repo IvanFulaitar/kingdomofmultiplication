@@ -1,9 +1,7 @@
 import { rand, shuffle } from "./random.js";
 
 // Банк типів завдань для "Лабіринту" — кілька форматів замість одного
-// й того ж прикладу на кожному кроці. NUMERIC_KINDS — формати з числовою
-// відповіддю, придатні для дверей-розвилок (на дверях пишуться числа).
-export const NUMERIC_KINDS = ["classic", "missing", "chain", "word"];
+// й того ж прикладу на кожному кроці.
 export const ALL_KINDS = ["classic", "missing", "compare", "chain", "find_error", "word"];
 
 const WORD_TEMPLATES = [
@@ -96,11 +94,4 @@ function buildWord(lastPair, count) {
 export function pickKind(kinds, lastKind) {
   const pool = kinds.length > 1 ? kinds.filter((k) => k !== lastKind) : kinds;
   return pool[rand(0, pool.length - 1)];
-}
-
-// Розвилки-двері завжди показують числа (не текстові варіанти), тому тут
-// вибираємо лише з числових форматів, навіть якщо тир дозволяє й інші.
-export function pickForkKind(kinds, lastKind) {
-  const numeric = kinds.filter((k) => NUMERIC_KINDS.includes(k));
-  return pickKind(numeric.length ? numeric : NUMERIC_KINDS, lastKind);
 }
