@@ -129,7 +129,7 @@ export default function App() {
   }
 
   return (
-    <div
+    <main
       className="min-h-dvh bg-gradient-to-b from-indigo-950 via-indigo-900 to-indigo-950 font-body text-white bg-cover bg-center"
       style={{ backgroundImage: "url(/assets/backgrounds/app_bg.png), linear-gradient(180deg, #1e1b4b, #312e81, #1e1b4b)" }}
     >
@@ -188,6 +188,6 @@ export default function App() {
       )}
       {showBadges && <BadgesModal progress={progress} onClose={() => setShowBadges(false)} />}
       {newBadge && <BadgeToast badge={newBadge} onClose={() => setNewBadge(null)} />}
-    </div>
+    </main>
   );
 }

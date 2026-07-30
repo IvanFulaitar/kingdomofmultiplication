@@ -20,6 +20,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             src={`/assets/avatars/${avatar.id}.png`}
             fallback={avatar.icon}
             alt={avatar.id}
+            fetchPriority="high"
             className="relative w-56 sm:w-64 h-56 sm:h-64 mx-auto mb-1 object-contain flex items-center justify-center text-8xl drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]"
           />
           <h1 className="font-display gold-text text-4xl font-extrabold mt-2 tracking-wide">Королівство Математики</h1>
