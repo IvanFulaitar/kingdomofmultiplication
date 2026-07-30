@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { BADGES } from "./data/rewards.js";
 import { LEVEL_META } from "./data/regions.js";
 import { getWeakFacts } from "./game/generateQuestion.js";
@@ -7,15 +7,26 @@ import {
   starsForMistakes, heroLevelFromXp,
 } from "./game/progress.js";
 
+// MenuScreen — перше, що бачить гравець, тому вантажиться одразу.
+// Решта екранів — лениво (code-splitting), щоб на старті не тягнути
+// JS усіх ігрових режимів, які людина, можливо, ще не відкриє.
 import MenuScreen from "./screens/MenuScreen.jsx";
-import ShopScreen from "./screens/ShopScreen.jsx";
-import TrainingScreen from "./screens/TrainingScreen.jsx";
-import MemoryScreen from "./screens/MemoryScreen.jsx";
-import MapScreen from "./screens/MapScreen.jsx";
-import GameScreen from "./screens/GameScreen.jsx";
-import ResultsScreen from "./screens/ResultsScreen.jsx";
-import BadgesModal from "./components/BadgesModal.jsx";
 import BadgeToast from "./components/BadgeToast.jsx";
+const ShopScreen = lazy(() => import("./screens/ShopScreen.jsx"));
+const TrainingScreen = lazy(() => import("./screens/TrainingScreen.jsx"));
+const MemoryScreen = lazy(() => import("./screens/MemoryScreen.jsx"));
+const MapScreen = lazy(() => import("./screens/MapScreen.jsx"));
+const GameScreen = lazy(() => import("./screens/GameScreen.jsx"));
+const ResultsScreen = lazy(() => import("./screens/ResultsScreen.jsx"));
+const BadgesModal = lazy(() => import("./components/BadgesModal.jsx"));
+
+function LoadingGate() {
+  return (
+    <div className="min-h-dvh bg-indigo-950 flex items-center justify-center">
+      <div className="font-body text-amber-300 text-lg animate-pulse">Відчиняємо ворота королівства…</div>
+    </div>
+  );
+}
 
 export default function App() {
   const [progress, setProgress] = useState(null);
@@ -121,11 +132,7 @@ export default function App() {
   }
 
   if (!progress) {
-    return (
-      <div className="min-h-dvh bg-indigo-950 flex items-center justify-center">
-        <div className="font-body text-amber-300 text-lg animate-pulse">Відчиняємо ворота королівства…</div>
-      </div>
-    );
+    return <LoadingGate />;
   }
 
   return (
@@ -142,51 +149,53 @@ export default function App() {
           onTraining={() => setScreen("training")}
         />
       )}
-      {screen === "shop" && (
-        <ShopScreen progress={progress} onBuyAvatar={buyAvatar} onBack={() => setScreen("menu")} />
-      )}
-      {screen === "training" && <TrainingScreen onBack={() => setScreen("menu")} onSelect={(m) => setScreen(m)} />}
-      {screen === "memory" && (
-        <MemoryScreen
-          onBack={() => setScreen("training")}
-          onComplete={(coins, xp) => { rewardPractice(coins, xp); setScreen("training"); }}
-        />
-      )}
-      {screen === "map" && (
-        <MapScreen
-          progress={progress}
-          onBack={() => setScreen("menu")}
-          onSelect={(id) => { setActiveLevel(id); setScreen("game"); }}
-        />
-      )}
-      {screen === "game" && (
-        <GameScreen
-          levelId={activeLevel}
-          avatar={progress.avatar}
-          weakFacts={getWeakFacts(progress.facts)}
-          onAnswer={recordFact}
-          onExit={() => setScreen("map")}
-          onFinish={(mistakes) => {
-            const result = completeLevel(activeLevel, mistakes);
-            setOutcome({ won: true, ...result });
-            setScreen("results");
-          }}
-          onGameOver={(correctCount) => {
-            setOutcome({ won: false, levelId: activeLevel, correctCount });
-            setScreen("results");
-          }}
-        />
-      )}
-      {screen === "results" && (
-        <ResultsScreen
-          outcome={outcome}
-          progress={progress}
-          onNextChallenge={startNextChallenge}
-          onRetry={() => setScreen("game")}
-          onContinue={() => setScreen("map")}
-        />
-      )}
-      {showBadges && <BadgesModal progress={progress} onClose={() => setShowBadges(false)} />}
+      <Suspense fallback={<LoadingGate />}>
+        {screen === "shop" && (
+          <ShopScreen progress={progress} onBuyAvatar={buyAvatar} onBack={() => setScreen("menu")} />
+        )}
+        {screen === "training" && <TrainingScreen onBack={() => setScreen("menu")} onSelect={(m) => setScreen(m)} />}
+        {screen === "memory" && (
+          <MemoryScreen
+            onBack={() => setScreen("training")}
+            onComplete={(coins, xp) => { rewardPractice(coins, xp); setScreen("training"); }}
+          />
+        )}
+        {screen === "map" && (
+          <MapScreen
+            progress={progress}
+            onBack={() => setScreen("menu")}
+            onSelect={(id) => { setActiveLevel(id); setScreen("game"); }}
+          />
+        )}
+        {screen === "game" && (
+          <GameScreen
+            levelId={activeLevel}
+            avatar={progress.avatar}
+            weakFacts={getWeakFacts(progress.facts)}
+            onAnswer={recordFact}
+            onExit={() => setScreen("map")}
+            onFinish={(mistakes) => {
+              const result = completeLevel(activeLevel, mistakes);
+              setOutcome({ won: true, ...result });
+              setScreen("results");
+            }}
+            onGameOver={(correctCount) => {
+              setOutcome({ won: false, levelId: activeLevel, correctCount });
+              setScreen("results");
+            }}
+          />
+        )}
+        {screen === "results" && (
+          <ResultsScreen
+            outcome={outcome}
+            progress={progress}
+            onNextChallenge={startNextChallenge}
+            onRetry={() => setScreen("game")}
+            onContinue={() => setScreen("map")}
+          />
+        )}
+        {showBadges && <BadgesModal progress={progress} onClose={() => setShowBadges(false)} />}
+      </Suspense>
       {newBadge && <BadgeToast badge={newBadge} onClose={() => setNewBadge(null)} />}
     </main>
   );
