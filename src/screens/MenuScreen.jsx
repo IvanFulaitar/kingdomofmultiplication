@@ -11,6 +11,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
+  const xpPct = (into / need) * 100;
 
   function toggleSound() {
     const next = !soundOn;
@@ -35,7 +36,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         v{APP_VERSION}<br />{LAST_UPDATE}
       </span>
 
-      <div className="relative z-10 max-w-md mx-auto px-6 py-10 flex flex-col items-center gap-6 pb-14">
+      <div className="relative z-10 max-w-md mx-auto px-7 py-10 flex flex-col items-center gap-6 pb-14">
         <div className="text-center relative">
           <div className="staff-glow" />
           <ArtImage
@@ -50,48 +51,49 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           <p className="text-violet-200 mt-1.5 text-base">Мандруй, розв'язуй, опановуй магію чисел</p>
         </div>
 
-        <div className="flex gap-3 justify-center">
-          <div className="resource-pill rounded-2xl px-5 py-2.5 flex items-center gap-2">
-            <StarIcon filled /> <span className="font-bold text-lg">{progress.totalStars}</span>
+        <div className="w-full grid grid-cols-3 gap-3">
+          <div className="menu-resource-pill rounded-2xl px-3 py-2.5 flex items-center justify-center gap-2">
+            <StarIcon filled /> <span className="font-extrabold text-xl">{progress.totalStars}</span>
           </div>
-          <div className="resource-pill-gold rounded-2xl px-5 py-2.5 flex items-center gap-2 text-indigo-950">
+          <div className="menu-resource-pill-gold rounded-2xl px-3 py-2.5 flex items-center justify-center gap-2 text-indigo-950">
             <ArtImage src="/assets/icons/ui/coin.png" fallback="🪙" alt="монети" className="w-6 h-6 object-contain inline-flex items-center justify-center" />
-            <span className="font-extrabold text-lg">{progress.coins}</span>
+            <span className="font-extrabold text-2xl">{progress.coins}</span>
           </div>
-          <div className="resource-pill rounded-2xl px-5 py-2.5 flex items-center gap-2">
+          <div className="menu-resource-pill rounded-2xl px-3 py-2.5 flex items-center justify-center gap-2">
             <ArtImage src="/assets/icons/ui/flame.png" fallback="🔥" alt="стрік" className="w-6 h-6 object-contain inline-flex items-center justify-center" />
-            <span className="font-bold text-lg">{progress.streak.current}</span>
+            <span className="font-extrabold text-xl">{progress.streak.current}</span>
           </div>
         </div>
 
-        <div className="w-full rpg-panel rpg-panel-gold rounded-3xl p-5">
-          <div className="flex items-center gap-3 mb-2.5">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-b from-amber-300 to-amber-600 border-2 border-amber-100/80 flex items-center justify-center font-display font-extrabold text-indigo-950 text-lg shrink-0 shadow">
+        <div className="w-full menu-panel rounded-3xl px-5 py-4">
+          <div className="flex items-center gap-3.5 mb-2">
+            <div className="menu-level-badge w-10 h-10 rounded-xl flex items-center justify-center font-display font-extrabold text-indigo-950 text-lg shrink-0">
               {level}
             </div>
-            <span className="font-display font-bold text-base flex-1">Рівень героя {level}</span>
-            <span className="text-sm text-violet-200 font-semibold">{into}/{need} XP</span>
+            <span className="font-display font-bold text-lg flex-1">Рівень героя {level}</span>
+            <span className="text-sm text-violet-100 font-semibold">{into}/{need} XP</span>
           </div>
-          <div className="h-4 xp-track rounded-full overflow-hidden">
-            <div className="h-full xp-fill rounded-full transition-all" style={{ width: `${(into / need) * 100}%` }} />
+          <div className="h-5 menu-xp-track rounded-full relative">
+            <div className="h-full menu-xp-fill rounded-full transition-all" style={{ width: `${xpPct}%` }} />
+            <span className="menu-xp-glow-dot absolute top-1/2 -translate-y-1/2" style={{ left: `calc(${xpPct}% - 5px)` }} aria-hidden="true" />
           </div>
         </div>
 
-        <div className="w-full rpg-panel rounded-3xl pt-7 pb-5 px-4 relative">
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rpg-banner-fill px-6 py-1.5 whitespace-nowrap">
+        <div className="w-full menu-panel rounded-3xl pt-8 pb-4 px-4 relative">
+          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 menu-quest-banner px-8 py-1 whitespace-nowrap">
             <span className="font-display font-bold text-amber-300 text-xs">✦ Щоденні завдання ✦</span>
           </div>
-          <div className="flex flex-col gap-3.5 mt-1">
+          <div className="flex flex-col mt-2 divide-y divide-white/10">
             {QUESTS.map((q) => {
               const p = q.progress(progress.daily);
               const done = progress.daily.claimed.includes(q.id) || p >= q.target;
               return (
-                <div key={q.id} className="flex items-center gap-3 text-sm">
-                  <span className={`w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0 border ${done ? "bg-emerald-600/25 border-emerald-400/50" : "bg-indigo-950/60 border-amber-400/30"}`}>
+                <div key={q.id} className={`flex items-center gap-3 text-sm py-2.5 px-1.5 -mx-1.5 rounded-lg ${done ? "" : "bg-white/[0.03]"}`}>
+                  <span className={`w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0 border ${done ? "bg-emerald-600/25 border-emerald-400/50 menu-quest-check-glow" : "bg-indigo-950/60 border-amber-400/30"}`}>
                     {done ? "✅" : q.icon}
                   </span>
-                  <span className={`flex-1 ${done ? "text-white/40 line-through" : "text-white"}`}>{q.label}</span>
-                  <span className={`text-xs font-semibold rounded-full px-2.5 py-1 border ${done ? "text-emerald-300 bg-emerald-600/20 border-emerald-400/40" : "text-white/70 rpg-panel"}`}>
+                  <span className={`flex-1 ${done ? "text-violet-200/65 line-through decoration-1" : "text-white"}`}>{q.label}</span>
+                  <span className={`text-xs font-semibold rounded-full px-2.5 py-1 border ${done ? "text-emerald-300 bg-emerald-600/20 border-emerald-400/40" : "text-white/80 menu-quest-badge-active"}`}>
                     {Math.min(p, q.target)}/{q.target}
                   </span>
                 </div>
@@ -101,11 +103,11 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         </div>
 
         <div className="relative w-full">
-          <button onClick={() => { playClick(); onPlay(); }} className="hero-play-button relative w-full min-h-[72px]">
+          <button onClick={() => { playClick(); onPlay(); }} className="hero-play-button relative w-full min-h-[66px]">
             <span className="hero-play-shine" aria-hidden="true" />
-            <span className="relative z-10 grid grid-cols-[1.75rem_1fr_1.75rem] items-center gap-2 px-8 h-full">
+            <span className="relative z-10 grid grid-cols-[1.5rem_1fr_1.5rem] items-center gap-2 px-8 h-full">
               <span className="hero-play-diamond justify-self-start" aria-hidden="true" />
-              <span className="hero-play-text font-display font-extrabold text-3xl tracking-wide justify-self-center">ГРАТИ</span>
+              <span className="hero-play-text font-display font-extrabold text-4xl tracking-wide justify-self-center">ГРАТИ</span>
               <span className="hero-play-diamond justify-self-end" aria-hidden="true" />
             </span>
           </button>
@@ -116,17 +118,17 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         </div>
 
         <div className="w-full grid grid-cols-3 gap-3">
-          <button onClick={() => { playClick(); onBadges(); }} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
-            <ArtImage src="/assets/icons/ui/trophy.png" fallback="🏆" alt="" className="text-3xl w-8 h-8 object-contain flex items-center justify-center" />
-            <span className="font-semibold text-xs text-white">Досягнення</span>
+          <button onClick={() => { playClick(); onBadges(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
+            <ArtImage src="/assets/icons/ui/trophy.png" fallback="🏆" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
+            <span className="font-bold text-sm text-white">Досягнення</span>
           </button>
-          <button onClick={() => { playClick(); onShop(); }} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
-            <ArtImage src="/assets/icons/ui/shop.png" fallback="🛍️" alt="" className="text-3xl w-8 h-8 object-contain flex items-center justify-center" />
-            <span className="font-semibold text-xs text-white">Магазин</span>
+          <button onClick={() => { playClick(); onShop(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
+            <ArtImage src="/assets/icons/ui/shop.png" fallback="🛍️" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
+            <span className="font-bold text-sm text-white">Магазин</span>
           </button>
-          <button onClick={() => { playClick(); onTraining(); }} className="rpg-panel rpg-panel-gold hover:brightness-125 active:scale-95 active:brightness-110 transition rounded-xl py-3.5 flex flex-col items-center gap-1.5">
-            <ArtImage src="/assets/icons/ui/target.png" fallback="🎯" alt="" className="text-3xl w-8 h-8 object-contain flex items-center justify-center" />
-            <span className="font-semibold text-xs text-white">Тренування</span>
+          <button onClick={() => { playClick(); onTraining(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
+            <ArtImage src="/assets/icons/ui/target.png" fallback="🎯" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
+            <span className="font-bold text-sm text-white">Тренування</span>
           </button>
         </div>
 
@@ -138,7 +140,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           aria-label="Instagram автора гри Ivan Stepanowich"
         >
           <span className="creator-link__icon" aria-hidden="true">◎</span>
-          <span>Автор гри <strong>@ivan_stepanowich</strong></span>
+          <span><span className="creator-link__label">Автор гри </span><strong>@ivan_stepanowich</strong></span>
         </a>
       </div>
     </div>
