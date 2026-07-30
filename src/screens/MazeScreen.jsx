@@ -49,17 +49,22 @@ function doorRiskClass(maze, neighborKey) {
   return "";
 }
 
-// Коли шляхів назад декілька (гравець на розвилці з циклом), однакові
-// кнопки "← Назад" не можна відрізнити одну від одної — тому підписуємо
-// напрямом, куди саме веде кожна.
-function backtrackLabel(maze, fromKey, toKey, multiple) {
-  if (!multiple) return "← Назад";
+// Кнопка веде на вже відвідану клітинку, але якщо з неї ще є недосліджені
+// сусіди — це фактично рух ДАЛІ (через петлю), а не відступ, тож підпис
+// має казати "Вперед", а не "Назад". Коли варіантів декілька, ще й додаємо
+// напрям (вгору/вниз/ліворуч/праворуч), щоб однакові кнопки різнились.
+function moveButtonLabel(maze, visitedSet, hasKey, fromKey, toKey, multiple) {
+  const stillOpen = cellNeighbors(maze, toKey).some(
+    (nb) => !visitedSet.has(nb) && !(nb === maze.exitKey && maze.requiresKey && !hasKey)
+  );
+  const word = stillOpen ? "Вперед" : "Назад";
+  if (!multiple) return `← ${word}`;
   const from = maze.cells[fromKey];
   const to = maze.cells[toKey];
-  if (to.row < from.row) return "↑ Назад (вгору)";
-  if (to.row > from.row) return "↓ Назад (вниз)";
-  if (to.col < from.col) return "← Назад (ліворуч)";
-  return "→ Назад (праворуч)";
+  if (to.row < from.row) return `↑ ${word} (вгору)`;
+  if (to.row > from.row) return `↓ ${word} (вниз)`;
+  if (to.col < from.col) return `← ${word} (ліворуч)`;
+  return `→ ${word} (праворуч)`;
 }
 
 function taskCardTitle(activeQuestion, maze) {
@@ -593,7 +598,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                 <div className="flex flex-wrap justify-center gap-2">
                   {visitedNeighbors.map((k) => (
                     <button key={k} disabled={!!feedback} onClick={() => handleBacktrack(k)} className="rpg-panel rounded-xl px-3 py-1.5 text-xs text-violet-200/80 active:scale-95 transition">
-                      {backtrackLabel(maze, hero, k, visitedNeighbors.length > 1)}
+                      {moveButtonLabel(maze, visited, hasKey, hero, k, visitedNeighbors.length > 1)}
                     </button>
                   ))}
                 </div>
