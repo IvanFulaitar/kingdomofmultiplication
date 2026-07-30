@@ -134,7 +134,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
           <button
             onClick={() => { playModalOpen(); setShowExitConfirm(true); }}
             aria-label="Назад"
-            className="rpg-panel rpg-panel-gold w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
+            className="rpg-panel w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
           >
             ←
           </button>

@@ -6,7 +6,7 @@ export default function TopBar({ onBack, title, right }) {
       <button
         onClick={() => { playUiBack(); onBack(); }}
         aria-label="Назад"
-        className="rpg-panel rpg-panel-gold shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
+        className="rpg-panel shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
       >
         ←
       </button>

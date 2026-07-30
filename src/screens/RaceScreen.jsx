@@ -248,7 +248,7 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
 
       <div className="relative z-10 max-w-md mx-auto px-5 py-8 pb-14 min-h-dvh flex flex-col">
         <div className="battle-header">
-          <button onClick={() => { playModalOpen(); setShowExitConfirm(true); }} aria-label="Назад" className="rpg-panel rpg-panel-gold w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition">←</button>
+          <button onClick={() => { playModalOpen(); setShowExitConfirm(true); }} aria-label="Назад" className="rpg-panel w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition">←</button>
           <div className="rpg-panel rpg-panel-gold battle-title rounded-xl px-4 py-2 text-center">
             <div className="font-display gold-text font-extrabold text-base leading-tight truncate">✦ Перегони ✦</div>
             <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">

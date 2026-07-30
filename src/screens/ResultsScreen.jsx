@@ -139,7 +139,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
               <span className="retry-arrow-badge w-9 h-9 rounded-full flex items-center justify-center text-lg text-amber-100 shrink-0">↻</span>
               Спробувати ще раз
             </button>
-            <button onClick={() => { playUiBack(); onContinue(); }} className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
+            <button onClick={() => { playUiBack(); onContinue(); }} className="map-ghost-button w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
               <ArtImage src="/assets/icons/ui/map_scroll.png" fallback="🗺️" alt="" className="w-6 h-6 object-contain" />
               До карти
             </button>
@@ -164,7 +164,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
           className="relative z-10 w-full h-full object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.55)]"
         />
       </div>
-      <h2 className="font-display font-bold text-2xl text-amber-300 mb-1">Перемога!</h2>
+      <h2 className="font-display gold-text font-extrabold text-2xl mb-1">Перемога!</h2>
       <p className="text-white/60 mb-6">{meta.enemy.name} переможено</p>
 
       <div className="flex gap-2 mb-6">

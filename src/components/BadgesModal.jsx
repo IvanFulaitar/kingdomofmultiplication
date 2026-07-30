@@ -62,7 +62,7 @@ export default function BadgesModal({ progress, onClose }) {
             })}
           </div>
 
-          <button onClick={handleClose} className="close-button mt-7 w-full rounded-2xl py-3.5 font-display font-bold text-lg text-amber-50">
+          <button onClick={handleClose} className="close-button mt-7 w-full rounded-2xl py-3.5 font-display font-extrabold text-lg text-indigo-950">
             Закрити
           </button>
         </div>
