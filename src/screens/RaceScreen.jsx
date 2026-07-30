@@ -15,6 +15,17 @@ const RIVALS = [
   { id: "rivalB", name: "Гірський яструб", img: "/assets/monsters/4.png", fallback: "🦅", fillClass: "race-fill-teal" },
 ];
 
+// "Гумова" логіка наздоганяння (як у гоночних іграх): що більше гравець
+// відривається — то швидше суперник підтягується; якщо гравець відстає —
+// суперник трохи сповільнюється. Без цього перегони або вигравались "в
+// одну хвіртку" (сильний гравець), або були б безнадійними (слабкий).
+function rivalGain([baseMin, baseMax], gap) {
+  const catchUp = Math.max(-6, Math.min(14, gap * 0.35));
+  const min = Math.max(4, baseMin + catchUp);
+  const max = Math.max(min + 2, baseMax + catchUp);
+  return rand(Math.round(min), Math.round(max));
+}
+
 function Lane({ name, imgSrc, fallback, pct, fillClass, highlight }) {
   return (
     <div className="mb-3 last:mb-0">
@@ -81,10 +92,12 @@ export default function RaceScreen({ avatar, onBack, onComplete }) {
     if (correct) playCorrect(); else playWrong();
 
     const playerGain = correct ? (fast ? 22 : 15) : 0;
+    const gapA = positions.player - positions.rivalA;
+    const gapB = positions.player - positions.rivalB;
     const nextPositions = {
       player: Math.min(FINISH, positions.player + playerGain),
-      rivalA: Math.min(FINISH, positions.rivalA + rand(10, 18)),
-      rivalB: Math.min(FINISH, positions.rivalB + rand(8, 16)),
+      rivalA: Math.min(FINISH, positions.rivalA + rivalGain([10, 18], gapA)),
+      rivalB: Math.min(FINISH, positions.rivalB + rivalGain([8, 16], gapB)),
     };
     setPositions(nextPositions);
 
