@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { playModalClose } from "../game/sfx.js";
 import ArtImage from "./ArtImage.jsx";
 
 const MODE_COPY = {
@@ -55,6 +56,7 @@ export default function ExitConfirmModal({
   function confirmExit() {
     if (exiting) return;
     setExiting(true);
+    playModalClose();
     onExit();
   }
 
@@ -80,7 +82,7 @@ export default function ExitConfirmModal({
 
         <div className="flex flex-col gap-3">
           <button
-            onClick={onContinue}
+            onClick={() => { playModalClose(); onContinue(); }}
             className="exit-continue-button relative rounded-2xl py-3.5 px-4 font-display font-extrabold text-indigo-950 flex items-center justify-center gap-2.5"
           >
             <span className="exit-continue-shield" aria-hidden="true" />

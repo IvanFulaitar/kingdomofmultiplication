@@ -1,8 +1,10 @@
+import { playUiBack } from "../game/sfx.js";
+
 export default function TopBar({ onBack, title, right }) {
   return (
     <div className="flex items-center gap-3">
       <button
-        onClick={onBack}
+        onClick={() => { playUiBack(); onBack(); }}
         aria-label="Назад"
         className="rpg-panel rpg-panel-gold shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
       >

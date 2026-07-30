@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { playModalOpen, playModalClose, playPurchaseSuccess, playInsufficientCoins, playUiClick } from "../game/sfx.js";
 import ArtImage from "./ArtImage.jsx";
 
 const LOW_BALANCE_THRESHOLD = 30;
@@ -53,7 +54,10 @@ export default function AvatarPurchaseModal({
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    playModalOpen();
+    if (phase === "insufficient") setTimeout(playInsufficientCoins, 200);
     return () => { document.body.style.overflow = original; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Закриття: Escape на комп'ютері й системна кнопка "Назад" на телефоні —
@@ -76,6 +80,7 @@ export default function AvatarPurchaseModal({
   function safeClose() {
     if (closingRef.current) return;
     closingRef.current = true;
+    playModalClose();
     onCancel();
   }
 
@@ -88,10 +93,12 @@ export default function AvatarPurchaseModal({
       const success = onConfirm();
       setLoading(false);
       setPhase(success ? "success" : "insufficient");
+      if (success) playPurchaseSuccess(); else playInsufficientCoins();
     }, CONFIRM_DELAY_MS);
   }
 
   function handleSelectNow() {
+    playUiClick();
     onSelect();
     safeClose();
   }

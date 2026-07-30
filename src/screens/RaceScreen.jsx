@@ -7,8 +7,11 @@ import {
   tierForCompletions, TIER_LABEL, speedTierFor, playerBaseGain, streakBonus,
   opponentGain, pickRaceEvent, rankParticipants, liveStandings, starsForRace,
 } from "../game/raceEngine.js";
-import { playCorrect, playWrong, playWin, playFinalStretch } from "../game/sound.js";
 import { setMusicIntensity } from "../game/music.js";
+import {
+  preloadSfxGroup, playAnswerCorrect, playAnswerWrong, playModalOpen,
+  playRaceStart, playRaceBoost, playRaceOvertake, playRaceFinish,
+} from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
@@ -80,13 +83,14 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
   const statsRef = useRef({ correctCount: 0, missedCount: 0, responseTimeSum: 0, roundsAnswered: 0, bonusCoins: 0 });
   const answeredRef = useRef(false);
   const exitConfirmRef = useRef(false);
-  const finalStretchSoundRef = useRef(false);
 
   const isFinalStretch = round >= MAX_ROUNDS - 2;
 
   // Той самий головний мотив грає й тут — лише трохи енергійніше (перегони).
   useEffect(() => {
     setMusicIntensity("active");
+    preloadSfxGroup("race");
+    playRaceStart();
     return () => setMusicIntensity("calm");
   }, []);
 
@@ -139,7 +143,8 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
     stats.responseTimeSum += TIME_LIMIT - timeLeft;
     stats.roundsAnswered += 1;
 
-    if (correct) playCorrect(); else playWrong();
+    if (correct) playAnswerCorrect(); else playAnswerWrong();
+    if (correct && speedTier === "veryFast") playRaceBoost();
 
     setStreak(newStreak);
     setFeedback({ correct, chosen: option, gain: playerGain, speedTier, timedOut: !correct && timeLeft <= 0 });
@@ -147,6 +152,10 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
 
     const nextPlayerPos = positions.player + playerGain;
     const nextPositions = { player: nextPlayerPos, rivalA: positions.rivalA, rivalB: positions.rivalB };
+    const overtook = RIVALS.some(
+      (rival) => positions.player <= positions[rival.id] && nextPlayerPos > positions[rival.id]
+    );
+    if (overtook) playRaceOvertake();
 
     for (const rival of RIVALS) {
       const tierConfig = rival.tiers[tier];
@@ -189,7 +198,7 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
           stars: starsForRace({ place, accuracy, missedCount: stats.missedCount }),
         });
         setFinished(true);
-        if (place === 1) playWin();
+        playRaceFinish();
         return;
       }
 
@@ -201,10 +210,6 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
       setFeedback(null);
       setDashing(false);
       answeredRef.current = false;
-      if (nextRound === MAX_ROUNDS - 2 && !finalStretchSoundRef.current) {
-        finalStretchSoundRef.current = true;
-        playFinalStretch();
-      }
     }, 750);
   }
 
@@ -215,11 +220,11 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
     lastAnswerTimeRef.current = { player: TIME_LIMIT, rivalA: TIME_LIMIT / 2, rivalB: TIME_LIMIT / 2 };
     bestStreakRef.current = 0;
     statsRef.current = { correctCount: 0, missedCount: 0, responseTimeSum: 0, roundsAnswered: 0, bonusCoins: 0 };
-    finalStretchSoundRef.current = false;
     answeredRef.current = false;
     setQuestion(generatePracticeQuestion(null));
     setTimeLeft(TIME_LIMIT);
     setStreak(0);
+    playRaceStart();
     setFeedback(null);
     setDashing(false);
     setFinished(false);
@@ -243,7 +248,7 @@ export default function RaceScreen({ avatar, completions = 0, onBack, onComplete
 
       <div className="relative z-10 max-w-md mx-auto px-5 py-8 pb-14 min-h-dvh flex flex-col">
         <div className="battle-header">
-          <button onClick={() => setShowExitConfirm(true)} aria-label="Назад" className="rpg-panel rpg-panel-gold w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition">←</button>
+          <button onClick={() => { playModalOpen(); setShowExitConfirm(true); }} aria-label="Назад" className="rpg-panel rpg-panel-gold w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition">←</button>
           <div className="rpg-panel rpg-panel-gold battle-title rounded-xl px-4 py-2 text-center">
             <div className="font-display gold-text font-extrabold text-base leading-tight truncate">✦ Перегони ✦</div>
             <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">

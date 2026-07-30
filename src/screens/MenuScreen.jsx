@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import { QUESTS } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
-import { isSoundEnabled, setSoundEnabled, playClick } from "../game/sound.js";
+import { isSoundEnabled, setSoundEnabled } from "../game/sound.js";
 import { isMusicEnabled, setMusicEnabled } from "../game/music.js";
+import { playUiClick, playUiPrimary } from "../game/sfx.js";
 import { APP_VERSION, LAST_UPDATE } from "../version.js";
 import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
@@ -37,13 +38,13 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   function toggleSfx(next) {
     setSfxOn(next);
     setSoundEnabled(next);
-    if (next) playClick();
+    if (next) playUiClick();
   }
 
   function toggleMusic(next) {
     setMusicOn(next);
     setMusicEnabled(next);
-    if (sfxOn) playClick();
+    if (sfxOn) playUiClick();
   }
 
   useEffect(() => {
@@ -160,7 +161,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         </div>
 
         <div className="relative w-full">
-          <button onClick={() => { playClick(); onPlay(); }} className="hero-play-button relative w-full min-h-[66px]">
+          <button onClick={() => { playUiPrimary(); onPlay(); }} className="hero-play-button relative w-full min-h-[66px]">
             <span className="hero-play-shine" aria-hidden="true" />
             <span className="relative z-10 grid grid-cols-[1.5rem_1fr_1.5rem] items-center gap-2 px-8 h-full">
               <span className="hero-play-diamond justify-self-start" aria-hidden="true" />
@@ -175,15 +176,15 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         </div>
 
         <div className="w-full grid grid-cols-3 gap-3">
-          <button onClick={() => { playClick(); onBadges(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
+          <button onClick={() => { playUiClick(); onBadges(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/trophy.png" fallback="🏆" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
             <span className="font-bold text-sm text-white">Досягнення</span>
           </button>
-          <button onClick={() => { playClick(); onShop(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
+          <button onClick={() => { playUiClick(); onShop(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/shop.png" fallback="🛍️" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
             <span className="font-bold text-sm text-white">Магазин</span>
           </button>
-          <button onClick={() => { playClick(); onTraining(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
+          <button onClick={() => { playUiClick(); onTraining(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/target.png" fallback="🎯" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
             <span className="font-bold text-sm text-white">Тренування</span>
           </button>

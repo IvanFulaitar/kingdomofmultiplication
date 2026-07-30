@@ -1,4 +1,5 @@
 import { REGIONS, LEVEL_META, isLevelUnlocked } from "../data/regions.js";
+import { playUiClick } from "../game/sfx.js";
 import TopBar from "../components/TopBar.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 
@@ -89,7 +90,7 @@ export default function MapScreen({ progress, onBack, onSelect }) {
                       <button
                         key={id}
                         disabled={!unlocked}
-                        onClick={() => onSelect(id)}
+                        onClick={() => { playUiClick(); onSelect(id); }}
                         className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left transition ${
                           isDone
                             ? "rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98]"

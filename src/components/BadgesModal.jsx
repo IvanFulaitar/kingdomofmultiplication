@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { BADGES } from "../data/rewards.js";
+import { playModalOpen, playModalClose } from "../game/sfx.js";
 import LockBadge from "./LockBadge.jsx";
 import ArtImage from "./ArtImage.jsx";
 
@@ -19,11 +20,17 @@ export default function BadgesModal({ progress, onClose }) {
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    playModalOpen();
     return () => { document.body.style.overflow = original; };
   }, []);
 
+  function handleClose() {
+    playModalClose();
+    onClose();
+  }
+
   return (
-    <div className="modal-backdrop fixed inset-0 flex items-end sm:items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="modal-backdrop fixed inset-0 flex items-end sm:items-center justify-center z-50 p-4" onClick={handleClose}>
       <div
         className="modal-panel relative rounded-t-3xl sm:rounded-3xl w-full max-w-md screen-in"
         onClick={(e) => e.stopPropagation()}
@@ -55,7 +62,7 @@ export default function BadgesModal({ progress, onClose }) {
             })}
           </div>
 
-          <button onClick={onClose} className="close-button mt-7 w-full rounded-2xl py-3.5 font-display font-bold text-lg text-amber-50">
+          <button onClick={handleClose} className="close-button mt-7 w-full rounded-2xl py-3.5 font-display font-bold text-lg text-amber-50">
             Закрити
           </button>
         </div>

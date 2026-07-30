@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
+import { playUiClick } from "../game/sfx.js";
 import TopBar from "../components/TopBar.jsx";
 import Coin from "../components/Coin.jsx";
 import ArtImage from "../components/ArtImage.jsx";
@@ -38,7 +39,7 @@ export default function ShopScreen({ progress, onPurchaseAvatar, onSelectAvatar,
     const owned = progress.ownedAvatars.includes(av.id);
     const selected = progress.avatar === av.id;
     if (selected) return;
-    if (owned) { onSelectAvatar(av.id); return; }
+    if (owned) { playUiClick(); onSelectAvatar(av.id); return; }
     setPurchaseTarget(av);
   }
 

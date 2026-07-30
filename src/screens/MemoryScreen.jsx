@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { buildMemoryCards } from "../game/memory.js";
-import { playCorrect, playWrong, playWin } from "../game/sound.js";
+import {
+  preloadSfxGroup, playCardFlip, playPairMatch, playPairWrong, playMemoryComplete, playHintSfx, playModalOpen,
+} from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
@@ -26,7 +28,11 @@ export default function MemoryScreen({ onBack, onComplete }) {
   }, [showExitConfirm]);
 
   useEffect(() => {
-    if (done) playWin();
+    preloadSfxGroup("memory");
+  }, []);
+
+  useEffect(() => {
+    if (done) playMemoryComplete();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
 
@@ -46,6 +52,7 @@ export default function MemoryScreen({ onBack, onComplete }) {
 
   function handleFlip(card) {
     if (showExitConfirm || busyRef.current || flipped.includes(card.id) || matched.includes(card.id) || hintIds.length) return;
+    playCardFlip();
     const next = [...flipped, card.id];
     setFlipped(next);
 
@@ -58,12 +65,12 @@ export default function MemoryScreen({ onBack, onComplete }) {
       if (isMatch) {
         setResultMsg("match");
         setMatched((m) => [...m, first.id, second.id]);
-        playCorrect();
+        playPairMatch();
       } else {
         setTimeout(() => {
           setLastWrong(true);
           setResultMsg("miss");
-          playWrong();
+          playPairWrong();
         }, 550);
       }
       setTimeout(() => {
@@ -86,6 +93,7 @@ export default function MemoryScreen({ onBack, onComplete }) {
     setHints((h) => h - 1);
     busyRef.current = true;
     setHintIds(pick);
+    playHintSfx();
     setTimeout(() => { setHintIds([]); busyRef.current = false; }, 1200);
   }
 
@@ -95,7 +103,7 @@ export default function MemoryScreen({ onBack, onComplete }) {
 
       <div className="relative z-10 max-w-md mx-auto px-4 py-8 pb-10 min-h-dvh flex flex-col">
         <div className="flex items-start gap-2 w-full min-w-0">
-          <button onClick={() => setShowExitConfirm(true)} className="rpg-panel rpg-panel-gold rounded-xl w-11 h-11 flex items-center justify-center text-xl text-amber-100 active:scale-95 transition shrink-0 mt-2">←</button>
+          <button onClick={() => { playModalOpen(); setShowExitConfirm(true); }} className="rpg-panel rpg-panel-gold rounded-xl w-11 h-11 flex items-center justify-center text-xl text-amber-100 active:scale-95 transition shrink-0 mt-2">←</button>
 
           <div className="flex-1 min-w-0 relative mt-6">
             <div className="modal-ornament absolute -top-9 left-1/2 -translate-x-1/2 z-10" style={{ width: "3.25rem", height: "3.25rem", fontSize: "1.5rem", background: "linear-gradient(180deg, #fbcfe8, #f472b6 60%, #db2777)" }}>

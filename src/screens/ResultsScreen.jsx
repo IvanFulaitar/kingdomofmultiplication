@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { heroLevelFromXp } from "../game/progress.js";
+import { playUiClick, playUiPrimary, playUiBack, playStar, playCoin, playXpGain, playLevelUp } from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
 
 const levelIds = Object.keys(LEVEL_META).map(Number).sort((a, b) => a - b);
@@ -40,6 +42,22 @@ function victoryActionFor(levelId) {
 export default function ResultsScreen({ outcome, progress, onContinue, onRetry, onNextChallenge }) {
   const meta = LEVEL_META[outcome.levelId];
   const heroInfo = heroLevelFromXp(progress.xp);
+
+  // Невеликий "каскад" нагород, синхронний із появою зірок/монет/XP на
+  // екрані — кожен елемент дістає свій виразний звук замість одного
+  // узагальненого "перемога".
+  useEffect(() => {
+    if (!outcome.won) return;
+    const timers = [];
+    for (let i = 0; i < (outcome.newStars ?? 0); i++) {
+      timers.push(setTimeout(playStar, i * 150));
+    }
+    if (outcome.coinGain > 0) timers.push(setTimeout(playCoin, 300));
+    if (outcome.xpGain > 0) timers.push(setTimeout(playXpGain, 480));
+    if (outcome.leveledUp) timers.push(setTimeout(playLevelUp, 700));
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [outcome]);
 
   if (!outcome.won) {
     const region = REGIONS.find((r) => r.levels.includes(outcome.levelId));
@@ -117,11 +135,11 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
           </p>
 
           <div className="w-full flex flex-col gap-3 mt-auto">
-            <button onClick={onRetry} className="play-button relative w-full text-indigo-950 font-display font-extrabold text-lg py-4 rounded-2xl flex items-center justify-center gap-3">
+            <button onClick={() => { playUiClick(); onRetry(); }} className="play-button relative w-full text-indigo-950 font-display font-extrabold text-lg py-4 rounded-2xl flex items-center justify-center gap-3">
               <span className="retry-arrow-badge w-9 h-9 rounded-full flex items-center justify-center text-lg text-amber-100 shrink-0">↻</span>
               Спробувати ще раз
             </button>
-            <button onClick={onContinue} className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
+            <button onClick={() => { playUiBack(); onContinue(); }} className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
               <ArtImage src="/assets/icons/ui/map_scroll.png" fallback="🗺️" alt="" className="w-6 h-6 object-contain" />
               До карти
             </button>
@@ -191,7 +209,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
 
       <div className="w-full flex flex-col gap-3">
         <button
-          onClick={() => onNextChallenge(victoryAction.targetLevelId)}
+          onClick={() => { playUiPrimary(); onNextChallenge(victoryAction.targetLevelId); }}
           className="next-challenge-button relative w-full rounded-2xl px-4 py-4 text-indigo-950 font-display overflow-hidden"
         >
           <span className="next-challenge-shine" />
@@ -204,12 +222,12 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
           </span>
         </button>
 
-        <button onClick={onRetry} className="retry-button w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
+        <button onClick={() => { playUiClick(); onRetry(); }} className="retry-button w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
           <span className="retry-arrow-badge w-8 h-8 rounded-full flex items-center justify-center text-base text-amber-100 shrink-0">↻</span>
           Зіграти ще раз
         </button>
 
-        <button onClick={onContinue} className="map-ghost-button w-full rounded-2xl py-3 font-display font-bold text-base flex items-center justify-center gap-2.5">
+        <button onClick={() => { playUiBack(); onContinue(); }} className="map-ghost-button w-full rounded-2xl py-3 font-display font-bold text-base flex items-center justify-center gap-2.5">
           <ArtImage src="/assets/icons/ui/map_scroll.png" fallback="" alt="" className="w-5 h-5 object-contain" />
           До карти
         </button>

@@ -3,8 +3,11 @@ import { AVATARS } from "../data/cosmetics.js";
 import { CELL, generateMaze, tierForCompletions, cellNeighbors, mainPathAnchorIndex } from "../game/mazeGen.js";
 import { generateMazeQuestion, pickKind } from "../game/mazeQuestions.js";
 import { shuffle } from "../game/random.js";
-import { playCorrect, playWrong, playWin } from "../game/sound.js";
 import { setMusicIntensity } from "../game/music.js";
+import {
+  preloadSfxGroup, playAnswerCorrect, playAnswerWrong, playHeartLost, playDefeat, playModalOpen,
+  playMazeMove, playKeyPickup, playChestOpen, playHintSfx, playCoin, playTrapSfx, playPortal, playMazeExit,
+} from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
 import MazeIcon from "../components/MazeIcon.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
@@ -199,8 +202,11 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
   // Той самий головний мотив грає й тут — лише трохи енергійніше (лабіринт).
   useEffect(() => {
     setMusicIntensity("active");
+    preloadSfxGroup("maze");
     return () => setMusicIntensity("calm");
   }, []);
+
+  useEffect(() => { if (phase === "failed") playDefeat(); }, [phase]);
 
   useEffect(() => { exitConfirmRef.current = showExitConfirm; }, [showExitConfirm]);
 
@@ -335,7 +341,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     const already = collected.has(k);
     switch (cell.type) {
       case CELL.COIN:
-        if (!already) { markCollected(k); setCoins((c) => c + 5); showToast("+5 монет"); }
+        if (!already) { markCollected(k); setCoins((c) => c + 5); showToast("+5 монет"); playCoin(); }
         break;
       case CELL.HEART:
         if (!already) {
@@ -354,21 +360,22 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
             if (g >= 3) { showToast("Гном лише махає рукою — підказок і так максимум"); return g; }
             setHints((h) => h + 1);
             showToast("Мандрівний гном дає підказку!");
+            playHintSfx();
             return g + 1;
           });
         }
         break;
       case CELL.KEY:
-        if (!already) { markCollected(k); setHasKey(true); showToast("Ключ здобуто!"); }
+        if (!already) { markCollected(k); setHasKey(true); showToast("Ключ здобуто!"); playKeyPickup(); }
         break;
       case CELL.CHEST:
-        if (!already) { markCollected(k); setChestsFound((c) => c + 1); setCoins((c) => c + 15); showToast("Скриню відкрито! +15 монет"); }
+        if (!already) { markCollected(k); setChestsFound((c) => c + 1); setCoins((c) => c + 15); showToast("Скриню відкрито! +15 монет"); playChestOpen(); }
         break;
       case CELL.SECRET:
-        if (!already) { markCollected(k); setChestsFound((c) => c + 1); setSecretFound(true); setCoins((c) => c + 25); showToast("Таємну скриню знайдено!"); }
+        if (!already) { markCollected(k); setChestsFound((c) => c + 1); setSecretFound(true); setCoins((c) => c + 25); showToast("Таємну скриню знайдено!"); playChestOpen(); }
         break;
       case CELL.TRAP:
-        if (!already) setTrapCellKey(k); // окрема зустріч "Уникни пастки"
+        if (!already) { setTrapCellKey(k); playTrapSfx(); } // окрема зустріч "Уникни пастки"
         break;
       case CELL.PORTAL:
         if (!already) { markCollected(k); setPortalPending(k); }
@@ -385,7 +392,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
   }
 
   function startFinale() {
-    playWin();
+    playMazeExit();
     setPhase("finale");
     setFinaleStep(0);
   }
@@ -395,6 +402,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
   // плавно "їде" між координатами клітинок, замість миттєвого перескоку.
   function beginMove(targetKey) {
     if (moving) return;
+    playMazeMove();
     setMoving(true);
     setHeroDisplayKey(targetKey);
     setTimeout(() => {
@@ -434,12 +442,12 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     if (feedback || showExitConfirm || phase !== "playing") return;
     if (correct) {
       setFeedback({ correct: true });
-      playCorrect();
+      playAnswerCorrect();
       setTimeout(() => { setFeedback(null); setUnlockedForward(true); }, 500);
       return;
     }
-    playWrong();
     const nextStrikes = wrongStrikes + 1;
+    if (nextStrikes >= 2) playHeartLost(); else playAnswerWrong();
     if (nextStrikes >= 2) {
       setFeedback({ correct: false, chosenValue, lifeLost: true });
       setLives((l) => l - 1);
@@ -465,7 +473,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
   function handleTrapAnswer(value) {
     if (feedback || showExitConfirm || !trapCellKey || !trapQuestion) return;
     const correct = value === trapQuestion.correct;
-    if (correct) playCorrect(); else playWrong();
+    if (correct) playAnswerCorrect(); else playHeartLost();
     setFeedback({ correct, chosenValue: value, trap: true, lifeLost: !correct });
     if (correct) {
       setTimeout(() => {
@@ -486,6 +494,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
 
   function handlePortalConfirm() {
     if (!portalPending) return;
+    playPortal();
     const target = maze.portalTarget;
     setPortalPending(null);
     showToast("Портал переносить тебе вперед!");
@@ -503,12 +512,13 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     const toRemove = shuffle(wrongVals).slice(1);
     setEliminated((e) => new Set([...e, ...toRemove]));
     setHints((h) => h - 1);
+    playHintSfx();
   }
 
   function handleTreasureAnswer(value) {
     if (feedback || showExitConfirm || !treasureRound || !treasureQuestion) return;
     const correct = value === treasureQuestion.correct;
-    if (correct) playCorrect(); else playWrong();
+    if (correct) playAnswerCorrect(); else playAnswerWrong();
     setFeedback({ correct, chosenValue: value, treasure: true });
     setTimeout(() => {
       setFeedback(null);
@@ -577,7 +587,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
 
       <div className="relative z-10 max-w-md mx-auto px-5 py-8 pb-14 min-h-dvh flex flex-col">
         <div className="battle-header">
-          <button onClick={() => { if (canInteract) setShowExitConfirm(true); }} aria-label="Назад" className="rpg-panel rpg-panel-gold w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition">←</button>
+          <button onClick={() => { if (canInteract) { playModalOpen(); setShowExitConfirm(true); } }} aria-label="Назад" className="rpg-panel rpg-panel-gold w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition">←</button>
           <div className="rpg-panel rpg-panel-gold battle-title rounded-xl px-4 py-2 text-center">
             <div className="font-display gold-text font-extrabold text-base leading-tight truncate">✦ Лабіринт ✦</div>
             <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">

@@ -1,4 +1,5 @@
 import TopBar from "../components/TopBar.jsx";
+import { playUiPrimary } from "../game/sfx.js";
 
 function ModeIcon({ children, active }) {
   return (
@@ -31,7 +32,7 @@ export default function TrainingScreen({ onBack, onSelect }) {
 
         <div className="flex flex-col gap-3.5">
           <button
-            onClick={() => onSelect("memory")}
+            onClick={() => { playUiPrimary(); onSelect("memory"); }}
             className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition rounded-2xl p-4 flex items-center gap-4 text-left"
           >
             <ModeIcon active>🧠</ModeIcon>
@@ -43,7 +44,7 @@ export default function TrainingScreen({ onBack, onSelect }) {
           </button>
 
           <button
-            onClick={() => onSelect("maze")}
+            onClick={() => { playUiPrimary(); onSelect("maze"); }}
             className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition rounded-2xl p-4 flex items-center gap-4 text-left"
           >
             <ModeIcon active>🌀</ModeIcon>
@@ -55,7 +56,7 @@ export default function TrainingScreen({ onBack, onSelect }) {
           </button>
 
           <button
-            onClick={() => onSelect("race")}
+            onClick={() => { playUiPrimary(); onSelect("race"); }}
             className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition rounded-2xl p-4 flex items-center gap-4 text-left"
           >
             <ModeIcon active>🏁</ModeIcon>

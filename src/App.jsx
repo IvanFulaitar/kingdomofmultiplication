@@ -3,8 +3,8 @@ import { BADGES } from "./data/rewards.js";
 import { AVATARS } from "./data/cosmetics.js";
 import { LEVEL_META } from "./data/regions.js";
 import { getWeakFacts } from "./game/generateQuestion.js";
-import { playBadge } from "./game/sound.js";
 import { initMusic } from "./game/music.js";
+import { preloadCoreSfx, playAchievementSfx } from "./game/sfx.js";
 import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
   starsForMistakes, heroLevelFromXp,
@@ -52,6 +52,7 @@ export default function App() {
   // гучність/темп, див. setMusicIntensity у GameScreen/MazeScreen/RaceScreen).
   useEffect(() => {
     initMusic();
+    preloadCoreSfx();
   }, []);
 
   // Без цього перехід між екранами лишає стару прокрутку сторінки,
@@ -161,7 +162,7 @@ export default function App() {
     if (earned.length) {
       next.badges = [...p.badges, ...earned.map((b) => b.id)];
       setNewBadge(earned[0]);
-      playBadge();
+      playAchievementSfx();
     }
     next = checkQuests(next);
     const newHero = heroLevelFromXp(next.xp);

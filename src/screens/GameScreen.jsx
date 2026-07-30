@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel } from "../game/generateQuestion.js";
-import { playCorrect, playWrong, playWin } from "../game/sound.js";
 import { setMusicIntensity } from "../game/music.js";
+import { preloadSfxGroup, playAttack, playEnemyHit, playHeartLost, playVictory, playDefeat, playModalOpen } from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
@@ -44,6 +44,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   // Той самий головний мотив грає й тут — лише трохи енергійніше (бій).
   useEffect(() => {
     setMusicIntensity("active");
+    preloadSfxGroup("combat");
     return () => setMusicIntensity("calm");
   }, []);
 
@@ -89,7 +90,12 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
     setFeedback({ correct, chosen: option });
     if (correct) setCorrectCount((c) => c + 1);
     onAnswer(question.pair, correct, question.kind);
-    if (correct) playCorrect(); else playWrong();
+    if (correct) {
+      playAttack();
+      setTimeout(playEnemyHit, 90);
+    } else {
+      playHeartLost();
+    }
 
     setTimeout(() => {
       if (!correct) {
@@ -97,11 +103,11 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
         const newMistakes = mistakes + 1;
         setLives(newLives);
         setMistakes(newMistakes);
-        if (newLives <= 0) { onGameOver(correctCount); return; }
+        if (newLives <= 0) { playDefeat(); onGameOver(correctCount); return; }
       }
       const nextIndex = qIndex + 1;
       if (nextIndex >= QUESTIONS_PER_LEVEL) {
-        if (correct) playWin();
+        if (correct) playVictory();
         onFinish(correct ? mistakes : mistakes + 1);
       } else {
         setQIndex(nextIndex);
@@ -126,7 +132,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
       <div className="relative z-10 max-w-md mx-auto px-5 py-6 min-h-dvh flex flex-col w-full">
         <div className="battle-header">
           <button
-            onClick={() => setShowExitConfirm(true)}
+            onClick={() => { playModalOpen(); setShowExitConfirm(true); }}
             aria-label="Назад"
             className="rpg-panel rpg-panel-gold w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
           >
