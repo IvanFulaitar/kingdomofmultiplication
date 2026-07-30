@@ -49,6 +49,19 @@ function doorRiskClass(maze, neighborKey) {
   return "";
 }
 
+// Коли шляхів назад декілька (гравець на розвилці з циклом), однакові
+// кнопки "← Назад" не можна відрізнити одну від одної — тому підписуємо
+// напрямом, куди саме веде кожна.
+function backtrackLabel(maze, fromKey, toKey, multiple) {
+  if (!multiple) return "← Назад";
+  const from = maze.cells[fromKey];
+  const to = maze.cells[toKey];
+  if (to.row < from.row) return "↑ Назад (вгору)";
+  if (to.row > from.row) return "↓ Назад (вниз)";
+  if (to.col < from.col) return "← Назад (ліворуч)";
+  return "→ Назад (праворуч)";
+}
+
 function taskCardTitle(activeQuestion, maze) {
   if (!activeQuestion) return "";
   if (activeQuestion.mode === "deadend") return "Глухий кут — час повернутися";
@@ -569,7 +582,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                 <div className="flex flex-wrap justify-center gap-2">
                   {visitedNeighbors.map((k) => (
                     <button key={k} disabled={!!feedback} onClick={() => handleBacktrack(k)} className="rpg-panel rounded-xl px-3 py-1.5 text-xs text-violet-200/80 active:scale-95 transition">
-                      ← Назад
+                      {backtrackLabel(maze, hero, k, visitedNeighbors.length > 1)}
                     </button>
                   ))}
                 </div>
