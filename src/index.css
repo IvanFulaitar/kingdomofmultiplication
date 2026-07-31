@@ -2283,3 +2283,47 @@ html, body {
 .knowledge-score-transition {
   transition: color 0.4s ease;
 }
+
+/* =====================================================================
+   Перехід "Переглянути мій прогрес" на сторінці "Тренування"
+   (TrainingScreen.jsx) — компактна, свідомо менш акцентна картка, ніж
+   .rpg-panel-gold картки режимів (Пам'ять/Лабіринт/Перегони): темніший фон,
+   ТОНКА приглушена золота рамка, без сильного зовнішнього сяйва.
+   ===================================================================== */
+.training-progress-card {
+  background: linear-gradient(180deg, rgba(64, 51, 110, 0.55), rgba(30, 23, 66, 0.65));
+  border: 1px solid rgba(245, 185, 66, 0.28);
+  box-shadow: 0 4px 10px -6px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+@media (hover: hover) {
+  .training-progress-card:hover {
+    border-color: rgba(245, 185, 66, 0.5);
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+  .training-progress-card:hover .training-progress-chevron {
+    transform: translateX(2px);
+    color: rgba(245, 185, 66, 0.9);
+  }
+}
+.training-progress-card:active {
+  transform: scale(0.98);
+  border-color: rgba(245, 185, 66, 0.6);
+  box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+.training-progress-card:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(196, 181, 253, 0.75),
+    0 4px 10px -6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.training-progress-icon {
+  background: rgba(30, 23, 66, 0.6);
+  border: 1px solid rgba(245, 185, 66, 0.3);
+}
+.training-progress-chevron {
+  color: rgba(255, 255, 255, 0.35);
+  transition: transform 0.15s ease, color 0.15s ease;
+}

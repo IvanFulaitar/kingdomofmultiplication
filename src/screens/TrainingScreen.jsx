@@ -26,22 +26,10 @@ export default function TrainingScreen({ onBack, onSelect }) {
           <TopBar onBack={onBack} title="Тренування" />
         </div>
 
-        <div className="rpg-panel rounded-xl px-4 py-2.5 flex items-center gap-2 text-sm text-violet-100 mb-3">
+        <div className="rpg-panel rounded-xl px-4 py-2.5 flex items-center gap-2 text-sm text-violet-100 mb-6">
           <span className="text-amber-300">⭐</span>
           <span>Додаткові режими для практики — не впливають на карту королівства.</span>
         </div>
-
-        {/* Другорядне посилання на "Мої знання" — навмисно менш акцентне за
-            картки режимів нижче (немає rpg-panel-gold/кнопки "Грати"), бо
-            це не мінігра, а перегляд прогресу. Головний вхід — картка на
-            головному екрані; тут лише зручний ярлик під час тренування. */}
-        <button
-          onClick={() => { playUiClick(); onSelect("knowledge"); }}
-          className="w-full flex items-center gap-1.5 text-sm text-violet-200/80 hover:text-white transition mb-6 px-1"
-        >
-          <ArtImage src="/assets/icons/ui/book.png" fallback="📖" alt="" className="w-4 h-4 object-contain inline-flex items-center justify-center" />
-          Переглянути прогрес у "Моїх знаннях" →
-        </button>
 
         <div className="flex flex-col gap-3.5">
           <button
@@ -80,6 +68,30 @@ export default function TrainingScreen({ onBack, onSelect }) {
             <span className="play-button rounded-xl px-4 py-2 text-sm font-display font-bold text-indigo-950 shrink-0">Грати</span>
           </button>
         </div>
+
+        {/* Перехід до "Мої знання" — навмисно компактний і менш акцентний за
+            картки режимів вище (без rpg-panel-gold/кнопки "Грати"): це не
+            мінігра, а перехід до розділу прогресу. Головний, найпомітніший
+            вхід лишається карткою на головному екрані. */}
+        <button
+          onClick={() => { playUiClick(); onSelect("knowledge"); }}
+          aria-label="Переглянути навчальний прогрес у розділі Мої знання"
+          className="training-progress-card w-full min-h-[72px] rounded-2xl px-4 py-3 mt-5 flex items-center gap-3.5 text-left"
+        >
+          <span className="training-progress-icon w-11 h-11 rounded-xl flex items-center justify-center shrink-0">
+            <ArtImage
+              src="/assets/icons/ui/book.png"
+              fallback="📖"
+              alt=""
+              className="w-6 h-6 object-contain flex items-center justify-center text-lg"
+            />
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="font-display font-bold text-sm text-violet-50 truncate">Переглянути мій прогрес</div>
+            <div className="text-xs text-violet-200/70 mt-0.5 truncate">Дізнайся, які таблиці вже засвоєні</div>
+          </div>
+          <span className="training-progress-chevron shrink-0 text-lg" aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
   );
