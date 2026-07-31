@@ -31,12 +31,17 @@ export function computeMastery(stat) {
   return Math.round(raw * (0.5 + 0.5 * confidence));
 }
 
+// "file" — ім'я файлу в public/assets/icons/knowledge/ (без розширення).
+// Малюнків поки немає, тож MyKnowledgeScreen.jsx показує через ArtImage
+// (яка тихо показує "icon" emoji, якщо файл ще не додано) — щойно хтось
+// покладе PNG із такою назвою в цю папку, картинка підхопиться сама, без
+// жодних правок коду. Дивись art-generation-prompts-knowledge-icons.md.
 const TIERS = [
-  { max: 0, tier: "untried", icon: "⚪", label: "Ще не пробували" },
-  { max: 39, tier: "weak", icon: "🔴", label: "Потрібно потренувати" },
-  { max: 69, tier: "almost", icon: "🟡", label: "Майже засвоєно" },
-  { max: 89, tier: "good", icon: "🟢", label: "Добре знаю" },
-  { max: 100, tier: "master", icon: "⭐", label: "Майстер" },
+  { max: 0, tier: "untried", icon: "⚪", file: "knowledge_untried", label: "Ще не пробували" },
+  { max: 39, tier: "weak", icon: "🔴", file: "knowledge_weak", label: "Потрібно потренувати" },
+  { max: 69, tier: "almost", icon: "🟡", file: "knowledge_almost", label: "Майже засвоєно" },
+  { max: 89, tier: "good", icon: "🟢", file: "knowledge_good", label: "Добре знаю" },
+  { max: 100, tier: "master", icon: "⭐", file: "knowledge_master", label: "Майстер" },
 ];
 
 // attempts===0 -> окремий нейтральний статус "Ще не пробували" (не 🔴 —

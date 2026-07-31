@@ -1,5 +1,6 @@
 import { useState } from "react";
 import TopBar from "../components/TopBar.jsx";
+import ArtImage from "../components/ArtImage.jsx";
 import { playUiPrimary, playUiBack } from "../game/sfx.js";
 import { computeMastery, masteryStatus, tableMastery } from "../game/mastery.js";
 
@@ -45,7 +46,12 @@ export default function MyKnowledgeScreen({ progress, onBack }) {
                   className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition rounded-2xl p-4 flex items-center gap-4 text-left"
                 >
                   <span className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-indigo-950/50 border border-white/10">
-                    {m.icon}
+                    <ArtImage
+                      src={`/assets/icons/knowledge/${m.file}.png`}
+                      fallback={m.icon}
+                      alt=""
+                      className="w-9 h-9 object-contain flex items-center justify-center text-2xl"
+                    />
                   </span>
                   <div className="flex-1">
                     <div className="font-display font-bold text-base">Таблиця на {n}</div>
@@ -72,7 +78,12 @@ export default function MyKnowledgeScreen({ progress, onBack }) {
                   key={m}
                   className="rpg-panel rounded-xl px-4 py-3 flex items-center gap-3"
                 >
-                  <span className="text-xl shrink-0">{status.icon}</span>
+                  <ArtImage
+                    src={`/assets/icons/knowledge/${status.file}.png`}
+                    fallback={status.icon}
+                    alt=""
+                    className="w-6 h-6 object-contain flex items-center justify-center text-xl shrink-0"
+                  />
                   <div className="flex-1 font-body text-sm text-violet-100">
                     {selected} × {m} = {selected * m}
                   </div>
