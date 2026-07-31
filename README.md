@@ -126,6 +126,12 @@ npm run build
 `improvement-plan.md` (старіший, менш пріоритетний список ідей —
 здебільшого вже покритий/уточнений у `launch-plan.md`).
 
+Окремо — `backend-architecture-plan.md`: довідковий план переходу з
+`localStorage` на серверне збереження (React+Vite+TS / NestJS /
+PostgreSQL+Prisma / Cloudflare Pages / Railway), коли/якщо гра виросте з
+суто локального прогресу. Не блокує публічний реліз — це задокументований
+напрямок на майбутнє, код поки не змінювався.
+
 Інші ідеї для продовження:
 - Дістати чисту логіку з `game/` (без React) в окремі unit-тести (Vitest/Jest).
 - Винести кольори/шрифти з `index.css` у `tailwind.config.js` (`theme.extend`),
