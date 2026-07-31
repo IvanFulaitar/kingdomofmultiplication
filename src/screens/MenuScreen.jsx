@@ -26,7 +26,7 @@ function ToggleSwitch({ checked, onChange, label }) {
   );
 }
 
-export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onExportSave, onImportSave }) {
+export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, onExportSave, onImportSave }) {
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
@@ -192,6 +192,16 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             <div className="h-full menu-xp-fill rounded-full transition-all" style={{ width: `${xpPct}%` }} />
             <span className="menu-xp-glow-dot absolute top-1/2 -translate-y-1/2" style={{ left: `calc(${xpPct}% - 5px)` }} aria-hidden="true" />
           </div>
+          {/* Другий (не основний) вхід у "Мої знання" — компактне посилання
+              прямо в панелі героя, поруч із досвідом, з яким прогрес
+              природно асоціюється. Основний вхід — картка нижче. */}
+          <button
+            onClick={() => { playUiClick(); onKnowledge(); }}
+            className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-violet-200 hover:text-white transition ml-auto"
+          >
+            <ArtImage src="/assets/icons/ui/book.png" fallback="📖" alt="" className="w-3.5 h-3.5 object-contain inline-flex items-center justify-center" />
+            Прогрес →
+          </button>
         </div>
 
         <div className="w-full menu-panel rounded-3xl pt-8 pb-4 px-4 relative">
@@ -235,18 +245,37 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           <span className="hero-play-sparkle hero-play-sparkle-br" aria-hidden="true" />
         </div>
 
-        <div className="w-full grid grid-cols-3 gap-3">
+        {/* 2×2: "Мої знання" — прогрес/статистика, а не ігровий режим, тож
+            стоїть поруч із "Досягнення" (теж прогрес), окремо від
+            "Тренування" (де раніше жила помилково, серед мінігор). */}
+        <div className="w-full grid grid-cols-2 gap-3">
           <button onClick={() => { playUiClick(); onBadges(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/trophy.png" fallback="🏆" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
             <span className="font-bold text-sm text-white">Досягнення</span>
+            {/* Невидимий підпис-заповнювач — лише щоб рядок сітки мав ту
+                саму висоту, що й картка "Мої знання" (у якої підпис видимий
+                від sm і вище). Сам текст ніколи не бачать (invisible). */}
+            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">Прогрес навчання</span>
+          </button>
+          <button onClick={() => { playUiClick(); onKnowledge(); }} className="menu-nav-button rounded-[20px] py-4 relative flex flex-col items-center gap-1.5">
+            {hasNewKnowledge && (
+              <span className="menu-nav-badge absolute -top-1.5 -right-1.5 rounded-full px-2 py-0.5 text-[10px] font-display font-extrabold">
+                Нове
+              </span>
+            )}
+            <ArtImage src="/assets/icons/ui/book.png" fallback="📖" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
+            <span className="font-bold text-sm text-white">Мої знання</span>
+            <span className="hidden sm:block text-[11px] text-violet-200/70 -mt-1">Прогрес навчання</span>
           </button>
           <button onClick={() => { playUiClick(); onShop(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/shop.png" fallback="🛍️" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
             <span className="font-bold text-sm text-white">Магазин</span>
+            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">Прогрес навчання</span>
           </button>
           <button onClick={() => { playUiClick(); onTraining(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/target.png" fallback="🎯" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
             <span className="font-bold text-sm text-white">Тренування</span>
+            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">Прогрес навчання</span>
           </button>
         </div>
 

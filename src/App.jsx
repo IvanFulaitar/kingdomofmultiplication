@@ -3,6 +3,7 @@ import { BADGES } from "./data/rewards.js";
 import { AVATARS } from "./data/cosmetics.js";
 import { LEVEL_META } from "./data/regions.js";
 import { getWeakFacts } from "./game/generateQuestion.js";
+import { hasNewMasteryActivity } from "./game/mastery.js";
 import { initMusic } from "./game/music.js";
 import { preloadCoreSfx, playAchievementSfx } from "./game/sfx.js";
 import {
@@ -48,6 +49,11 @@ export default function App() {
   const [showBadges, setShowBadges] = useState(false);
   const [newBadge, setNewBadge] = useState(null);
   const [saveWarning, setSaveWarning] = useState(null);
+  // "Мої знання" тепер відкривається з трьох різних місць (головна кнопка
+  // навігації, кнопка "Прогрес" у панелі героя, другорядне посилання в
+  // "Тренуванні") — знаємо, куди повертатись по "Назад", не прив'язуючи цей
+  // екран назавжди лише до одного з них.
+  const [knowledgeReturn, setKnowledgeReturn] = useState("menu");
 
   // localStorage читається синхронно, тому завантаження прогресу тут
   // не потребує async/await (на відміну від артефактної версії).
@@ -297,6 +303,22 @@ export default function App() {
     return true;
   }
 
+  // Відмічає, що гравець щойно бачив свій прогрес (лише для бейджа "Нове"
+  // на головному екрані, див. hasNewMasteryActivity у mastery.js) — не
+  // критична дія, тож немає сенсу писати таймстемп, якщо він уже свіжіший
+  // (наприклад, повторний виклик з того самого рендера).
+  function markKnowledgeSeen() {
+    const ts = Date.now();
+    if ((progress.knowledgeLastSeenAt ?? 0) >= ts) return;
+    persist({ ...progress, knowledgeLastSeenAt: ts });
+  }
+
+  function openKnowledge(returnTo) {
+    markKnowledgeSeen();
+    setKnowledgeReturn(returnTo);
+    setScreen("knowledge");
+  }
+
   function startNextChallenge(levelId) {
     if (levelId && LEVEL_META[levelId]) {
       setActiveLevel(levelId);
@@ -322,6 +344,8 @@ export default function App() {
           onBadges={() => setShowBadges(true)}
           onShop={() => setScreen("shop")}
           onTraining={() => setScreen("training")}
+          onKnowledge={() => openKnowledge("menu")}
+          hasNewKnowledge={hasNewMasteryActivity(progress.facts, progress.knowledgeLastSeenAt ?? 0)}
           onExportSave={exportSave}
           onImportSave={importSave}
         />
@@ -341,11 +365,17 @@ export default function App() {
         {screen === "training" && (
           <TrainingScreen
             onBack={() => setScreen("menu")}
-            onSelect={(m) => setScreen(m === "race" ? "raceDifficulty" : m)}
+            onSelect={(m) => {
+              // "Мої знання" — не тренувальний режим (не веде через
+              // спільний "Грати"-роутинг нижче), лише окреме посилання на
+              // прогрес; onBack звідти має повернути саме в "Тренування".
+              if (m === "knowledge") { openKnowledge("training"); return; }
+              setScreen(m === "race" ? "raceDifficulty" : m);
+            }}
           />
         )}
         {screen === "knowledge" && (
-          <MyKnowledgeScreen progress={progress} onBack={() => setScreen("training")} />
+          <MyKnowledgeScreen progress={progress} onBack={() => setScreen(knowledgeReturn)} />
         )}
         {screen === "memory" && (
           <MemoryScreen

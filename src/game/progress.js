@@ -55,6 +55,12 @@ export function defaultProgress() {
     // поля) отримують true заднім числом, якщо в них уже є прогрес.
     onboardingComplete: false,
     onboardingConfidence: null, // "beginner" | "intermediate" | "confident" — лише інформаційне
+    // Коли гравець востаннє відкривав екран "Мої знання" — використовується
+    // лише для бейджа "Нове" на головному екрані (src/game/mastery.js:
+    // hasNewMasteryActivity порівнює з lastAnsweredAt кожного факту).
+    // 0 (а не null/Date.now()), щоб старі збереження без жодного факту не
+    // отримали бейдж одразу — лише коли з'явиться реальна нова активність.
+    knowledgeLastSeenAt: 0,
     totalStars: 0, coins: 0, xp: 0,
     streak: { current: 0, lastPlayedDate: null },
     levels: {}, badges: [], facts: {},
@@ -117,8 +123,9 @@ function migrateProgress(p) {
     (p.totalStars ?? 0) > 0 ||
     (p.badges ?? []).length > 0;
   const onboardingComplete = p.onboardingComplete === true || hasPriorProgress;
+  const knowledgeLastSeenAt = p.knowledgeLastSeenAt ?? 0;
 
-  return { ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily, daily, onboardingComplete };
+  return { ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily, daily, onboardingComplete, knowledgeLastSeenAt };
 }
 
 // Версійна міграція формату збереження (окремо від migrateProgress вище,
@@ -203,8 +210,7 @@ function finishLoad(parsed) {
   return p;
 }
 
-// Це справжній проєкт поза Claude, тож прогрес зберігається у звичайному
-// localStorage браузера — а не window.storage, який працював тільки в чаті.
+// Прогрес зберігається у звичайному localStorage браузера.
 //
 // Порядок відновлення при пошкодженому основному записі:
 // 1. Спробувати резервну копію (BACKUP_KEY) — це попередній вдалий save.

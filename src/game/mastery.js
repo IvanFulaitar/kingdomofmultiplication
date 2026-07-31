@@ -66,6 +66,19 @@ export function factsForTable(facts, number) {
   return result;
 }
 
+// Чи з'явилась хоч якась нова активність у фактах з моменту, коли гравець
+// востаннє відкривав "Мої знання" (progress.knowledgeLastSeenAt) —
+// використовується лише для бейджа "Нове" на головному екрані. lastAnsweredAt
+// з'являється в App.jsx:recordFact лише для фактів, відповіданих ПІСЛЯ появи
+// цієї фічі — старі факти без цього поля просто не рахуються (не показуємо
+// бейдж заднім числом за давню активність).
+export function hasNewMasteryActivity(facts, sinceTs = 0) {
+  for (const stat of Object.values(facts ?? {})) {
+    if ((stat?.lastAnsweredAt ?? 0) > sinceTs) return true;
+  }
+  return false;
+}
+
 // Агрегований статус для цілої таблиці (наприклад, усе, де множник — 7):
 // зважене за кількістю спроб середнє з mastery кожного окремого факту.
 export function tableMastery(facts, number) {
