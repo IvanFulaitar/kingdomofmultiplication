@@ -178,14 +178,15 @@ export function overallMastery(facts) {
   const tables = MULTIPLIER_RANGE.map((n) => ({ number: n, ...tableMastery(facts, n) }));
   const totalAttempts = tables.reduce((s, t) => s + t.attempts, 0);
   if (totalAttempts === 0) {
-    return { score: 0, attempts: 0, goodCount: 0, weakCount: 0, untriedCount: tables.length, tables };
+    return { score: 0, attempts: 0, goodCount: 0, almostCount: 0, weakCount: 0, untriedCount: tables.length, tables };
   }
   const weightedSum = tables.reduce((s, t) => s + t.score * t.attempts, 0);
   const score = Math.round(weightedSum / totalAttempts);
   const goodCount = tables.filter((t) => t.tier === "good" || t.tier === "master").length;
+  const almostCount = tables.filter((t) => t.tier === "almost").length;
   const weakCount = tables.filter((t) => t.tier === "weak").length;
   const untriedCount = tables.filter((t) => t.tier === "untried").length;
-  return { score, attempts: totalAttempts, goodCount, weakCount, untriedCount, tables };
+  return { score, attempts: totalAttempts, goodCount, almostCount, weakCount, untriedCount, tables };
 }
 
 // Чи з'явилась хоч якась нова активність у фактах з моменту, коли гравець
@@ -268,6 +269,83 @@ export function weakestFacts(facts, { limit = 8, excludeUntried = true, needsWor
 
   return eligible.slice(0, limit).map((e) => {
     const [a, b] = e.pair.split("x").map(Number);
-    return { pair: e.pair, a, b, score: e.score, attempts: e.attempts };
+    return { pair: e.pair, a, b, score: e.score, attempts: e.attempts, tier: e.tier };
   });
+}
+
+const PRACTICE_SESSION_MIN = 6;
+const PRACTICE_SESSION_MAX = 8;
+
+// Тренування ОДНІЄЇ конкретної таблиці (розділ 3.6 технічного завдання):
+// якщо явно слабких прикладів мало (наприклад, лише 2 у статусі "Потрібно
+// повторити"/"Майже засвоєно"), сесія з лише 2 завдань — це не повноцінне
+// тренування. Добираємо до 6-8 завдань у такому порядку пріоритету:
+//   1. факти, які реально потребують уваги (weak/almost);
+//   2. факти з недостатньою кількістю даних (0-2 спроби в МЕЖАХ цієї
+//      таблиці) — дитина вже свідомо обрала тренувати саме цю таблицю,
+//      тож зустріти в ній ще не спробуваний приклад доречно (на відміну
+//      від глобального "Потренувати слабкі приклади", який untried не займає);
+//   3. 1-2 вже добре засвоєних факти — для закріплення.
+// Порядок пар не нормалізується (як і всюди) — a завжди tableNumber, b —
+// партнер, так рядки "N × m" читаються природно в межах цієї таблиці.
+export function buildTablePracticePool(facts, tableNumber, { min = PRACTICE_SESSION_MIN, max = PRACTICE_SESSION_MAX } = {}) {
+  const entries = tableFacts(facts, tableNumber).map((e) => {
+    const attempts = e.stat ? (e.stat.correct ?? 0) + (e.stat.wrong ?? 0) : 0;
+    const tier = attempts >= MIN_ATTEMPTS_FOR_TIER ? masteryStatus(e.stat).tier : "insufficient";
+    const score = e.stat ? computeMastery(e.stat) : 0;
+    return { m: e.m, pair: e.pair, stat: e.stat, attempts, tier, score };
+  });
+
+  const weakish = entries.filter((e) => e.tier === "weak" || e.tier === "almost").sort((a, b) => a.score - b.score);
+  const insufficient = entries.filter((e) => e.tier === "insufficient");
+  // Серед добре засвоєних для закріплення — теж від найслабшого (95% ближчий
+  // до потреби повторити, ніж 100%), не довільно.
+  const solid = entries.filter((e) => e.tier === "good" || e.tier === "master").sort((a, b) => a.score - b.score);
+
+  const picked = [];
+  for (const e of weakish) {
+    if (picked.length >= max) break;
+    picked.push(e);
+  }
+  for (const e of insufficient) {
+    if (picked.length >= max) break;
+    picked.push(e);
+  }
+  // Закріплення — ЗАВЖДИ не більше 1-2 фактів, незалежно від того, чи
+  // дотягнули загалом до "min": мета — трохи розбавити сесію вже знайомим
+  // успіхом, а не штучно розтягувати повністю засвоєну таблицю до 6-8
+  // питань лише тому, що "так треба". Якщо таблиця вже вся "Добре"/
+  // "Майстер" (немає weak/insufficient узагалі), сесія лишається короткою
+  // (1-2 приклади на легке повторення) — це свідомий вибір, не баг.
+  let reinforcementAdded = 0;
+  for (const e of solid) {
+    if (picked.length >= max || reinforcementAdded >= 2) break;
+    picked.push(e);
+    reinforcementAdded++;
+  }
+
+  return picked.map((e) => ({
+    pair: e.pair, a: tableNumber, b: e.m, score: e.score, attempts: e.attempts, tier: e.tier,
+  }));
+}
+
+// Пул для кнопки "Потренувати слабкі приклади" на головному екрані (розділ
+// 2.7) — на відміну від таблично-обмеженого варіанта вище, тут НІКОЛИ не
+// займаємо ще не вивчене (дитина не обирала свідомо якусь одну тему, тож
+// зустріти щось геть нове було б несподіванкою, а не тренуванням). "mode"
+// визначає і текст кнопки, і заголовок екрана тренування:
+//   "weak"   — є реально слабкі (🔴) приклади;
+//   "improve"— слабких немає, але є "майже засвоєні" (🟡), варто дотягнути;
+//   "review" — усе вже добре/майстер — легке тренування на закріплення;
+//   "none"   — узагалі ще нічого не пробували (свіжий гравець) -> нема що
+//              тренувати, кнопку варто ховати.
+export function buildOverviewPracticePool(facts, { limit = 10 } = {}) {
+  const weak = weakestFacts(facts, { limit });
+  if (weak.length) {
+    const mode = weak.some((f) => f.tier === "weak") ? "weak" : "improve";
+    return { pool: weak, mode };
+  }
+  const attempted = weakestFacts(facts, { limit, needsWork: false });
+  if (!attempted.length) return { pool: [], mode: "none" };
+  return { pool: attempted, mode: "review" };
 }

@@ -695,6 +695,23 @@ html, body {
   background: rgba(255,255,255,0.04);
   border: 2px solid rgba(255,255,255,0.06);
 }
+/* "Мої знання" — тренування (WeakPracticeScreen.jsx), перша помилка в
+   питанні (розділ 4.4/4.5): дозволяємо повторну спробу, тож НЕ фарбуємо
+   кнопку в суцільний тривожний червоний (це залишається для другої,
+   фінальної помилки — .answer-btn-wrong вище), лише м'який коралевий
+   контур і коротке тремтіння. */
+.answer-btn-wrong-retry {
+  background: linear-gradient(180deg, rgba(90, 70, 145, 0.95), rgba(42, 32, 84, 0.97));
+  border: 2px solid rgba(251, 113, 133, 0.75);
+  box-shadow: 0 0 14px rgba(251, 113, 133, 0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+@keyframes knowledge-shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-5px); }
+  40%, 60% { transform: translateX(5px); }
+}
+.knowledge-shake { animation: knowledge-shake 0.4s ease; }
 
 @keyframes feedback-pop { 0% { opacity: 0; transform: translateY(6px) scale(0.9); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 .feedback-pop { animation: feedback-pop 0.25s ease; }
@@ -2118,7 +2135,9 @@ html, body {
    за тіером — лише rgba-акцент рамки нижче (.knowledge-card-*). */
 .knowledge-card {
   background: linear-gradient(165deg, rgba(56, 44, 100, 0.85), rgba(22, 17, 46, 0.92));
-  border: 1px solid rgba(245, 185, 66, 0.28);
+  /* Тонша за попередню (було 0.28) — статус несуть іконка/прогрес-бар/назва
+     одночасно, рамка лише легкий акцент, не суцільна кольорова "заливка". */
+  border: 1px solid rgba(245, 185, 66, 0.16);
   box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -2149,6 +2168,13 @@ html, body {
   line-height: 1;
   transition: color 0.15s ease;
 }
+/* Помітніша стрілка на картках огляду (розділ 2.5: "зробити стрілку
+   помітнішою") — трохи більша й світліша за базову. */
+.knowledge-chevron-lg {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.7rem;
+  line-height: 1;
+}
 
 /* Тонкий прогрес-бар під назвою/статусом — темний трек, м'яке (не яскраве)
    світіння активної частини, колір відповідає тіеру. */
@@ -2163,6 +2189,50 @@ html, body {
   height: 100%;
   border-radius: 999px;
   transition: width 0.5s ease, background 0.4s ease;
+}
+/* Товстіший варіант для зведеної панелі (розділ 2.3): темний матовий трек,
+   легкий верхній глянець і м'яке світіння на передньому краї заповнення. */
+.knowledge-progress-track-lg {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.knowledge-progress-fill-lg {
+  position: relative;
+  height: 100%;
+  border-radius: 999px;
+}
+.knowledge-progress-fill-lg::before {
+  content: "";
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 45%;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+}
+.knowledge-progress-fill-lg::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+  width: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  filter: blur(3px);
+  opacity: 0.75;
+}
+/* Заповнення "накочується" при відкритті екрана, а не одразу зʼявляється
+   на повну довжину (розділ 2.3: "анімувати заповнення при відкритті"). */
+@keyframes knowledge-fill-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.knowledge-fill-animate {
+  transform-origin: left center;
+  animation: knowledge-fill-grow 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .knowledge-fill-untried { background: rgba(255, 255, 255, 0.25); }
 .knowledge-fill-weak {
@@ -2202,18 +2272,31 @@ html, body {
   white-space: nowrap;
 }
 
-/* Менш формальний бейдж "Повторити" на рядку окремого прикладу (розділ 7) —
-   м'якший, фіолетово-рожевий, а не суцільний тривожний червоний. */
-.knowledge-badge-repeat {
-  background: rgba(225, 29, 72, 0.22);
-  border: 1px solid rgba(225, 29, 72, 0.5);
-  color: #ffd7de;
+/* Дружній, ДІЄВИЙ бейдж "Потренувати" на рядку окремого прикладу (розділ
+   3.4) — замінює колишній суцільно-червоний "Повторити": тепер це
+   фіолетово-золота капсула без тривожного червоного заливання, і вона
+   реально клікабельна (запускає тренування саме цього прикладу). Слабкі
+   приклади можуть мати коралевий акцент рамки картки-рядка, але НІКОЛИ
+   суцільну червону заливку самого бейджа. */
+.knowledge-badge-practice {
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.35), rgba(124, 58, 237, 0.22));
+  border: 1px solid rgba(196, 181, 253, 0.55);
+  color: #fdf0d5;
   font-size: 0.65rem;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 999px;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, border-color 0.15s ease;
 }
+@media (hover: hover) {
+  .knowledge-badge-practice:hover {
+    background: linear-gradient(180deg, rgba(245, 185, 66, 0.35), rgba(217, 143, 30, 0.25));
+    border-color: rgba(245, 185, 66, 0.6);
+  }
+}
+.knowledge-badge-practice:active { transform: scale(0.95); }
 
 /* Банер з автоматичною рекомендацією (звичайний і "усе засвоєно"). */
 .knowledge-recommend-banner {
@@ -2226,22 +2309,136 @@ html, body {
   border: 1px solid rgba(16, 185, 129, 0.4);
   color: #b7f5d8;
 }
-
-/* Перемикач сортування — компактні пігулки, активна виділяється золотом. */
-.knowledge-sort-btn {
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(216, 204, 255, 0.75);
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+/* Банер-рекомендація тепер клікабельний (розділ 2.2 — переходить одразу
+   до відповідної таблиці), тож потребує власних hover/press станів. */
+.knowledge-recommend-banner-tappable {
+  transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease;
 }
-.knowledge-sort-btn-active {
-  background: linear-gradient(180deg, rgba(245, 185, 66, 0.9), rgba(210, 145, 30, 0.9));
+@media (hover: hover) {
+  .knowledge-recommend-banner-tappable:hover {
+    filter: brightness(1.12);
+    box-shadow: 0 0 14px rgba(245, 185, 66, 0.35);
+  }
+}
+.knowledge-recommend-banner-tappable:active { transform: scale(0.98); }
+
+/* Перемикач сортування — компактний segmented control (розділ 2.4):
+   активна половина — золота заливка + темно-фіолетовий текст + м'яка
+   тінь; неактивна — темно-фіолетовий фон + тонка приглушена рамка +
+   світло-лавандовий текст. */
+.knowledge-segmented {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.knowledge-segmented-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(30, 23, 66, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(216, 204, 255, 0.7);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.knowledge-segmented-btn-active {
+  background: linear-gradient(180deg, rgba(245, 185, 66, 0.95), rgba(210, 145, 30, 0.95));
   border-color: rgba(245, 185, 66, 0.9);
   color: #241c4a;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.5);
+}
+
+/* Головна кнопка дії на всіх трьох екранах "Мої знання" (розділ 2.7/3.6) —
+   окрема від .next-challenge-button (яка й далі використовується деінде в
+   грі): темно-фіолетовий зовнішній контур замість коричневого, трохи менша
+   висота (задається padding у розмітці), і текст навмисно темно-фіолетовий
+   (text-indigo-950 у розмітці), а не дрібний білий на золотому. */
+.knowledge-cta-button {
+  background: linear-gradient(180deg, #fff08a 0%, #ffc83d 42%, #f59e0b 72%, #d97706 100%);
+  border: 2px solid rgba(49, 32, 92, 0.85);
+  box-shadow:
+    0 0 0 2px rgba(255, 236, 150, 0.9),
+    0 0 20px rgba(245, 185, 66, 0.35),
+    0 10px 20px -8px rgba(22, 13, 55, 0.85),
+    inset 0 2px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -3px 6px rgba(122, 63, 8, 0.22);
+  transition: transform 0.14s ease, box-shadow 0.18s ease, filter 0.15s ease;
+}
+@media (hover: hover) {
+  .knowledge-cta-button:hover { filter: brightness(1.05); }
+}
+.knowledge-cta-button:active {
+  transform: translateY(2px) scale(0.985);
+  box-shadow:
+    0 0 0 2px rgba(255, 236, 150, 0.9),
+    0 0 14px rgba(245, 185, 66, 0.45),
+    0 5px 10px -6px rgba(22, 13, 55, 0.8),
+    inset 0 2px 8px rgba(87, 45, 7, 0.3);
+}
+.knowledge-cta-button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255, 236, 150, 0.9),
+    0 0 0 5px rgba(196, 181, 253, 0.75),
+    0 10px 20px -8px rgba(22, 13, 55, 0.85);
+}
+
+/* Другорядні (violet) кнопки-дії — "Потренувати цей приклад"/"Продовжити"/
+   "Потренувати ще раз", і приглушений варіант для "Закрити". */
+.knowledge-secondary-button {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.9), rgba(76, 29, 149, 0.95));
+  border: 2px solid rgba(196, 181, 253, 0.5);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+@media (hover: hover) {
+  .knowledge-secondary-button:hover { filter: brightness(1.12); }
+}
+.knowledge-secondary-button:active { transform: translateY(1px) scale(0.98); }
+.knowledge-secondary-button-muted {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(224, 216, 255, 0.85);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+.knowledge-secondary-button-muted:active { transform: scale(0.98); }
+
+/* Сегментований індикатор прогресу тренування (WeakPracticeScreen.jsx,
+   розділ 4.2) — ромби замість тексту "Приклад X з Y": пройдені
+   зелено-золоті, поточний фіолетовий із сяйвом, майбутні темні. Помилка
+   НІКОЛИ не залишає сегмент червоним — лише done/current/future. */
+.knowledge-pip {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.knowledge-pip-future { background: rgba(255, 255, 255, 0.12); }
+.knowledge-pip-current {
+  background: linear-gradient(135deg, #c4b5fd, #7c3aed);
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.85);
+  transform: rotate(45deg) scale(1.25);
+}
+.knowledge-pip-done {
+  background: linear-gradient(135deg, #ffe27a, #d97706);
+  box-shadow: 0 0 4px rgba(245, 185, 66, 0.5);
+}
+
+/* Додаткова "подвійна рамка" й акцент для картки прикладу на екрані
+   тренування (розділ 4.3) — поверх базового .quest-page. */
+.knowledge-quest-page {
+  border-width: 4px;
+  box-shadow:
+    0 0 0 1px rgba(245, 185, 66, 0.5),
+    0 0 0 5px rgba(139, 92, 246, 0.25),
+    0 20px 40px -12px rgba(0, 0, 0, 0.65),
+    inset 0 2px 0 rgba(255, 255, 255, 0.6);
 }
 
 /* Рядок окремого прикладу на детальному екрані — той самий тіер-акцент
