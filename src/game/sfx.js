@@ -7,7 +7,7 @@
 // приглушення музики (duckMusic) для "важливих" подій.
 
 import { isSoundEnabled, getSfxVolume, getSharedAudioContext } from "./sound.js";
-import { duckMusic } from "./music.js";
+import { duckMusic, getCurrentMusicGain } from "./music.js";
 
 const BASE = "/assets/audio/sfx/";
 
@@ -39,6 +39,18 @@ const IMPORTANT = new Set(["level_up", "achievement", "victory", "defeat", "race
 // music.js) звужує цей розрив із ~+13.6dB до ~+7.4dB — стінгер усе ще
 // чітко виділяється, але вже не оглушує.
 const IMPORTANT_GAIN_SCALE = 0.7;
+
+// СТРОГЕ правило (явна вимога): жоден звуковий ефект НІКОЛИ не повинен
+// звучати гучніше за фонову музику — не лише "важливі" стінгери вище, а
+// геть усі 36 ефектів. Числа гучності за замовчуванням (sfxVolume/
+// musicVolume) — це лише СТАРТОВІ орієнтири; вони "розходяться" залежно
+// від intensity/ducking/видимості вкладки, тож єдиний спосіб гарантувати
+// правило за БУДЬ-яких обставин — щоразу перед відтворенням звіряти
+// бажану гучність ефекту з РЕАЛЬНИМ поточним gain музики прямо зараз
+// (getCurrentMusicGain() у music.js) і не давати ефекту перевищити його
+// певну частку. Якщо музика вимкнена або ще не заграла — порівнювати
+// нема з чим, ефект грає як завжди, на своїй звичайній гучності.
+const SFX_MAX_RATIO_TO_MUSIC = 0.75;
 
 // Per-id налаштування анти-спаму: невеликий cooldown для частих кліків,
 // суворіший ліміт (без накладання копій) для великих одноразових подій.
@@ -128,7 +140,14 @@ export function playSfx(id) {
     if (!ctx) return;
 
     const gain = ctx.createGain();
-    gain.gain.value = getSfxVolume() * (IMPORTANT.has(id) ? IMPORTANT_GAIN_SCALE : 1);
+    const desired = getSfxVolume() * (IMPORTANT.has(id) ? IMPORTANT_GAIN_SCALE : 1);
+    const musicGain = getCurrentMusicGain();
+    // Жорсткий, завжди-чинний захист: якщо музика зараз чутна, ефект не
+    // може перевищити SFX_MAX_RATIO_TO_MUSIC від її РЕАЛЬНОГО поточного
+    // gain — байдуже, тиха вона зараз (ducking, згорнута вкладка) чи
+    // голосніша (активна фаза бою). Музика вимкнена/не заграла — musicGain
+    // === null, обмежувати нема з чим.
+    gain.gain.value = musicGain === null ? desired : Math.min(desired, musicGain * SFX_MAX_RATIO_TO_MUSIC);
     gain.connect(ctx.destination);
 
     const src = ctx.createBufferSource();

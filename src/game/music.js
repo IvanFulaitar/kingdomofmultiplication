@@ -176,6 +176,16 @@ function effectiveVolume() {
   return clamp01(v);
 }
 
+// СТРОГЕ правило "усі звукові ефекти тихіші за музику" (sfx.js) звіряється
+// не з фіксованим числом, а з РЕАЛЬНИМ поточним gain музики прямо зараз —
+// він і так весь час "плаває" (intensity/ducking/видимість вкладки).
+// null означає "музика вимкнена або ще не заграла" — порівнювати нема з
+// чим, sfx.js у цьому разі просто не обмежує ефекти.
+export function getCurrentMusicGain() {
+  if (!enabled || !gainNode) return null;
+  return effectiveVolume();
+}
+
 function applyGain(rampSec) {
   if (!gainNode) return;
   const ctx = ctxOrNull();
