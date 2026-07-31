@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
-import { QUESTS } from "../data/rewards.js";
+import { QUEST_POOL } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { isSoundEnabled, setSoundEnabled } from "../game/sound.js";
 import { isMusicEnabled, setMusicEnabled } from "../game/music.js";
@@ -199,7 +199,10 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             <span className="font-display font-bold text-amber-300 text-xs">✦ Щоденні завдання ✦</span>
           </div>
           <div className="flex flex-col mt-2 divide-y divide-white/10">
-            {QUESTS.map((q) => {
+            {(progress.daily.activeQuestIds ?? [])
+              .map((id) => QUEST_POOL.find((q) => q.id === id))
+              .filter(Boolean)
+              .map((q) => {
               const p = q.progress(progress.daily);
               const done = progress.daily.claimed.includes(q.id) || p >= q.target;
               return (

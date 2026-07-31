@@ -219,7 +219,7 @@ export default function MemoryScreen({ onBack, onComplete }) {
           <div className="rpg-panel rpg-panel-gold rounded-3xl p-5 mt-4 text-center screen-in">
             <div className="font-display gold-text font-extrabold text-xl mb-1">Усі пари знайдено! 🎉</div>
             <div className="text-violet-200 text-sm mb-4">Нагорода: 20 монет, 20 XP</div>
-            <button onClick={() => onComplete(20, 20)} className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl">
+            <button onClick={() => onComplete(20, 20, pairsFound)} className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl">
               Забрати нагороду
             </button>
           </div>

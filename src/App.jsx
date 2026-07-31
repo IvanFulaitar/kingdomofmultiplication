@@ -101,35 +101,63 @@ export default function App() {
 
   function recordFact(pair, correct, kind) {
     let p = ensureDaily(progress);
+    let weakFixed = false;
     if (kind !== "combined") {
       const existing = p.facts?.[pair] ?? { correct: 0, wrong: 0 };
+      // "Слабкий, і щойно виправлений" — фіксуємо ДО оновлення факту нижче,
+      // інакше existing уже враховуватиме цю саму правильну відповідь.
+      weakFixed = correct && existing.wrong > 0 && existing.wrong >= existing.correct;
       const key = correct ? "correct" : "wrong";
       p = { ...p, facts: { ...p.facts, [pair]: { ...existing, [key]: existing[key] + 1 } } };
     }
     if (correct) {
       p = { ...p, daily: { ...p.daily, correctToday: p.daily.correctToday + 1 } };
+      // "pair" для класичних/missing прикладів завжди має вигляд "AxB" —
+      // якщо один із множників 7, це відповідь із таблиці на 7 (щоденне
+      // завдання table7x5). Складені (kind==="combined") приклади мають
+      // інший формат pair і тут навмисно не рахуються.
+      if (kind !== "combined" && pair.split("x").includes("7")) {
+        p = { ...p, daily: { ...p.daily, table7Today: (p.daily.table7Today ?? 0) + 1 } };
+      }
+      if (weakFixed) {
+        p = { ...p, daily: { ...p.daily, weakFixedToday: (p.daily.weakFixedToday ?? 0) + 1 } };
+      }
     }
     p = checkQuests(p);
     persist(p);
   }
 
-  function rewardPractice(coinGain, xpGain) {
+  function rewardPractice(coinGain, xpGain, pairsFound = 0) {
     let p = ensureDaily(progress);
-    p = { ...p, coins: p.coins + coinGain, xp: (p.xp ?? 0) + xpGain };
+    p = {
+      ...p,
+      coins: p.coins + coinGain,
+      xp: (p.xp ?? 0) + xpGain,
+      daily: { ...p.daily, memoryPairsToday: (p.daily.memoryPairsToday ?? 0) + pairsFound },
+    };
+    p = checkQuests(p);
     persist(p);
   }
 
   // Окремо від rewardPractice — рахує ще й кількість пройдених лабіринтів,
   // щоб наступна спроба могла плавно підвищити складність (нові механіки
-  // з'являються поступово, а не всі одразу).
-  function completeMaze(coinGain, xpGain) {
+  // з'являються поступово, а не всі одразу). extra — скрині/таємний шлях
+  // цього конкретного проходження, для щоденних завдань mazeChest1/mazeSecret1.
+  function completeMaze(coinGain, xpGain, extra = {}) {
+    const { chestsFound = 0, secretFound = false } = extra;
     let p = ensureDaily(progress);
     p = {
       ...p,
       coins: p.coins + coinGain,
       xp: (p.xp ?? 0) + xpGain,
       mazeCompletions: (p.mazeCompletions ?? 0) + 1,
+      daily: {
+        ...p.daily,
+        mazeChestsToday: (p.daily.mazeChestsToday ?? 0) + chestsFound,
+        mazeSecretToday: p.daily.mazeSecretToday || secretFound,
+      },
     };
+    p = checkQuests(p);
     persist(p);
   }
 
@@ -138,6 +166,7 @@ export default function App() {
   // (для рекомендації складності наступного разу), особисті рекорди на
   // кожній складності, розблокування чемпіонського заїзду, і лічильник
   // сьогоднішніх перемог тренувального заїзду (м'який захист від фарму).
+  // Також рахує щоденні завдання raceTop2_1/raceBest1.
   function completeRace(coinGain, xpGain, meta) {
     let p = ensureDaily(progress);
     p = {
@@ -147,9 +176,18 @@ export default function App() {
       raceCompletions: (p.raceCompletions ?? 0) + 1,
     };
     if (meta) {
-      const { p: nextP } = recordRaceResult(p, meta);
+      const { p: nextP, isPersonalBest } = recordRaceResult(p, meta);
       p = nextP;
+      p = {
+        ...p,
+        daily: {
+          ...p.daily,
+          raceTop2Today: meta.place <= 2 ? (p.daily.raceTop2Today ?? 0) + 1 : (p.daily.raceTop2Today ?? 0),
+          raceBestToday: p.daily.raceBestToday || isPersonalBest,
+        },
+      };
     }
+    p = checkQuests(p);
     persist(p);
   }
 
@@ -252,7 +290,7 @@ export default function App() {
         {screen === "memory" && (
           <MemoryScreen
             onBack={() => setScreen("training")}
-            onComplete={(coins, xp) => { rewardPractice(coins, xp); setScreen("training"); }}
+            onComplete={(coins, xp, pairsFound) => { rewardPractice(coins, xp, pairsFound); setScreen("training"); }}
           />
         )}
         {screen === "maze" && (
@@ -260,7 +298,7 @@ export default function App() {
             avatar={progress.avatar}
             completions={progress.mazeCompletions ?? 0}
             onBack={() => setScreen("training")}
-            onComplete={(coins, xp) => { completeMaze(coins, xp); setScreen("training"); }}
+            onComplete={(coins, xp, extra) => { completeMaze(coins, xp, extra); setScreen("training"); }}
           />
         )}
         {screen === "raceDifficulty" && (

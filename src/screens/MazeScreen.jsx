@@ -820,7 +820,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                   <div>Таємний шлях: <b className="text-white">{secretFound ? "знайдено!" : "не знайдено"}</b></div>
                 </div>
                 <div className="text-violet-200 text-sm mb-4">Нагорода: {totalCoins} монет, {totalXp} XP</div>
-                <button onClick={() => onComplete(totalCoins, totalXp)} className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl">
+                <button onClick={() => onComplete(totalCoins, totalXp, { chestsFound, secretFound })} className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl">
                   Забрати нагороду
                 </button>
               </div>

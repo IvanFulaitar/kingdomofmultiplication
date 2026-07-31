@@ -1,4 +1,4 @@
-import { QUESTS } from "../data/rewards.js";
+import { QUEST_POOL, pickDailyQuestIds } from "../data/rewards.js";
 
 export const STORAGE_KEY = "kingdom-multiplication-progress";
 // Резервна копія — завжди попередній успішно збережений стан, на випадок
@@ -24,6 +24,28 @@ export function takeLoadWarning() {
   return w;
 }
 
+// Порожній об'єкт daily на конкретну дату — використовується і для щойно
+// створеного прогресу (defaultProgress), і щоразу, як настає новий день
+// (ensureDaily). activeQuestIds — сьогоднішні 3 щоденні завдання, обрані
+// детерміновано з QUEST_POOL (src/data/rewards.js): по одному з easy/medium/training.
+function emptyDaily(date) {
+  return {
+    date,
+    correctToday: 0,
+    levelsToday: 0,
+    perfectToday: false,
+    memoryPairsToday: 0,
+    mazeChestsToday: 0,
+    mazeSecretToday: false,
+    raceTop2Today: 0,
+    raceBestToday: false,
+    table7Today: 0,
+    weakFixedToday: 0,
+    claimed: [],
+    activeQuestIds: pickDailyQuestIds(date ?? "unknown"),
+  };
+}
+
 export function defaultProgress() {
   return {
     saveVersion: CURRENT_SAVE_VERSION,
@@ -31,7 +53,7 @@ export function defaultProgress() {
     streak: { current: 0, lastPlayedDate: null },
     levels: {}, badges: [], facts: {},
     avatar: "wizard", ownedAvatars: ["wizard"],
-    daily: { date: null, correctToday: 0, levelsToday: 0, perfectToday: false, claimed: [] },
+    daily: emptyDaily(null),
     mazeCompletions: 0,
     raceCompletions: 0,
     // Перегони: історія останніх 5 заїздів (для рекомендації складності),
@@ -56,7 +78,25 @@ function migrateProgress(p) {
   const raceBest = p.raceBest ?? {};
   const raceChampionUnlocked = p.raceChampionUnlocked ?? false;
   const raceDaily = p.raceDaily ?? { date: null, trainingWins: 0 };
-  return { ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily };
+
+  // Дозаповнює нові лічильники/activeQuestIds для збереження того самого
+  // дня (ensureDaily нижче скидає daily цілком лише на зміну дати, тож
+  // збереження в межах поточного дня, зроблені до появи нового пулу
+  // завдань, самі по собі activeQuestIds не отримають без цього).
+  const dailyBase = p.daily ?? emptyDaily(null);
+  const daily = {
+    ...dailyBase,
+    memoryPairsToday: dailyBase.memoryPairsToday ?? 0,
+    mazeChestsToday: dailyBase.mazeChestsToday ?? 0,
+    mazeSecretToday: dailyBase.mazeSecretToday ?? false,
+    raceTop2Today: dailyBase.raceTop2Today ?? 0,
+    raceBestToday: dailyBase.raceBestToday ?? false,
+    table7Today: dailyBase.table7Today ?? 0,
+    weakFixedToday: dailyBase.weakFixedToday ?? 0,
+    activeQuestIds: dailyBase.activeQuestIds ?? pickDailyQuestIds(dailyBase.date ?? new Date().toISOString().slice(0, 10)),
+  };
+
+  return { ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily, daily };
 }
 
 // Версійна міграція формату збереження (окремо від migrateProgress вище,
@@ -83,7 +123,7 @@ export function migrateSave(raw) {
 export function ensureDaily(p) {
   const today = new Date().toISOString().slice(0, 10);
   if (p.daily?.date === today) return p;
-  return { ...p, daily: { date: today, correctToday: 0, levelsToday: 0, perfectToday: false, claimed: [] } };
+  return { ...p, daily: emptyDaily(today) };
 }
 
 export function updateStreak(p) {
@@ -104,10 +144,12 @@ export function heroLevelFromXp(xp) {
   return { level, into: remaining, need };
 }
 
-// Перевіряє, чи щойно виконано якесь щоденне завдання, і одразу нараховує нагороду.
+// Перевіряє лише СЬОГОДНІШНІ 3 активні завдання (daily.activeQuestIds) і
+// одразу нараховує нагороду за щойно виконані.
 export function checkQuests(p) {
   const daily = p.daily;
-  const newlyDone = QUESTS.filter((q) => !daily.claimed.includes(q.id) && q.progress(daily) >= q.target);
+  const activeQuests = QUEST_POOL.filter((q) => daily.activeQuestIds?.includes(q.id));
+  const newlyDone = activeQuests.filter((q) => !daily.claimed.includes(q.id) && q.progress(daily) >= q.target);
   if (!newlyDone.length) return p;
   const claimed = [...daily.claimed, ...newlyDone.map((q) => q.id)];
   const coins = p.coins + newlyDone.reduce((s, q) => s + q.reward.coins, 0);
