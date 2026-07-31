@@ -24,10 +24,15 @@ necromancer, monk, pirate, beastmaster, alchemist, samurai, fairy, golem` — 16
 
 ## icons/ui/ — дрібні іконки інтерфейсу (квадрат, прозорий фон, ~128×128)
 `star, coin, flame, lock, trophy, shop, target, chest, heart_full,
-heart_empty, map_scroll, hint_lightbulb`.
+heart_empty, map_scroll, hint_lightbulb, book`.
 
 ## icons/achievements/ — іконки бейджів досягнень
 `medal, diamond, tree, mountains, castle, brain, crown, streak_fire`.
+
+## icons/knowledge/ — статус засвоєння в "Моїх знаннях" (квадрат, ~128×128)
+`knowledge_untried, knowledge_weak, knowledge_almost, knowledge_good,
+knowledge_master` — 5 рівнів (⚪🔴🟡🟢⭐ емодзі-фолбек у mastery.js), кристал
+змінює колір/сяйво від тьмяно-сірого до золотої зірки-майстра.
 
 ## icons/maze/ — об'єкти й позначки в режимі "Лабіринт"
 `key, trap, portal, shield, lightning` — ключ/пастка/портал і два кутові
