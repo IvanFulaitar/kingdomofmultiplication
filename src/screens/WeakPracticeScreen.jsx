@@ -54,6 +54,22 @@ function formatTableList(numbers) {
   return `${numbers.slice(0, -1).join(", ")} і ${numbers[numbers.length - 1]}`;
 }
 
+// Ранг тіера для порівняння "було -> стало" (розділ 5 тех. завдання для
+// екрана завершення): "insufficient" — власна синтетична позначка
+// buildTablePracticePool()/singleFact-пулу (не справжній тіер із
+// mastery.js), рахуємо її нарівні з "untried" — обидва означають "ще
+// немає реального статусу".
+const TIER_RANK = { untried: 0, insufficient: 0, weak: 1, almost: 2, good: 3, master: 4 };
+
+// Підзаголовок свята одразу під заголовком (розділ 2) — тон завжди
+// підбадьорливий, ніколи не звинувачувальний, навіть при низькій точності.
+function celebrationSubtitle(accuracy) {
+  if (accuracy >= 100) return "Бездоганно! Усі відповіді правильні";
+  if (accuracy >= 80) return "Чудовий результат! Ти добре попрацював";
+  if (accuracy >= 60) return "Гарна робота! Ще трохи практики — і буде ще краще";
+  return "Молодець, що тренуєшся! Спробуй ще раз, і результат покращиться";
+}
+
 export default function WeakPracticeScreen({ progress, tableNumber = null, singleFact = null, onAnswer, onReward, onExit, onReplay }) {
   const facts = progress.facts ?? {};
 
@@ -111,6 +127,9 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
   const [bestStreak, setBestStreak] = useState(0);
   const [done, setDone] = useState(false);
   const questionStartRef = useRef(Date.now());
+  // Які факти хоч раз завадили дитині цього тренування — для персональної
+  // рекомендації на екрані завершення ("Радимо ще раз повторити N × M").
+  const mistakePairsRef = useRef(new Set());
 
   // Немає жодного факту для тренування — дружнє повідомлення замість
   // порожнього/зламаного екрана (MyKnowledgeScreen.jsx і так ховає кнопку
@@ -184,6 +203,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
 
     setCurrentStreak(0);
     playHeartLost();
+    mistakePairsRef.current.add(question.pair);
     if (!hadWrongThisQuestion) {
       // Перша помилка в цьому питанні (розділ 4.5): не переходимо далі
       // автоматично — даємо підказку й дозволяємо спробувати ще раз.
@@ -197,88 +217,206 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
   }
 
   if (done) {
+    // Рівень 1 — ЦІЛА таблиця (розділ 4 тех. завдання): показуємо і старе,
+    // і нове значення разом із приростом, а не голе "було->стало" без
+    // пояснення. delta===0 (округлення "з'їло" реальний прогрес) -> дружнє
+    // формулювання замість "77% → 77%" (розділ 5).
     const totalAfter = summaryTables.map((n) => {
       const before = beforeRef.current[n];
       const after = tableMastery(progress.facts, n);
       const leveledUp = after.tier !== before.tier && after.score > before.score;
-      return { n, before, after, leveledUp };
+      return { n, before, after, leveledUp, delta: after.score - before.score };
     });
 
-    // Розділ 4.7 — зміни показуємо і на рівні ТАБЛИЦІ (вище), і на рівні
-    // КОНКРЕТНОГО прикладу (тут): "2 × 10: 54% → 63%". Унікалізуємо пари,
-    // бо singleFact-режим повторює один і той самий факт кілька разів.
+    // Рівень 2 — ОКРЕМИЙ приклад (розділ 4.7/4): "2 × 10: 54% → 63%".
+    // Унікалізуємо пари, бо singleFact-режим повторює один і той самий
+    // факт кілька разів. У підсумок "Покращені приклади" (розділ 4)
+    // потрапляють лише ті, що РЕАЛЬНО покращились — не кожен факт із
+    // пулу (інакше це були б випадкові картки, а не список покращень).
     const uniqueFacts = [...new Map(pool.map((f) => [f.pair, f])).values()];
     const factsAfter = uniqueFacts.map((f) => {
       const stat = progress.facts?.[f.pair] ?? null;
       const afterScore = stat ? computeMastery(stat) : 0;
-      return { ...f, afterScore };
+      const afterStatus = masteryStatus(stat);
+      const leveledUp = TIER_RANK[afterStatus.tier] > TIER_RANK[f.tier];
+      return { ...f, afterScore, afterStatus, leveledUp };
     });
+    const improvedFacts = factsAfter.filter((f) => f.afterScore > f.score);
 
     const accuracy = pool.length ? (firstTryCorrectCount / pool.length) * 100 : 0;
+    const anyLeveledUp = totalAfter.some((t) => t.leveledUp) || improvedFacts.some((f) => f.leveledUp);
+
+    // Розділ 6 — персональна рекомендація: пріоритет підвищення рівня >
+    // ідеальний результат > конкретний факт, що заважав > загальна
+    // підбадьорка. "mistakeFact" — найслабший ЗАРАЗ серед фактів, де
+    // дитина хоч раз помилилась цього тренування.
+    const mistakeFact = [...factsAfter]
+      .filter((f) => mistakePairsRef.current.has(f.pair))
+      .sort((a, b) => a.afterScore - b.afterScore)[0];
+    let motivationText;
+    if (anyLeveledUp) {
+      motivationText = "Новий рівень засвоєння відкрито!";
+    } else if (accuracy >= 100) {
+      motivationText = mode === "single"
+        ? "Чудово! Спробуй перевірити цей приклад ще раз завтра, щоб надійно його закріпити"
+        : "Чудово! Спробуй перевірити ці приклади ще раз завтра, щоб надійно їх закріпити";
+    } else if (mistakeFact) {
+      motivationText = `Радимо ще раз повторити ${mistakeFact.a} × ${mistakeFact.b} — це допоможе краще його запам'ятати`;
+    } else {
+      motivationText = "Продовжуй у тому ж дусі — кожна практика наближає до нового рівня";
+    }
+
+    // Розділ 7/8 — не змушувати повторювати вже ідеально виконане:
+    // 100% і не одна конкретна таблиця -> "Наступний приклад" (onReplay
+    // все одно перебудує пул наново, і вже засвоєні факти природно
+    // поступляться місцем іншим); 100% в режимі одного факту -> взагалі
+    // ховаємо кнопку повтору, повернення до "Моїх знань" і так веде далі.
+    const secondaryLabel = accuracy >= 100
+      ? (mode === "single" ? null : "Наступний приклад")
+      : accuracy >= 80
+        ? "Закріпити ще раз"
+        : "Потренувати ще раз";
 
     return (
       <div className="relative overflow-hidden min-h-dvh screen-in">
         <div className="center-vignette" />
-        <div className="relative z-10 max-w-md mx-auto px-6 py-8 pb-16 flex flex-col items-center text-center gap-5">
-          <span className="text-6xl knowledge-result-sparkle">✨</span>
-          <h2 className="font-display gold-text text-2xl font-extrabold">Тренування завершено!</h2>
-          <p className="text-violet-200 text-sm">
-            Правильних: {firstTryCorrectCount} із {pool.length} · Точність: {formatPercent(accuracy)}
-          </p>
-          <p className="text-violet-200/80 text-xs -mt-3">Найкраща серія поспіль: {bestStreak}</p>
-
-          <div className="w-full flex flex-col gap-2.5">
-            {totalAfter.map(({ n, before, after, leveledUp }) => (
-              <div key={n} className="rpg-panel rounded-xl px-4 py-3 text-left">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-display font-bold text-sm">Таблиця на {n}</span>
-                  <span className="font-display font-extrabold text-sm gold-text knowledge-score-transition">
-                    {formatPercent(before.score)} → {formatPercent(after.score)}
-                  </span>
-                </div>
-                {leveledUp && (
-                  <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
-                    <ArtImage
-                      src={`/assets/icons/knowledge/${after.file}.png`}
-                      fallback={after.icon}
-                      alt=""
-                      className="w-4 h-4 object-contain inline-flex items-center justify-center knowledge-tier-glow"
-                    />
-                    Новий рівень: {after.label}!
-                  </div>
-                )}
-              </div>
-            ))}
+        <div className="relative z-10 max-w-md sm:max-w-2xl mx-auto px-6 sm:px-8 pt-8 pb-[max(20px,env(safe-area-inset-bottom))] flex flex-col items-center text-center gap-5">
+          {/* 1. Святкова верхня частина */}
+          <div className="knowledge-result-medallion relative">
+            <span className="text-4xl knowledge-result-sparkle">✨</span>
+            <span className="knowledge-result-twinkle knowledge-result-twinkle-1" aria-hidden="true">✦</span>
+            <span className="knowledge-result-twinkle knowledge-result-twinkle-2" aria-hidden="true">✦</span>
+          </div>
+          <div className="knowledge-result-fade-up" style={{ "--kr-delay": "0.1s" }}>
+            <h2 className="font-display gold-text text-3xl font-extrabold">Тренування завершено!</h2>
+            <p className="font-body text-violet-100 text-sm mt-1.5 max-w-xs mx-auto">{celebrationSubtitle(accuracy)}</p>
           </div>
 
-          {factsAfter.length > 0 && (
-            <div className="w-full">
-              <div className="text-xs font-semibold text-violet-200/70 mb-1.5 text-left">Окремі приклади</div>
-              <div className="grid grid-cols-2 gap-2">
-                {factsAfter.map((f) => (
-                  <div key={f.pair} className="rpg-panel rounded-lg px-3 py-2 text-left">
-                    <div className="text-xs text-violet-100">{f.a} × {f.b}</div>
-                    <div className="font-display font-bold text-xs gold-text">
-                      {formatPercent(f.score)} → {formatPercent(f.afterScore)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* 2. Загальна статистика */}
+          <div
+            className="rpg-panel knowledge-result-fade-up rounded-2xl w-full grid grid-cols-3 divide-x divide-white/10 px-2 py-4"
+            style={{ "--kr-delay": "0.22s" }}
+          >
+            <div className="flex flex-col items-center px-1.5">
+              <span className="font-display font-extrabold text-xl sm:text-2xl gold-text">{firstTryCorrectCount} із {pool.length}</span>
+              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">Правильно</span>
             </div>
-          )}
+            <div className="flex flex-col items-center px-1.5">
+              <span className="font-display font-extrabold text-xl sm:text-2xl gold-text">{formatPercent(accuracy)}</span>
+              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">Точність</span>
+            </div>
+            <div className="flex flex-col items-center px-1.5">
+              <span className="font-display font-extrabold text-xl sm:text-2xl gold-text">{bestStreak}</span>
+              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">Найкраща серія</span>
+            </div>
+          </div>
 
-          <div className="w-full flex flex-col gap-2.5 mt-2">
-            {onReplay && (
-              <button
-                onClick={() => { playUiPrimary(); onReplay(); }}
-                className="knowledge-secondary-button w-full py-3.5 rounded-2xl font-display font-bold text-base"
-              >
-                Потренувати ще раз
-              </button>
-            )}
-            <button onClick={() => { playUiPrimary(); onExit(); }} className="next-challenge-button w-full py-4 rounded-2xl font-display font-extrabold text-lg">
+          {/* 3-4. Твій прогрес — таблиця(і) і покращені приклади в ОДНІЙ панелі */}
+          <div className="w-full text-left knowledge-result-fade-up" style={{ "--kr-delay": "0.32s" }}>
+            <h3 className="font-display font-bold text-base text-violet-50">Твій прогрес</h3>
+            <p className="text-xs text-violet-200/70 mt-0.5 mb-3">Ось що покращилося після тренування</p>
+
+            <div className="rpg-panel rounded-2xl px-4 py-4 flex flex-col gap-4">
+              {totalAfter.map(({ n, before, after, leveledUp, delta }) => (
+                <div key={n}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-display font-bold text-sm text-violet-50">Таблиця на {n}</span>
+                    <span className="font-display font-extrabold text-sm gold-text knowledge-score-transition">{formatPercent(after.score)}</span>
+                  </div>
+                  {delta === 0 ? (
+                    <p className="text-xs text-violet-200/70 mt-1 mb-1.5">
+                      {firstTryCorrectCount > 0 ? "Ще одна успішна відповідь наближає до наступного рівня" : "Прогрес закріплено"}
+                    </p>
+                  ) : (
+                    <div className="flex items-center justify-between gap-2 mt-1 mb-1.5">
+                      <span className="text-xs text-violet-200/60">Було {formatPercent(before.score)}</span>
+                      <span className={`text-xs font-bold ${delta > 0 ? "text-emerald-300" : "text-rose-300"}`}>
+                        {delta > 0 ? "+" : ""}{Math.round(delta)}%
+                      </span>
+                    </div>
+                  )}
+                  <div className="knowledge-progress-track relative">
+                    {delta !== 0 && (
+                      <span className="knowledge-progress-marker" style={{ left: `${Math.max(0, Math.min(100, before.score))}%` }} />
+                    )}
+                    <div
+                      className={`knowledge-progress-fill knowledge-fill-${after.tier} knowledge-fill-glow-edge`}
+                      style={{ width: `${Math.max(0, Math.min(100, after.score))}%` }}
+                    />
+                  </div>
+                  {leveledUp && (
+                    <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+                      <ArtImage
+                        src={`/assets/icons/knowledge/${after.file}.png`}
+                        fallback={after.icon}
+                        alt=""
+                        className="w-4 h-4 object-contain inline-flex items-center justify-center knowledge-tier-glow"
+                      />
+                      Новий рівень: {after.label}!
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {improvedFacts.length > 0 && (
+                <div className="pt-1 border-t border-white/10 flex flex-col gap-3">
+                  <h4 className="font-display font-bold text-xs text-violet-100 -mb-1">Покращені приклади</h4>
+                  {improvedFacts.map((f) => (
+                    <div key={f.pair}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-body text-sm text-violet-50">{f.a} × {f.b} = {f.a * f.b}</span>
+                        <span className="font-display font-bold text-sm gold-text">{formatPercent(f.afterScore)}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 mt-1 mb-1.5">
+                        <span className="text-xs text-violet-200/60">Було {formatPercent(f.score)}</span>
+                        <span className="text-xs font-bold text-emerald-300">+{Math.round(f.afterScore - f.score)}%</span>
+                      </div>
+                      <div className="knowledge-progress-track">
+                        <div
+                          className={`knowledge-progress-fill knowledge-fill-${f.afterStatus.tier} knowledge-fill-glow-edge`}
+                          style={{ width: `${Math.max(0, Math.min(100, f.afterScore))}%` }}
+                        />
+                      </div>
+                      {f.leveledUp && (
+                        <div className="mt-1.5 flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+                          <ArtImage
+                            src={`/assets/icons/knowledge/${f.afterStatus.file}.png`}
+                            fallback={f.afterStatus.icon}
+                            alt=""
+                            className="w-4 h-4 object-contain inline-flex items-center justify-center knowledge-tier-glow"
+                          />
+                          Новий статус: {f.afterStatus.label}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 6. Мотиваційне повідомлення */}
+          <div className="knowledge-recommend-banner knowledge-result-fade-up rounded-xl px-3.5 py-2.5 text-sm font-semibold flex items-center gap-2 w-full text-left" style={{ "--kr-delay": "0.4s" }}>
+            <span aria-hidden="true">💡</span>
+            <span>{motivationText}</span>
+          </div>
+
+          {/* 7-8. Кнопки — головна золота дія першою, другорядна нижче */}
+          <div className="w-full flex flex-col gap-2.5 mt-1">
+            <button
+              onClick={() => { playUiPrimary(); onExit(); }}
+              className="knowledge-cta-button w-full py-3.5 rounded-2xl font-display font-extrabold text-lg text-indigo-950 min-h-[56px]"
+            >
               Повернутися до "Моїх знань"
             </button>
+            {secondaryLabel && onReplay && (
+              <button
+                onClick={() => { playUiPrimary(); onReplay(); }}
+                className="knowledge-secondary-button w-full py-3.5 rounded-2xl font-display font-bold text-base min-h-[56px]"
+              >
+                {secondaryLabel}
+              </button>
+            )}
           </div>
         </div>
       </div>

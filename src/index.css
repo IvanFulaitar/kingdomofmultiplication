@@ -2481,6 +2481,90 @@ html, body {
   transition: color 0.4s ease;
 }
 
+/* Екран завершення персонального тренування (WeakPracticeScreen.jsx,
+   "done") — святковий медальйон з іконкою, легкі іскри навколо, і плавна
+   послідовна поява блоків зверху вниз (title -> статистика -> прогрес ->
+   рекомендація), кожен зі своєю невеликою затримкою через --kr-delay. */
+.knowledge-result-medallion {
+  width: 84px;
+  height: 84px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, rgba(124, 58, 237, 0.35), rgba(30, 23, 66, 0.85) 70%);
+  border: 2px solid rgba(245, 185, 66, 0.8);
+  box-shadow:
+    0 0 0 4px rgba(124, 58, 237, 0.18),
+    0 0 26px rgba(245, 185, 66, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15);
+  animation: knowledge-result-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes knowledge-result-pop {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.knowledge-result-twinkle {
+  position: absolute;
+  color: #ffe27a;
+  font-size: 0.8rem;
+  animation: knowledge-result-twinkle-anim 1.6s ease-in-out infinite;
+}
+.knowledge-result-twinkle-1 { top: -4px; right: 0; animation-delay: 0.2s; }
+.knowledge-result-twinkle-2 { bottom: 2px; left: -8px; animation-delay: 0.75s; }
+@keyframes knowledge-result-twinkle-anim {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes knowledge-result-fade-up-anim {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.knowledge-result-fade-up {
+  animation: knowledge-result-fade-up-anim 0.45s ease both;
+  animation-delay: var(--kr-delay, 0s);
+}
+/* Позначка старого значення на прогрес-барі "було -> стало" (тонка риска
+   на місці попереднього відсотка) — трек має бути position:relative, щоб
+   вона коректно позиціювалась усередині. */
+.knowledge-progress-track { position: relative; }
+.knowledge-progress-marker {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 1px;
+  z-index: 1;
+}
+/* Легке золоте світіння на передньому краї заповнення для ЗВИЧАЙНОГО
+   (не "-lg") прогрес-бару — саме такий використовує панель "Твій
+   прогрес" на екрані завершення. */
+.knowledge-fill-glow-edge { position: relative; }
+.knowledge-fill-glow-edge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+  width: 6px;
+  border-radius: 999px;
+  background: rgba(255, 236, 150, 0.9);
+  filter: blur(2px);
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knowledge-result-medallion,
+  .knowledge-result-twinkle,
+  .knowledge-result-fade-up,
+  .knowledge-result-sparkle,
+  .knowledge-fill-animate,
+  .knowledge-tier-glow {
+    animation: none !important;
+  }
+}
+
 /* =====================================================================
    Перехід "Переглянути мій прогрес" на сторінці "Тренування"
    (TrainingScreen.jsx) — компактна, свідомо менш акцентна картка, ніж
