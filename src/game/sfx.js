@@ -31,6 +31,15 @@ const GROUPS = {
 // через той самий duckMusic(), що й music.js уже надає.
 const IMPORTANT = new Set(["level_up", "achievement", "victory", "defeat", "race_finish", "memory_complete", "maze_exit"]);
 
+// Виміряно (ffmpeg volumedetect): самі файли цих "важливих" стінгерів НЕ
+// гучніші за музику (усі ~-15..-18dB mean, як і трек). "Перебивали" музику
+// вони через розрив множників гучності при затишенні (duckMusic у
+// music.js) — SFX і далі грав на повній getSfxVolume(), тоді як музика
+// падала набагато нижче. 0.7 тут разом зі зменшеним DUCK_MULT (0.5,
+// music.js) звужує цей розрив із ~+13.6dB до ~+7.4dB — стінгер усе ще
+// чітко виділяється, але вже не оглушує.
+const IMPORTANT_GAIN_SCALE = 0.7;
+
 // Per-id налаштування анти-спаму: невеликий cooldown для частих кліків,
 // суворіший ліміт (без накладання копій) для великих одноразових подій.
 const DEFAULT_RULE = { cooldownMs: 90, maxOverlap: 2 };
@@ -119,7 +128,7 @@ export function playSfx(id) {
     if (!ctx) return;
 
     const gain = ctx.createGain();
-    gain.gain.value = getSfxVolume();
+    gain.gain.value = getSfxVolume() * (IMPORTANT.has(id) ? IMPORTANT_GAIN_SCALE : 1);
     gain.connect(ctx.destination);
 
     const src = ctx.createBufferSource();
