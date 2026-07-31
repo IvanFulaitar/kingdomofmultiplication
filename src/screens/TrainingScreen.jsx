@@ -66,6 +66,18 @@ export default function TrainingScreen({ onBack, onSelect }) {
             </div>
             <span className="play-button rounded-xl px-4 py-2 text-sm font-display font-bold text-indigo-950 shrink-0">Грати</span>
           </button>
+
+          <button
+            onClick={() => { playUiPrimary(); onSelect("knowledge"); }}
+            className="rpg-panel rpg-panel-gold hover:brightness-110 active:scale-[0.98] transition rounded-2xl p-4 flex items-center gap-4 text-left"
+          >
+            <ModeIcon active>📖</ModeIcon>
+            <div className="flex-1">
+              <div className="font-display font-bold text-base">Мої знання</div>
+              <div className="text-xs text-white/60 mt-0.5">Наскільки добре засвоєна кожна таблиця</div>
+            </div>
+            <span className="play-button rounded-xl px-4 py-2 text-sm font-display font-bold text-indigo-950 shrink-0">Дивитись</span>
+          </button>
         </div>
       </div>
     </div>

@@ -19,6 +19,7 @@ import MenuScreen from "./screens/MenuScreen.jsx";
 import BadgeToast from "./components/BadgeToast.jsx";
 import SaveNoticeToast from "./components/SaveNoticeToast.jsx";
 const OnboardingScreen = lazy(() => import("./screens/OnboardingScreen.jsx"));
+const MyKnowledgeScreen = lazy(() => import("./screens/MyKnowledgeScreen.jsx"));
 const ShopScreen = lazy(() => import("./screens/ShopScreen.jsx"));
 const TrainingScreen = lazy(() => import("./screens/TrainingScreen.jsx"));
 const MemoryScreen = lazy(() => import("./screens/MemoryScreen.jsx"));
@@ -113,16 +114,30 @@ export default function App() {
   // у іншому вигляді, тому рахуються як завжди.
   const NON_FACT_KINDS = ["combined", "compare"];
 
-  function recordFact(pair, correct, kind) {
+  function recordFact(pair, correct, kind, responseTimeMs) {
     let p = ensureDaily(progress);
     let weakFixed = false;
     if (!NON_FACT_KINDS.includes(kind)) {
-      const existing = p.facts?.[pair] ?? { correct: 0, wrong: 0 };
+      const existing = p.facts?.[pair] ?? {
+        correct: 0, wrong: 0, correctStreak: 0, lastAnsweredAt: null, totalResponseTimeMs: 0, answeredCount: 0,
+      };
       // "Слабкий, і щойно виправлений" — фіксуємо ДО оновлення факту нижче,
       // інакше existing уже враховуватиме цю саму правильну відповідь.
       weakFixed = correct && existing.wrong > 0 && existing.wrong >= existing.correct;
       const key = correct ? "correct" : "wrong";
-      p = { ...p, facts: { ...p.facts, [pair]: { ...existing, [key]: existing[key] + 1 } } };
+      // Дані для мастерності (launch-plan.md, розділ 5): серія поспіль
+      // (скидається на помилку), коли востаннє відповідали, і сума часу
+      // відповіді — середнє рахується на льоту (totalResponseTimeMs /
+      // answeredCount) у src/game/mastery.js, а не зберігається як масив.
+      const updated = {
+        ...existing,
+        [key]: existing[key] + 1,
+        correctStreak: correct ? (existing.correctStreak ?? 0) + 1 : 0,
+        lastAnsweredAt: Date.now(),
+        totalResponseTimeMs: (existing.totalResponseTimeMs ?? 0) + (Number.isFinite(responseTimeMs) ? responseTimeMs : 0),
+        answeredCount: (existing.answeredCount ?? 0) + (Number.isFinite(responseTimeMs) ? 1 : 0),
+      };
+      p = { ...p, facts: { ...p.facts, [pair]: updated } };
     }
     if (correct) {
       p = { ...p, daily: { ...p.daily, correctToday: p.daily.correctToday + 1 } };
@@ -328,6 +343,9 @@ export default function App() {
             onBack={() => setScreen("menu")}
             onSelect={(m) => setScreen(m === "race" ? "raceDifficulty" : m)}
           />
+        )}
+        {screen === "knowledge" && (
+          <MyKnowledgeScreen progress={progress} onBack={() => setScreen("training")} />
         )}
         {screen === "memory" && (
           <MemoryScreen

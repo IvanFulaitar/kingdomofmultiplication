@@ -47,6 +47,10 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   const recentFactsRef = useRef(factsUsedIn(question));
   const answeredRef = useRef(false);
   const exitConfirmRef = useRef(false);
+  // Час показу поточного питання — для мастерності (launch-plan.md,
+  // розділ 5: averageResponseTime на факт). Скидається щоразу в
+  // nextQuestion(); handleAnswer() рахує різницю в мс на момент відповіді.
+  const questionStartRef = useRef(Date.now());
 
   // Той самий головний мотив грає й тут — лише трохи енергійніше (бій).
   useEffect(() => {
@@ -93,6 +97,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
     setTimeLeft(timeLimit);
     setFeedback(null);
     answeredRef.current = false;
+    questionStartRef.current = Date.now();
   }
 
   function handleAnswer(option) {
@@ -107,7 +112,8 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
       : null;
     setFeedback({ correct, chosen: option, explanation });
     if (correct) setCorrectCount((c) => c + 1);
-    onAnswer(question.pair, correct, question.kind);
+    const responseTimeMs = Date.now() - questionStartRef.current;
+    onAnswer(question.pair, correct, question.kind, responseTimeMs);
     if (correct) {
       playAttack();
       setTimeout(playEnemyHit, 90);
