@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel } from "../game/generateQuestion.js";
+import { explainFromPair } from "../game/explainFact.js";
 import { setMusicIntensity } from "../game/music.js";
 import { preloadSfxGroup, playAttack, playEnemyHit, playHeartLost, playVictory, playDefeat, playModalOpen } from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
@@ -87,7 +88,10 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
     if (answeredRef.current) return;
     answeredRef.current = true;
     const correct = option === question.correct;
-    setFeedback({ correct, chosen: option });
+    // Коротке пояснення факту (launch-plan.md, розділ 6) — лише для
+    // звичайних прикладів множення ("AxB"), не для складених (kind==="combined").
+    const explanation = !correct && question.kind !== "combined" ? explainFromPair(question.pair) : null;
+    setFeedback({ correct, chosen: option, explanation });
     if (correct) setCorrectCount((c) => c + 1);
     onAnswer(question.pair, correct, question.kind);
     if (correct) {
@@ -97,6 +101,9 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
       playHeartLost();
     }
 
+    // Помилку без пояснення видно й забуто за долю секунди — даємо трохи
+    // більше часу прочитати розклад (2200мс) перед переходом далі.
+    // Правильна відповідь так само швидка, як і раніше (700мс).
     setTimeout(() => {
       if (!correct) {
         const newLives = lives - 1;
@@ -113,7 +120,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
         setQIndex(nextIndex);
         nextQuestion();
       }
-    }, 700);
+    }, correct ? 700 : 2200);
   }
 
   const meta = LEVEL_META[levelId];
@@ -228,10 +235,15 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
             })}
           </div>
 
-          <div className="h-6 feedback-pop" key={feedback ? (feedback.correct ? "ok" : "no") : "none"}>
+          <div className={`feedback-pop ${feedback?.explanation ? "min-h-6" : "h-6"}`} key={feedback ? (feedback.correct ? "ok" : "no") : "none"}>
             {feedback && (
-              <div className={`font-display font-bold text-sm ${feedback.correct ? "text-emerald-300" : "text-rose-300"}`}>
-                {feedback.correct ? "✦ Правильно! ✦" : "Спробуй ще раз"}
+              <div className={`font-display font-bold text-sm text-center ${feedback.correct ? "text-emerald-300" : "text-rose-300"}`}>
+                {feedback.correct ? "✦ Правильно! ✦" : "Неправильно"}
+              </div>
+            )}
+            {feedback?.explanation && (
+              <div className="mt-1.5 rpg-panel rounded-xl px-3.5 py-2 max-w-xs mx-auto">
+                <p className="font-body text-xs text-amber-100 text-center leading-snug">{feedback.explanation}</p>
               </div>
             )}
           </div>
