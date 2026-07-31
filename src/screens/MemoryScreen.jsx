@@ -16,8 +16,18 @@ export default function MemoryScreen({ onBack, onComplete }) {
   const [hints, setHints] = useState(3);
   const [hintIds, setHintIds] = useState([]);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [rewardClaimed, setRewardClaimed] = useState(false);
   const busyRef = useRef(false);
   const exitConfirmRef = useRef(false);
+
+  // Захист від подвійного натискання "Забрати нагороду" (launch-plan.md,
+  // розділ 16) — без цього швидкий подвійний тап/клік міг би викликати
+  // onComplete() двічі й нарахувати монети/XP двічі за одне проходження.
+  function handleClaimReward() {
+    if (rewardClaimed) return;
+    setRewardClaimed(true);
+    onComplete(20, 20, pairsFound);
+  }
 
   const done = matched.length === cards.length;
   const pairsTotal = cards.length / 2;
@@ -219,8 +229,12 @@ export default function MemoryScreen({ onBack, onComplete }) {
           <div className="rpg-panel rpg-panel-gold rounded-3xl p-5 mt-4 text-center screen-in">
             <div className="font-display gold-text font-extrabold text-xl mb-1">Усі пари знайдено! 🎉</div>
             <div className="text-violet-200 text-sm mb-4">Нагорода: 20 монет, 20 XP</div>
-            <button onClick={() => onComplete(20, 20, pairsFound)} className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl">
-              Забрати нагороду
+            <button
+              onClick={handleClaimReward}
+              disabled={rewardClaimed}
+              className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl disabled:opacity-70"
+            >
+              {rewardClaimed ? "Забираємо…" : "Забрати нагороду"}
             </button>
           </div>
         )}

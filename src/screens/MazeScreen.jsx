@@ -186,6 +186,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
   const [trapQuestion, setTrapQuestion] = useState(null);
   const [trapSeed, setTrapSeed] = useState(0);
   const [portalPending, setPortalPending] = useState(null);
+  const [rewardClaimed, setRewardClaimed] = useState(false);
   const [treasureRound, setTreasureRound] = useState(null);
   const [treasureQuestion, setTreasureQuestion] = useState(null);
   const [toast, setToast] = useState(null);
@@ -820,8 +821,18 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                   <div>Таємний шлях: <b className="text-white">{secretFound ? "знайдено!" : "не знайдено"}</b></div>
                 </div>
                 <div className="text-violet-200 text-sm mb-4">Нагорода: {totalCoins} монет, {totalXp} XP</div>
-                <button onClick={() => onComplete(totalCoins, totalXp, { chestsFound, secretFound })} className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl">
-                  Забрати нагороду
+                <button
+                  onClick={() => {
+                    // Захист від подвійного натискання (launch-plan.md, розділ 16) —
+                    // без цього швидкий подвійний тап міг би нарахувати нагороду двічі.
+                    if (rewardClaimed) return;
+                    setRewardClaimed(true);
+                    onComplete(totalCoins, totalXp, { chestsFound, secretFound });
+                  }}
+                  disabled={rewardClaimed}
+                  className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl disabled:opacity-70"
+                >
+                  {rewardClaimed ? "Забираємо…" : "Забрати нагороду"}
                 </button>
               </div>
             )}

@@ -85,6 +85,7 @@ export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, 
   const [finished, setFinished] = useState(false);
   const [placement, setPlacement] = useState(null);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [rewardClaimed, setRewardClaimed] = useState(false);
 
   const lastAnswerTimeRef = useRef({ player: TIME_LIMIT, rivalA: TIME_LIMIT / 2, rivalB: TIME_LIMIT / 2 });
   const bestStreakRef = useRef(0);
@@ -459,14 +460,21 @@ export default function RaceScreen({ avatar, difficulty, trainingWinsToday = 0, 
             {/* 2.6 Кнопки дій */}
             <div className="flex flex-col gap-3">
               <button
-                onClick={() => onComplete(placement.finalCoins, placement.finalXp, {
-                  difficulty, place: placement.place, accuracy: placement.accuracy,
-                  avgResponseTime: placement.avgResponseTime, bestStreak: placement.bestStreak,
-                  gapToSecond: placement.gapToSecond, score: placement.score,
-                })}
-                className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl"
+                onClick={() => {
+                  // Захист від подвійного натискання (launch-plan.md, розділ 16) —
+                  // без цього швидкий подвійний тап міг би нарахувати нагороду двічі.
+                  if (rewardClaimed) return;
+                  setRewardClaimed(true);
+                  onComplete(placement.finalCoins, placement.finalXp, {
+                    difficulty, place: placement.place, accuracy: placement.accuracy,
+                    avgResponseTime: placement.avgResponseTime, bestStreak: placement.bestStreak,
+                    gapToSecond: placement.gapToSecond, score: placement.score,
+                  });
+                }}
+                disabled={rewardClaimed}
+                className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl disabled:opacity-70"
               >
-                Забрати нагороду
+                {rewardClaimed ? "Забираємо…" : "Забрати нагороду"}
               </button>
               <button onClick={retry} className="map-ghost-button w-full rounded-2xl py-3 font-display font-bold text-sm">
                 Спробувати ще раз (без нагороди)
