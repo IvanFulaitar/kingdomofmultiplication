@@ -99,10 +99,17 @@ export default function App() {
     persist({ ...progress, avatar: avatarId });
   }
 
+  // "combined" (рівні 10-12, ланцюжки дій) і "compare" (порівняння двох
+  // виразів, launch-plan.md розділ 7) не відповідають одному факту
+  // множення "AxB" — pair у них має інший формат, тож ці kind виключені
+  // з facts/table7/weakFixed. "missing" і "wordProblem" — той самий факт
+  // у іншому вигляді, тому рахуються як завжди.
+  const NON_FACT_KINDS = ["combined", "compare"];
+
   function recordFact(pair, correct, kind) {
     let p = ensureDaily(progress);
     let weakFixed = false;
-    if (kind !== "combined") {
+    if (!NON_FACT_KINDS.includes(kind)) {
       const existing = p.facts?.[pair] ?? { correct: 0, wrong: 0 };
       // "Слабкий, і щойно виправлений" — фіксуємо ДО оновлення факту нижче,
       // інакше existing уже враховуватиме цю саму правильну відповідь.
@@ -112,11 +119,10 @@ export default function App() {
     }
     if (correct) {
       p = { ...p, daily: { ...p.daily, correctToday: p.daily.correctToday + 1 } };
-      // "pair" для класичних/missing прикладів завжди має вигляд "AxB" —
-      // якщо один із множників 7, це відповідь із таблиці на 7 (щоденне
-      // завдання table7x5). Складені (kind==="combined") приклади мають
-      // інший формат pair і тут навмисно не рахуються.
-      if (kind !== "combined" && pair.split("x").includes("7")) {
+      // "pair" для класичних/missing/wordProblem прикладів завжди має
+      // вигляд "AxB" — якщо один із множників 7, це відповідь із таблиці
+      // на 7 (щоденне завдання table7x5).
+      if (!NON_FACT_KINDS.includes(kind) && pair.split("x").includes("7")) {
         p = { ...p, daily: { ...p.daily, table7Today: (p.daily.table7Today ?? 0) + 1 } };
       }
       if (weakFixed) {

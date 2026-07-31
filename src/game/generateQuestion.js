@@ -25,12 +25,13 @@ export function generateQuestion(levelId, lastPair, weakFacts) {
   return generateClassicQuestion(levelId, lastPair, weakFacts);
 }
 
-function generateClassicQuestion(levelId, lastPair, weakFacts = []) {
+// Обирає (a, b) для поточного рівня — приблизно половина прикладів у межах
+// поточного рівня береться зі "слабких" фактів (де дитина раніше помилялась),
+// щоб вони поверталися частіше, але не одразу підряд (lastPair).
+function pickFact(levelId, lastPair, weakFacts) {
   const region = REGIONS.find((r) => r.levels.includes(levelId));
   const [lo, hi] = region.range;
 
-  // Приблизно половина прикладів у межах поточного рівня — ті, де дитина
-  // раніше помилялася, щоб вони поверталися частіше, але не поспіль.
   const weakInRange = weakFacts
     .map((k) => k.split("x").map(Number))
     .filter(([wa]) => wa >= lo && wa <= hi);
@@ -47,23 +48,110 @@ function generateClassicQuestion(levelId, lastPair, weakFacts = []) {
       pair = factKey(a, b);
     } while (pair === lastPair);
   }
+  return { a, b, pair, region };
+}
 
+function buildWrongAnswers(correct, a, b) {
+  const options = new Set([correct]);
+  while (options.size < 4) {
+    const delta = [1, -1, 2, -2, a, -a, b, -b][Math.floor(Math.random() * 8)];
+    const wrong = correct + delta;
+    if (wrong > 0 && wrong !== correct) options.add(wrong);
+  }
+  return shuffle([...options]);
+}
+
+// launch-plan.md, розділ 7 "Урізноманітнити завдання в сюжетних рівнях":
+// рекомендований розподіл — 50% звичайних, 20% пропущений множник,
+// 15% порівняння, 15% текстова задача. "Пропущений множник" і далі
+// відкривається лише з рівня 7 (як і раніше) — його частку на молодших
+// рівнях пропорційно перерозподілено між рештою трьох типів.
+//
+// Свідомо НЕ реалізовано в цьому заході (з таблиці плану): "правда чи
+// помилка", "обернене завдання" (÷), "сортування", "пошук пари", "вибір
+// дверей" — останні два вже фактично покриті іншими режимами (Пам'ять,
+// Лабіринт), а решта потребують окремого продумування UI/балансу.
+function pickQuestionType(levelId) {
+  const r = Math.random();
+  if (levelId >= 7) {
+    if (r < 0.5) return "classic";
+    if (r < 0.7) return "missing";
+    if (r < 0.85) return "compare";
+    return "wordProblem";
+  }
+  if (r < 0.625) return "classic";
+  if (r < 0.8125) return "compare";
+  return "wordProblem";
+}
+
+const WORD_PROBLEM_TEMPLATES = [
+  (a, b) => `У ${a} кошиках лежить по ${b} яблук у кожному. Скільки яблук усього?`,
+  (a, b) => `У ${a} коробках по ${b} олівців. Скільки всього олівців?`,
+  (a, b) => `На ${a} полицях стоїть по ${b} книжок. Скільки книжок усього?`,
+  (a, b) => `${a} гноми зібрали по ${b} грибів кожен. Скільки грибів разом?`,
+  (a, b) => `У саду ${a} дерев, і на кожному по ${b} яблук. Скільки яблук усього?`,
+  (a, b) => `${a} вози везуть по ${b} мішків борошна. Скільки мішків усього?`,
+  (a, b) => `У ${a} клітках сидить по ${b} кроликів. Скільки кроликів усього?`,
+  (a, b) => `На ${a} тарілках лежить по ${b} печива. Скільки печива усього?`,
+];
+
+function generateClassicQuestion(levelId, lastPair, weakFacts = []) {
+  const type = pickQuestionType(levelId);
+
+  if (type === "compare") {
+    const first = pickFact(levelId, lastPair, weakFacts);
+    let second = pickFact(levelId, first.pair, weakFacts);
+    // Уникаємо нічиєї (однаковий добуток) і повного дублювання пари.
+    // guard — запобіжник за прикладом бага в "missing" вище: якщо з
+    // якоїсь причини (напр. дуже вузький діапазон рівня) різних добутків
+    // довго не трапляється, після 30 спроб просто приймаємо те, що є,
+    // замість ризику зависання (нічия на екрані — рідкісний, але
+    // нешкідливий побічний ефект, набагато краще за завислу вкладку).
+    let guard = 0;
+    while (guard < 30 && (second.a * second.b === first.a * first.b || second.pair === first.pair)) {
+      guard++;
+      second = pickFact(levelId, first.pair, weakFacts);
+    }
+    const left = `${first.a} × ${first.b}`;
+    const right = `${second.a} × ${second.b}`;
+    const correct = first.a * first.b > second.a * second.b ? left : right;
+    return {
+      pair: `cmp-${first.pair}_${second.pair}`,
+      kind: "compare",
+      prompt: "Який вираз має більше значення?",
+      correct,
+      options: shuffle([left, right]),
+    };
+  }
+
+  const { a, b, pair } = pickFact(levelId, lastPair, weakFacts);
   const answer = a * b;
-  const isMissingNumber = levelId >= 7 && Math.random() < 0.4;
 
-  if (isMissingNumber) {
+  if (type === "missing") {
+    // ВАЖЛИВО: попередня версія (зсув -2..+2, затиснутий до мінімуму 2)
+    // для b===2 могла дати лише 3 різних кандидати (2,3,4), тоді як цикл
+    // вимагав 4 — реальний нескінченний цикл (зависання вкладки) щоразу,
+    // як випадав пропущений множник "2". Зсув розширено до -3..+3 (7
+    // варіантів — для будь-якого b≥2 після затискання лишається ≥4
+    // унікальних), плюс запобіжник guard і послідовний filler — цикл
+    // гарантовано завершується за будь-яких обставин.
     const options = new Set([b]);
-    while (options.size < 4) options.add(Math.max(2, b + Math.floor(Math.random() * 5) - 2));
+    let guard = 0;
+    while (options.size < 4 && guard < 30) {
+      guard++;
+      options.add(Math.max(2, b + Math.floor(Math.random() * 7) - 3));
+    }
+    let filler = b + 3;
+    while (options.size < 4) { options.add(filler); filler++; }
     return { pair, kind: "missing", prompt: `${a} × ? = ${answer}`, correct: b, options: shuffle([...options]) };
   }
 
-  const options = new Set([answer]);
-  while (options.size < 4) {
-    const delta = [1, -1, 2, -2, a, -a, b, -b][Math.floor(Math.random() * 8)];
-    const wrong = answer + delta;
-    if (wrong > 0 && wrong !== answer) options.add(wrong);
+  if (type === "wordProblem") {
+    const template = WORD_PROBLEM_TEMPLATES[Math.floor(Math.random() * WORD_PROBLEM_TEMPLATES.length)];
+    return { pair, kind: "wordProblem", prompt: template(a, b), correct: answer, options: buildWrongAnswers(answer, a, b) };
   }
-  return { pair, kind: "classic", prompt: `${a} × ${b} = ?`, correct: answer, options: shuffle([...options]) };
+
+  return { pair, kind: "classic", prompt: `${a} × ${b} = ?`, correct: answer, options: buildWrongAnswers(answer, a, b) };
 }
 
 // Рівні 10-12: комбіновані вирази з кількома діями (×, +, −).

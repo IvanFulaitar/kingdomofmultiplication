@@ -89,8 +89,11 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
     answeredRef.current = true;
     const correct = option === question.correct;
     // Коротке пояснення факту (launch-plan.md, розділ 6) — лише для
-    // звичайних прикладів множення ("AxB"), не для складених (kind==="combined").
-    const explanation = !correct && question.kind !== "combined" ? explainFromPair(question.pair) : null;
+    // звичайних прикладів множення ("AxB"): не для складених ("combined")
+    // і не для порівняння двох виразів ("compare", pair — не один факт).
+    const explanation = !correct && !["combined", "compare"].includes(question.kind)
+      ? explainFromPair(question.pair)
+      : null;
     setFeedback({ correct, chosen: option, explanation });
     if (correct) setCorrectCount((c) => c + 1);
     onAnswer(question.pair, correct, question.kind);
@@ -209,7 +212,13 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
             <span className="absolute bottom-2 left-3 text-lg text-amber-700/30 font-display">−</span>
             <span className="absolute bottom-2 right-3 text-lg text-amber-700/30 font-display">?</span>
             <div className="text-xs text-center text-amber-800/70 font-semibold mb-1.5 tracking-wide">Обери правильну відповідь</div>
-            <div className={`font-display font-extrabold text-center tracking-wide ${question.prompt.length > 14 ? "text-3xl" : "text-5xl"}`}>{question.prompt}</div>
+            <div
+              className={`font-display font-extrabold text-center tracking-wide ${
+                question.prompt.length > 40 ? "text-lg leading-snug" : question.prompt.length > 14 ? "text-3xl" : "text-5xl"
+              }`}
+            >
+              {question.prompt}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3.5 w-full">
