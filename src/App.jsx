@@ -18,6 +18,7 @@ import {
 import MenuScreen from "./screens/MenuScreen.jsx";
 import BadgeToast from "./components/BadgeToast.jsx";
 import SaveNoticeToast from "./components/SaveNoticeToast.jsx";
+const OnboardingScreen = lazy(() => import("./screens/OnboardingScreen.jsx"));
 const ShopScreen = lazy(() => import("./screens/ShopScreen.jsx"));
 const TrainingScreen = lazy(() => import("./screens/TrainingScreen.jsx"));
 const MemoryScreen = lazy(() => import("./screens/MemoryScreen.jsx"));
@@ -50,11 +51,17 @@ export default function App() {
   // localStorage читається синхронно, тому завантаження прогресу тут
   // не потребує async/await (на відміну від артефактної версії).
   useEffect(() => {
-    setProgress(loadProgress());
+    const p = loadProgress();
+    setProgress(p);
     // Якщо loadProgress() довелося відновлювати з backup або скидати
     // через пошкоджений запис — показати про це один раз, одразу після
     // старту (див. src/game/progress.js).
     setSaveWarning(takeLoadWarning());
+    // Перший запуск нового гравця (launch-plan.md, розділ 4) — показуємо
+    // онбординг замість головного екрана. Старі збереження мігрують з
+    // onboardingComplete=true (progress.js), тож нинішні гравці цього не
+    // побачать.
+    if (!p.onboardingComplete) setScreen("onboarding");
   }, []);
 
   // Фонова тема стартує один раз на весь час життя застосунку — вона не
@@ -197,6 +204,32 @@ export default function App() {
     persist(p);
   }
 
+  // Завершення онбордингу (launch-plan.md, розділ 4) — приходить рівно
+  // один раз, від OnboardingScreen.jsx. Зібрані під час діагностики facts
+  // зливаємо в progress.facts (та сама структура, якою вже користується
+  // getWeakFacts()/generateQuestion.js — жодного окремого сховища не
+  // потрібно), даємо невелику стартову нагороду за навчальний бій, і
+  // позначаємо onboardingComplete=true, щоб цей екран більше не з'являвся.
+  function completeOnboarding({ facts, confidenceLevel }) {
+    let p = ensureDaily(progress);
+    const mergedFacts = { ...p.facts };
+    for (const [pair, stat] of Object.entries(facts ?? {})) {
+      const existing = mergedFacts[pair] ?? { correct: 0, wrong: 0 };
+      mergedFacts[pair] = { correct: existing.correct + stat.correct, wrong: existing.wrong + stat.wrong };
+    }
+    p = {
+      ...p,
+      onboardingComplete: true,
+      onboardingConfidence: confidenceLevel,
+      facts: mergedFacts,
+      coins: p.coins + 15,
+      xp: (p.xp ?? 0) + 30,
+    };
+    p = checkQuests(p);
+    persist(p);
+    setScreen("menu");
+  }
+
   // На відміну від інших дій, тут потрібно повернути короткий підсумок
   // (скільки зірок/монет/XP отримано, чи піднявся рівень героя), щоб
   // екран результатів міг одразу його показати й анімувати.
@@ -279,6 +312,9 @@ export default function App() {
         />
       )}
       <Suspense fallback={<LoadingGate />}>
+        {screen === "onboarding" && (
+          <OnboardingScreen onComplete={completeOnboarding} />
+        )}
         {screen === "shop" && (
           <ShopScreen
             progress={progress}

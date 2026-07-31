@@ -49,6 +49,12 @@ function emptyDaily(date) {
 export function defaultProgress() {
   return {
     saveVersion: CURRENT_SAVE_VERSION,
+    // launch-plan.md, розділ 4 "Повністю переробити перші 5 хвилин гри" —
+    // онбординг (OnboardingScreen.jsx) показується РІВНО один раз, поки
+    // це false. Дивись migrateProgress нижче: старі збереження (без цього
+    // поля) отримують true заднім числом, якщо в них уже є прогрес.
+    onboardingComplete: false,
+    onboardingConfidence: null, // "beginner" | "intermediate" | "confident" — лише інформаційне
     totalStars: 0, coins: 0, xp: 0,
     streak: { current: 0, lastPlayedDate: null },
     levels: {}, badges: [], facts: {},
@@ -96,7 +102,23 @@ function migrateProgress(p) {
     activeQuestIds: dailyBase.activeQuestIds ?? pickDailyQuestIds(dailyBase.date ?? new Date().toISOString().slice(0, 10)),
   };
 
-  return { ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily, daily };
+  // Онбординг (розділ 4 launch-plan.md) з'явився вже після того, як багато
+  // хто пройшов реєстрацію (perevantajennya localStorage). p.onboardingComplete
+  // тут ЗАВЖДИ визначено (defaultProgress() дає false), тож саму присутність
+  // поля в оригінальному JSON перевірити вже не можна — натомість, якщо в
+  // збереженні є БУДЬ-ЯКІ ознаки реального прогресу (пройдений рівень,
+  // монети, XP, зірки, бейджі), вважаємо онбординг уже давно пройденим,
+  // навіть якщо саме поле відсутнє. Інакше показали б навчальний екран
+  // гравцю, який вже давно грає.
+  const hasPriorProgress =
+    Object.keys(p.levels ?? {}).length > 0 ||
+    (p.coins ?? 0) > 0 ||
+    (p.xp ?? 0) > 0 ||
+    (p.totalStars ?? 0) > 0 ||
+    (p.badges ?? []).length > 0;
+  const onboardingComplete = p.onboardingComplete === true || hasPriorProgress;
+
+  return { ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily, daily, onboardingComplete };
 }
 
 // Версійна міграція формату збереження (окремо від migrateProgress вище,
