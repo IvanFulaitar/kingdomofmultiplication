@@ -1,9 +1,32 @@
 import { QUESTS } from "../data/rewards.js";
 
 export const STORAGE_KEY = "kingdom-multiplication-progress";
+// Резервна копія — завжди попередній успішно збережений стан, на випадок
+// якщо основний запис пошкодиться (наприклад, вкладку закрили посеред
+// запису). "-corrupted" — сюди складаємо будь-який нечитаний JSON, який
+// знайшли при завантаженні, лише для можливого експорту/діагностики.
+const BACKUP_KEY = `${STORAGE_KEY}-backup`;
+const CORRUPTED_KEY = `${STORAGE_KEY}-corrupted`;
+
+// Версія ФОРМАТУ збереження (не плутати з APP_VERSION у version.js).
+// Піднімати лише коли міняється сама структура полів прогресу настільки,
+// що старі дані треба явно перетворити (див. migrateSave нижче).
+export const CURRENT_SAVE_VERSION = 1;
+
+// Останнє попередження про відновлення/втрату збереження при завантаженні
+// (не персистентне — живе лише до першого виклику takeLoadWarning()).
+// Не персистимо його в самому прогресі, щоб випадково не записати в save.
+let lastLoadWarning = null;
+
+export function takeLoadWarning() {
+  const w = lastLoadWarning;
+  lastLoadWarning = null;
+  return w;
+}
 
 export function defaultProgress() {
   return {
+    saveVersion: CURRENT_SAVE_VERSION,
     totalStars: 0, coins: 0, xp: 0,
     streak: { current: 0, lastPlayedDate: null },
     levels: {}, badges: [], facts: {},
@@ -34,6 +57,27 @@ function migrateProgress(p) {
   const raceChampionUnlocked = p.raceChampionUnlocked ?? false;
   const raceDaily = p.raceDaily ?? { date: null, trainingWins: 0 };
   return { ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily };
+}
+
+// Версійна міграція формату збереження (окремо від migrateProgress вище,
+// яка лише дозаповнює поля, що з'явились без зміни saveVersion). Кожна
+// майбутня зміна структури save додає власний "if (next.saveVersion === N)"
+// крок і піднімає версію — так старі збереження ніколи не губляться мовчки.
+export function migrateSave(raw) {
+  let next = migrateProgress(raw);
+
+  if (!next.saveVersion || next.saveVersion < 1) {
+    // Найперші збереження (до появи saveVersion) — самі поля вже приведені
+    // до ладу через migrateProgress вище, лишається проставити версію.
+    next = { ...next, saveVersion: 1 };
+  }
+
+  // Приклад майбутнього кроку, коли з'явиться версія 2:
+  // if (next.saveVersion === 1) {
+  //   next = { ...next, /* нові/перейменовані поля */ saveVersion: 2 };
+  // }
+
+  return next;
 }
 
 export function ensureDaily(p) {
@@ -77,15 +121,58 @@ export function starsForMistakes(mistakes) {
   return 1;
 }
 
+// undefined = ключ був, але JSON зламаний; null = ключа просто не було
+// (перший запуск — це НЕ пошкодження, попереджати нема про що).
+function safeParseJson(raw) {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+}
+
+function finishLoad(parsed) {
+  let p = migrateSave({ ...defaultProgress(), ...parsed });
+  p = updateStreak(p);
+  p = ensureDaily(p);
+  return p;
+}
+
 // Це справжній проєкт поза Claude, тож прогрес зберігається у звичайному
 // localStorage браузера — а не window.storage, який працював тільки в чаті.
+//
+// Порядок відновлення при пошкодженому основному записі:
+// 1. Спробувати резервну копію (BACKUP_KEY) — це попередній вдалий save.
+// 2. Якщо й вона нечитабельна/відсутня — почати з нуля, але зберегти
+//    зіпсований JSON під CORRUPTED_KEY (не видаляти мовчки — можна буде
+//    показати гравцю/автору для діагностики чи спробувати відновити вручну).
 export function loadProgress() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    let p = raw ? migrateProgress({ ...defaultProgress(), ...JSON.parse(raw) }) : defaultProgress();
-    p = updateStreak(p);
-    p = ensureDaily(p);
-    return p;
+    const parsed = safeParseJson(raw);
+
+    if (parsed !== null && parsed !== undefined) {
+      return finishLoad(parsed);
+    }
+
+    if (parsed === undefined) {
+      try {
+        localStorage.setItem(CORRUPTED_KEY, raw);
+      } catch {
+        /* не критично — просто не буде куди зазирнути постфактум */
+      }
+
+      const backupRaw = localStorage.getItem(BACKUP_KEY);
+      const backupParsed = safeParseJson(backupRaw);
+      if (backupParsed !== null && backupParsed !== undefined) {
+        lastLoadWarning = "recovered-from-backup";
+        return finishLoad(backupParsed);
+      }
+      lastLoadWarning = "reset-corrupted";
+    }
+
+    return defaultProgress();
   } catch {
     return defaultProgress();
   }
@@ -93,9 +180,52 @@ export function loadProgress() {
 
 export function saveProgress(p) {
   try {
+    // Перед перезаписом основного ключа копіюємо його ПОПЕРЕДНІЙ (ще не
+    // зіпсований) вміст у backup — так backup завжди на один крок позаду,
+    // і зіпсований запис ніколи сам себе не перезаписує в backup.
+    const prevRaw = localStorage.getItem(STORAGE_KEY);
+    if (prevRaw !== null && safeParseJson(prevRaw) !== undefined) {
+      localStorage.setItem(BACKUP_KEY, prevRaw);
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
   } catch {
     /* збереження не вдалося цього разу — гра просто продовжує роботу */
+  }
+}
+
+// Викликається лише з явної дії гравця (кнопка "Експортувати прогрес") —
+// зберігає весь поточний прогрес у JSON-файл, який можна покласти в
+// хмару чи перенести на інший пристрій до появи серверних акаунтів.
+export function exportSaveFile(p) {
+  try {
+    const payload = JSON.stringify(p, null, 2);
+    const blob = new Blob([payload], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const date = new Date().toISOString().slice(0, 10);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kingdom-math-save-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Розбирає текст імпортованого файлу й повертає {ok:true, progress} або
+// {ok:false, error}. Навмисно НЕ зберігає сам — виклик має явно передати
+// готовий progress у saveProgress()/persist(), щоб екран міг спершу
+// запитати підтвердження (імпорт перезаписує весь поточний прогрес).
+export function parseImportedSave(text) {
+  try {
+    const parsed = JSON.parse(text);
+    if (!parsed || typeof parsed !== "object") return { ok: false, error: "empty" };
+    return { ok: true, progress: finishLoad(parsed) };
+  } catch {
+    return { ok: false, error: "invalid-json" };
   }
 }
 

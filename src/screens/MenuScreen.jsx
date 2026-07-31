@@ -26,14 +26,43 @@ function ToggleSwitch({ checked, onChange, label }) {
   );
 }
 
-export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining }) {
+export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onExportSave, onImportSave }) {
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
   const [musicOn, setMusicOn] = useState(() => isMusicEnabled());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [importStatus, setImportStatus] = useState(null); // null | "ok" | "error"
   const settingsRef = useRef(null);
+  const importInputRef = useRef(null);
   const xpPct = (into / need) * 100;
+
+  function handleExportClick() {
+    playUiClick();
+    onExportSave?.();
+  }
+
+  function handleImportClick() {
+    playUiClick();
+    importInputRef.current?.click();
+  }
+
+  function handleImportFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // дозволяє обрати той самий файл вдруге
+    if (!file) return;
+    const confirmed = window.confirm(
+      "Завантажити це збереження? Поточний прогрес у грі буде замінено."
+    );
+    if (!confirmed) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const ok = onImportSave?.(String(reader.result ?? ""));
+      setImportStatus(ok ? "ok" : "error");
+      setTimeout(() => setImportStatus(null), 3200);
+    };
+    reader.readAsText(file);
+  }
 
   function toggleSfx(next) {
     setSfxOn(next);
@@ -86,6 +115,34 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
               <span className="text-sm font-semibold text-white">Звуки</span>
               <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label="Увімкнути/вимкнути звукові ефекти" />
             </div>
+            <div className="h-px bg-white/10 my-0.5" />
+            <button
+              onClick={handleExportClick}
+              className="text-left text-xs font-semibold text-violet-200 hover:text-white transition"
+            >
+              ⬇ Експортувати прогрес
+            </button>
+            <button
+              onClick={handleImportClick}
+              className="text-left text-xs font-semibold text-violet-200 hover:text-white transition"
+            >
+              ⬆ Завантажити збереження
+            </button>
+            {importStatus === "ok" && (
+              <span className="text-[11px] text-emerald-300">Прогрес завантажено!</span>
+            )}
+            {importStatus === "error" && (
+              <span className="text-[11px] text-red-300">Файл пошкоджений або не той формат.</span>
+            )}
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImportFile}
+              className="hidden"
+              aria-hidden="true"
+              tabIndex={-1}
+            />
           </div>
         )}
       </div>

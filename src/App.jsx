@@ -9,6 +9,7 @@ import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
   starsForMistakes, heroLevelFromXp,
   recordRaceResult, todaysTrainingWins,
+  takeLoadWarning, exportSaveFile, parseImportedSave,
 } from "./game/progress.js";
 
 // MenuScreen — перше, що бачить гравець, тому вантажиться одразу.
@@ -16,6 +17,7 @@ import {
 // JS усіх ігрових режимів, які людина, можливо, ще не відкриє.
 import MenuScreen from "./screens/MenuScreen.jsx";
 import BadgeToast from "./components/BadgeToast.jsx";
+import SaveNoticeToast from "./components/SaveNoticeToast.jsx";
 const ShopScreen = lazy(() => import("./screens/ShopScreen.jsx"));
 const TrainingScreen = lazy(() => import("./screens/TrainingScreen.jsx"));
 const MemoryScreen = lazy(() => import("./screens/MemoryScreen.jsx"));
@@ -43,11 +45,16 @@ export default function App() {
   const [outcome, setOutcome] = useState(null);
   const [showBadges, setShowBadges] = useState(false);
   const [newBadge, setNewBadge] = useState(null);
+  const [saveWarning, setSaveWarning] = useState(null);
 
   // localStorage читається синхронно, тому завантаження прогресу тут
   // не потребує async/await (на відміну від артефактної версії).
   useEffect(() => {
     setProgress(loadProgress());
+    // Якщо loadProgress() довелося відновлювати з backup або скидати
+    // через пошкоджений запис — показати про це один раз, одразу після
+    // старту (див. src/game/progress.js).
+    setSaveWarning(takeLoadWarning());
   }, []);
 
   // Фонова тема стартує один раз на весь час життя застосунку — вона не
@@ -184,6 +191,20 @@ export default function App() {
     };
   }
 
+  // Експорт — просто скачує поточний progress як є, монет/помилок не
+  // чіпає. Імпорт замінює ВЕСЬ прогрес, тож підтвердження запитує сам
+  // виклик (MenuScreen), ще до звернення сюди; тут лише розбір + запис.
+  function exportSave() {
+    return exportSaveFile(progress);
+  }
+
+  function importSave(text) {
+    const result = parseImportedSave(text);
+    if (!result.ok) return false;
+    persist(result.progress);
+    return true;
+  }
+
   function startNextChallenge(levelId) {
     if (levelId && LEVEL_META[levelId]) {
       setActiveLevel(levelId);
@@ -209,6 +230,8 @@ export default function App() {
           onBadges={() => setShowBadges(true)}
           onShop={() => setScreen("shop")}
           onTraining={() => setScreen("training")}
+          onExportSave={exportSave}
+          onImportSave={importSave}
         />
       )}
       <Suspense fallback={<LoadingGate />}>
@@ -295,6 +318,7 @@ export default function App() {
         {showBadges && <BadgesModal progress={progress} onClose={() => setShowBadges(false)} />}
       </Suspense>
       {newBadge && <BadgeToast badge={newBadge} onClose={() => setNewBadge(null)} />}
+      {saveWarning && <SaveNoticeToast reason={saveWarning} onClose={() => setSaveWarning(null)} />}
     </main>
   );
 }
