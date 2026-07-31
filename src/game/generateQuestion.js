@@ -12,6 +12,15 @@ export function factKey(a, b) {
   return `${a}x${b}`;
 }
 
+// Множення переставне (6×8 і 8×6 — по суті один і той самий факт), а
+// звичайний factKey() зберігає порядок множників (потрібно для facts у
+// progress.js). Для ПОРІВНЯННЯ "чи це недавно вже було" множники
+// сортуємо — так "6×8" і "8×6" вважаються однаковим нещодавнім фактом,
+// і одне не може одразу підряд замінити інше.
+function normalizeFact(a, b) {
+  return a <= b ? `${a}x${b}` : `${b}x${a}`;
+}
+
 // "Слабкий" факт: дитина помиляється в ньому щонайменше так само часто, як вгадує.
 export function getWeakFacts(facts) {
   if (!facts) return [];
@@ -20,15 +29,56 @@ export function getWeakFacts(facts) {
     .map(([key]) => key);
 }
 
-export function generateQuestion(levelId, lastPair, weakFacts) {
+// Витягує нормалізовані факти, задіяні в питанні — потрібно, щоб виклик
+// GameScreen міг накопичити невелику історію "нещодавно показаного" і
+// передати її в наступний generateQuestion() (recentNormalized нижче).
+// "combined" (рівні 10-12) сюди не входить — той режим має власний,
+// окремий захист від повторів через lastPair.
+export function factsUsedIn(question) {
+  if (!question) return [];
+  if (question.kind === "compare") {
+    const m = /^cmp-(\d+)x(\d+)_(\d+)x(\d+)$/.exec(question.pair);
+    if (!m) return [];
+    return [normalizeFact(Number(m[1]), Number(m[2])), normalizeFact(Number(m[3]), Number(m[4]))];
+  }
+  const m = /^(\d+)x(\d+)$/.exec(question.pair ?? "");
+  if (!m) return [];
+  return [normalizeFact(Number(m[1]), Number(m[2]))];
+}
+
+export function generateQuestion(levelId, lastPair, weakFacts, recentNormalized = []) {
   if (levelId >= 10) return generateCombinedQuestion(levelId, lastPair);
-  return generateClassicQuestion(levelId, lastPair, weakFacts);
+  return generateClassicQuestion(levelId, weakFacts, recentNormalized);
+}
+
+// Випадковий (a, b) у діапазоні рівня, який ще не входить у recentNormalized
+// (останні кілька нещодавно показаних фактів, БЕЗ урахування порядку
+// множників). guard — той самий запобіжник, що й в інших циклах цього
+// файлу: гарантія виходу з циклу, навіть якщо колись recentNormalized
+// випадково покриє весь маленький діапазон рівня.
+function randomFact(lo, hi, recentNormalized) {
+  let a, b, guard = 0;
+  do {
+    a = Math.floor(Math.random() * (hi - lo + 1)) + lo;
+    b = Math.floor(Math.random() * 9) + 2;
+    guard++;
+  } while (recentNormalized.includes(normalizeFact(a, b)) && guard < 50);
+  return { a, b, pair: factKey(a, b) };
 }
 
 // Обирає (a, b) для поточного рівня — приблизно половина прикладів у межах
 // поточного рівня береться зі "слабких" фактів (де дитина раніше помилялась),
-// щоб вони поверталися частіше, але не одразу підряд (lastPair).
-function pickFact(levelId, lastPair, weakFacts) {
+// щоб вони поверталися частіше, але НЕ повторюючи те, що показувалось
+// останні кілька прикладів (recentNormalized, без урахування порядку
+// множників — "6×8" і "8×6" вважаються тим самим).
+//
+// ВАЖЛИВО, виправлений баг: попередня версія при єдиному доступному
+// слабкому факті (weakInRange.length===1), який якраз і був lastPair,
+// падала в `?? weakInRange[0]` — тобто ПРИМУСОВО повертала той самий
+// факт, що й щойно показувався (а при 50% шансі на цю гілку — могла й
+// кілька разів підряд). Тепер за відсутності "свіжого" слабкого факту
+// просто беремо звичайний випадковий, а не форсуємо повтор.
+function pickFact(levelId, recentNormalized, weakFacts) {
   const region = REGIONS.find((r) => r.levels.includes(levelId));
   const [lo, hi] = region.range;
 
@@ -36,18 +86,14 @@ function pickFact(levelId, lastPair, weakFacts) {
     .map((k) => k.split("x").map(Number))
     .filter(([wa]) => wa >= lo && wa <= hi);
 
-  let a, b, pair;
   if (weakInRange.length && Math.random() < 0.5) {
-    const pick = weakInRange.find((p) => factKey(...p) !== lastPair) ?? weakInRange[0];
-    [a, b] = pick;
-    pair = factKey(a, b);
-  } else {
-    do {
-      a = Math.floor(Math.random() * (hi - lo + 1)) + lo;
-      b = Math.floor(Math.random() * 9) + 2;
-      pair = factKey(a, b);
-    } while (pair === lastPair);
+    const pick = weakInRange.find(([wa, wb]) => !recentNormalized.includes(normalizeFact(wa, wb)));
+    if (pick) {
+      const [a, b] = pick;
+      return { a, b, pair: factKey(a, b), region };
+    }
   }
+  const { a, b, pair } = randomFact(lo, hi, recentNormalized);
   return { a, b, pair, region };
 }
 
@@ -95,22 +141,26 @@ const WORD_PROBLEM_TEMPLATES = [
   (a, b) => `На ${a} тарілках лежить по ${b} печива. Скільки печива усього?`,
 ];
 
-function generateClassicQuestion(levelId, lastPair, weakFacts = []) {
+function generateClassicQuestion(levelId, weakFacts = [], recentNormalized = []) {
   const type = pickQuestionType(levelId);
 
   if (type === "compare") {
-    const first = pickFact(levelId, lastPair, weakFacts);
-    let second = pickFact(levelId, first.pair, weakFacts);
-    // Уникаємо нічиєї (однаковий добуток) і повного дублювання пари.
-    // guard — запобіжник за прикладом бага в "missing" вище: якщо з
-    // якоїсь причини (напр. дуже вузький діапазон рівня) різних добутків
-    // довго не трапляється, після 30 спроб просто приймаємо те, що є,
-    // замість ризику зависання (нічия на екрані — рідкісний, але
-    // нешкідливий побічний ефект, набагато краще за завислу вкладку).
+    const first = pickFact(levelId, recentNormalized, weakFacts);
+    // "Свіжий" список для другого факту — не лише загальна нещодавня
+    // історія, а й перший факт цього самого порівняння (щоб не показати
+    // "6 × 8 проти 8 × 6", по суті одне й те саме навпаки).
+    const avoidForSecond = [...recentNormalized, normalizeFact(first.a, first.b)];
+    let second = pickFact(levelId, avoidForSecond, weakFacts);
+    // Уникаємо нічиєї (однаковий добуток). guard — запобіжник за прикладом
+    // бага в "missing" нижче: якщо з якоїсь причини (напр. дуже вузький
+    // діапазон рівня) різних добутків довго не трапляється, після 30
+    // спроб просто приймаємо те, що є, замість ризику зависання (нічия на
+    // екрані — рідкісний, але нешкідливий побічний ефект, набагато краще
+    // за завислу вкладку).
     let guard = 0;
-    while (guard < 30 && (second.a * second.b === first.a * first.b || second.pair === first.pair)) {
+    while (guard < 30 && second.a * second.b === first.a * first.b) {
       guard++;
-      second = pickFact(levelId, first.pair, weakFacts);
+      second = pickFact(levelId, avoidForSecond, weakFacts);
     }
     const left = `${first.a} × ${first.b}`;
     const right = `${second.a} × ${second.b}`;
@@ -124,7 +174,7 @@ function generateClassicQuestion(levelId, lastPair, weakFacts = []) {
     };
   }
 
-  const { a, b, pair } = pickFact(levelId, lastPair, weakFacts);
+  const { a, b, pair } = pickFact(levelId, recentNormalized, weakFacts);
   const answer = a * b;
 
   if (type === "missing") {

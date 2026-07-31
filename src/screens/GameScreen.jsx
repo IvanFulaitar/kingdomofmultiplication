@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AVATARS } from "../data/cosmetics.js";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
-import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel } from "../game/generateQuestion.js";
+import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel, factsUsedIn } from "../game/generateQuestion.js";
 import { explainFromPair } from "../game/explainFact.js";
 import { setMusicIntensity } from "../game/music.js";
 import { preloadSfxGroup, playAttack, playEnemyHit, playHeartLost, playVictory, playDefeat, playModalOpen } from "../game/sfx.js";
@@ -24,6 +24,11 @@ function ProgressDot({ state }) {
   return <span className={`w-2.5 h-2.5 rounded-full inline-block ${cls}`} />;
 }
 
+// Скільки останніх фактів (без урахування порядку множників — "6×8" і
+// "8×6" рахуються однаковим) пам'ятаємо, щоб не показати той самий вираз
+// одразу знову. Дивись generateQuestion.js: factsUsedIn()/recentNormalized.
+const RECENT_FACTS_HISTORY = 2;
+
 export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExit, onFinish, onGameOver }) {
   const timeLimit = timeForLevel(levelId);
   const heroIcon = AVATARS.find((av) => av.id === avatar)?.icon ?? "🧙";
@@ -39,6 +44,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   const [feedback, setFeedback] = useState(null); // {correct: bool, chosen}
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const lastPairRef = useRef(question.pair);
+  const recentFactsRef = useRef(factsUsedIn(question));
   const answeredRef = useRef(false);
   const exitConfirmRef = useRef(false);
 
@@ -76,8 +82,13 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   }, []);
 
   function nextQuestion() {
-    const nq = generateQuestion(levelId, lastPairRef.current, weakFacts);
+    const nq = generateQuestion(levelId, lastPairRef.current, weakFacts, recentFactsRef.current);
     lastPairRef.current = nq.pair;
+    // Оновлюємо коротку історію "нещодавно показаних фактів" (без
+    // урахування порядку множників) — так наступний виклик уникає і
+    // точного, і переставленого повтору (launch-plan.md-стиль виправлення
+    // бага "один і той же вираз кілька разів підряд").
+    recentFactsRef.current = [...recentFactsRef.current, ...factsUsedIn(nq)].slice(-RECENT_FACTS_HISTORY);
     setQuestion(nq);
     setTimeLeft(timeLimit);
     setFeedback(null);
