@@ -131,6 +131,18 @@ export default function App() {
       // інакше existing уже враховуватиме цю саму правильну відповідь.
       weakFixed = correct && existing.wrong > 0 && existing.wrong >= existing.correct;
       const key = correct ? "correct" : "wrong";
+      const priorAttempts = existing.correct + existing.wrong;
+      // Згладжена точність (EMA) — для mastery.js:computeMastery, щоб ОДНА
+      // випадкова помилка серед багатьох попередніх успіхів не обвалювала
+      // статус одразу (launch-plan.md, розділ 5/9: "не знижувати статус
+      // після однієї випадкової помилки"). Кожна відповідь лише ЗСУВАЄ
+      // попереднє значення на ALPHA у бік 1 (правильно) чи 0 (помилка), а
+      // не замінює його повністю. Перша відповідь на факт (priorAttempts
+      // === 0, значить smoothedAccuracy ще нема) стартує із самої себе —
+      // без штучного "розгону" з нуля.
+      const SMOOTHING_ALPHA = 0.2;
+      const priorAccuracy = existing.smoothedAccuracy ?? (priorAttempts > 0 ? existing.correct / priorAttempts : correct ? 1 : 0);
+      const smoothedAccuracy = priorAccuracy * (1 - SMOOTHING_ALPHA) + (correct ? 1 : 0) * SMOOTHING_ALPHA;
       // Дані для мастерності (launch-plan.md, розділ 5): серія поспіль
       // (скидається на помилку), коли востаннє відповідали, і сума часу
       // відповіді — середнє рахується на льоту (totalResponseTimeMs /
@@ -142,6 +154,7 @@ export default function App() {
         lastAnsweredAt: Date.now(),
         totalResponseTimeMs: (existing.totalResponseTimeMs ?? 0) + (Number.isFinite(responseTimeMs) ? responseTimeMs : 0),
         answeredCount: (existing.answeredCount ?? 0) + (Number.isFinite(responseTimeMs) ? 1 : 0),
+        smoothedAccuracy,
       };
       p = { ...p, facts: { ...p.facts, [pair]: updated } };
     }
@@ -375,7 +388,12 @@ export default function App() {
           />
         )}
         {screen === "knowledge" && (
-          <MyKnowledgeScreen progress={progress} onBack={() => setScreen(knowledgeReturn)} />
+          <MyKnowledgeScreen
+            progress={progress}
+            onBack={() => setScreen(knowledgeReturn)}
+            onAnswer={recordFact}
+            onReward={rewardPractice}
+          />
         )}
         {screen === "memory" && (
           <MemoryScreen

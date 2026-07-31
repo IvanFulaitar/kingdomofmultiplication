@@ -107,6 +107,16 @@ function buildWrongAnswers(correct, a, b) {
   return shuffle([...options]);
 }
 
+// Для "Мої знання" (src/screens/MyKnowledgeScreen.jsx, WeakPracticeScreen.jsx) —
+// на відміну від generateQuestion() вище, тут (a, b) уже ЗАДАНІ ЗАЗДАЛЕГІДЬ
+// (конкретний слабкий факт із mastery.js:weakestFacts), а не обираються
+// випадково з діапазону рівня. Перевикористовує той самий генератор
+// відповідей-приманок, що й звичайне "classic" питання в бою.
+export function buildFactQuestion(a, b) {
+  const correct = a * b;
+  return { pair: factKey(a, b), kind: "classic", prompt: `${a} × ${b} = ?`, correct, options: buildWrongAnswers(correct, a, b) };
+}
+
 // launch-plan.md, розділ 7 "Урізноманітнити завдання в сюжетних рівнях":
 // рекомендований розподіл — 50% звичайних, 20% пропущений множник,
 // 15% порівняння, 15% текстова задача. "Пропущений множник" і далі

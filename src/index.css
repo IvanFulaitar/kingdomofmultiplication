@@ -2104,3 +2104,182 @@ html, body {
 .race-tertiary-link:active {
   color: rgba(245, 185, 66, 0.9);
 }
+
+/* =====================================================================
+   "Мої знання" — статус засвоєння (MyKnowledgeScreen.jsx, WeakPracticeScreen.jsx)
+   Кольори тіерів навмисно ті самі, що вже встановлені для
+   .answer-btn-correct/.answer-btn-wrong (смарагд/рожево-червоний) — єдина
+   палітра "правильно/неправильно" по всій грі, а не нова окрема система.
+   ===================================================================== */
+
+/* Базова картка — темно-фіолетова, ТОНКА золота рамка (навмисно тонша за
+   .rpg-panel-gold: тут статус головним чином несуть іконка + прогрес-бар +
+   акцент рамки, а не декоративний контур). Колір самої картки НЕ міняється
+   за тіером — лише rgba-акцент рамки нижче (.knowledge-card-*). */
+.knowledge-card {
+  background: linear-gradient(165deg, rgba(56, 44, 100, 0.85), rgba(22, 17, 46, 0.92));
+  border: 1px solid rgba(245, 185, 66, 0.28);
+  box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+@media (hover: hover) {
+  .knowledge-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  .knowledge-card:hover .knowledge-chevron { color: rgba(245, 185, 66, 0.95); }
+}
+.knowledge-card:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* Невеликий кольоровий акцент рамки на тіер — статус усе одно передається
+   ще й іконкою та прогрес-баром (розділ 3/12 технічного завдання: "не
+   фарбувати всю картку", "не передавати статус лише кольором"). */
+.knowledge-card-untried { border-color: rgba(255, 255, 255, 0.14); }
+.knowledge-card-weak { border-color: rgba(225, 29, 72, 0.45); }
+.knowledge-card-almost { border-color: rgba(245, 185, 66, 0.5); }
+.knowledge-card-good { border-color: rgba(16, 185, 129, 0.45); }
+.knowledge-card-master { border-color: rgba(255, 208, 64, 0.65); }
+
+/* Стрілка переходу — світлішає в стані наведення/натискання (розділ 10). */
+.knowledge-chevron {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+/* Тонкий прогрес-бар під назвою/статусом — темний трек, м'яке (не яскраве)
+   світіння активної частини, колір відповідає тіеру. */
+.knowledge-progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.knowledge-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease, background 0.4s ease;
+}
+.knowledge-fill-untried { background: rgba(255, 255, 255, 0.25); }
+.knowledge-fill-weak {
+  background: linear-gradient(90deg, #e11d48, #fb7185);
+  box-shadow: 0 0 6px rgba(225, 29, 72, 0.4);
+}
+.knowledge-fill-almost {
+  background: linear-gradient(90deg, #d97706, #fbbf24);
+  box-shadow: 0 0 6px rgba(245, 185, 66, 0.4);
+}
+.knowledge-fill-good {
+  background: linear-gradient(90deg, #059669, #34d399);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+.knowledge-fill-master {
+  background: linear-gradient(90deg, #d97706, #ffd700);
+  box-shadow: 0 0 8px rgba(255, 208, 64, 0.55);
+}
+/* Тренувальний тест (WeakPracticeScreen) — нейтральний золотий, це прогрес
+   ПРОХОДЖЕННЯ квізу, а не статус засвоєння якогось конкретного тіера. */
+.knowledge-quiz-progress-fill {
+  background: linear-gradient(90deg, #f5b942, #ffe27a);
+  box-shadow: 0 0 6px rgba(245, 185, 66, 0.4);
+}
+
+/* Дружній бейдж рекомендації над карткою найслабшої таблиці — золотий, не
+   тривожний червоний (розділ 4: "має бути дружнім, без тривожного
+   оформлення"). */
+.knowledge-badge-recommend {
+  background: linear-gradient(180deg, rgba(245, 185, 66, 0.95), rgba(210, 145, 30, 0.95));
+  color: #241c4a;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(245, 185, 66, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+
+/* Менш формальний бейдж "Повторити" на рядку окремого прикладу (розділ 7) —
+   м'якший, фіолетово-рожевий, а не суцільний тривожний червоний. */
+.knowledge-badge-repeat {
+  background: rgba(225, 29, 72, 0.22);
+  border: 1px solid rgba(225, 29, 72, 0.5);
+  color: #ffd7de;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Банер з автоматичною рекомендацією (звичайний і "усе засвоєно"). */
+.knowledge-recommend-banner {
+  background: linear-gradient(180deg, rgba(245, 185, 66, 0.16), rgba(217, 143, 30, 0.08));
+  border: 1px solid rgba(245, 185, 66, 0.4);
+  color: #ffe9b0;
+}
+.knowledge-recommend-banner-good {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.08));
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #b7f5d8;
+}
+
+/* Перемикач сортування — компактні пігулки, активна виділяється золотом. */
+.knowledge-sort-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(216, 204, 255, 0.75);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.knowledge-sort-btn-active {
+  background: linear-gradient(180deg, rgba(245, 185, 66, 0.9), rgba(210, 145, 30, 0.9));
+  border-color: rgba(245, 185, 66, 0.9);
+  color: #241c4a;
+}
+
+/* Рядок окремого прикладу на детальному екрані — той самий тіер-акцент
+   рамки, що й картки таблиць вище, плюс плавне розгортання панелі деталей. */
+.knowledge-fact-row {
+  background: linear-gradient(165deg, rgba(56, 44, 100, 0.6), rgba(22, 17, 46, 0.75));
+  border: 1px solid rgba(245, 185, 66, 0.2);
+  transition: border-color 0.15s ease;
+}
+.knowledge-fact-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  animation: knowledge-details-in 0.18s ease;
+}
+@keyframes knowledge-details-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Підсумок тренування (WeakPracticeScreen) — коротке сяйво й золоті іскри
+   при завершенні, без надто довгої анімації (розділ 9: "без надто довгої
+   анімації"). */
+.knowledge-result-sparkle {
+  display: inline-block;
+  animation: knowledge-sparkle-pop 0.6s ease;
+}
+@keyframes knowledge-sparkle-pop {
+  0% { transform: scale(0.4) rotate(-15deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.knowledge-tier-glow {
+  animation: knowledge-tier-glow-pulse 1.1s ease-in-out 1;
+  filter: drop-shadow(0 0 6px rgba(245, 185, 66, 0.8));
+}
+@keyframes knowledge-tier-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(245, 185, 66, 0.3)); }
+  50% { filter: drop-shadow(0 0 10px rgba(245, 185, 66, 0.9)); }
+}
+.knowledge-score-transition {
+  transition: color 0.4s ease;
+}
