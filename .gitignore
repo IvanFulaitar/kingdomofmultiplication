@@ -4,3 +4,4 @@ dist
 .env.local
 .codex-vite.*.log
 .vs/
+package-lock.json
