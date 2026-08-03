@@ -364,7 +364,6 @@ export default function App() {
           hasNewKnowledge={hasNewMasteryActivity(progress.facts, progress.knowledgeLastSeenAt ?? 0)}
           user={user}
           onAccount={() => setScreen("auth")}
-          onLogout={handleLogout}
         />
       )}
       <Suspense fallback={<LoadingGate />}>

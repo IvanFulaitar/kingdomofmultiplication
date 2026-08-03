@@ -26,7 +26,7 @@ function ToggleSwitch({ checked, onChange, label }) {
   );
 }
 
-export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount, onLogout }) {
+export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount }) {
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
@@ -46,11 +46,6 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   function handleAccountClick() {
     playUiClick();
     onAccount?.();
-  }
-
-  function handleLogoutClick() {
-    playUiClick();
-    onLogout?.();
   }
 
   function closeSettings(returnFocus) {
@@ -98,7 +93,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         <button
           ref={settingsToggleRef}
           onClick={() => setSettingsOpen((o) => !o)}
-          aria-label="Налаштування"
+          aria-label="Налаштування звуку"
           aria-expanded={settingsOpen}
           className="rpg-panel rpg-panel-gold w-10 h-10 rounded-xl flex items-center justify-center text-lg active:scale-95 transition"
         >
@@ -107,7 +102,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         {settingsOpen && (
           <div
             role="menu"
-            className="absolute right-0 mt-3 menu-panel rounded-2xl p-4 w-[300px] max-w-[calc(100vw-2rem)] flex flex-col gap-3 shadow-xl"
+            className="absolute right-0 mt-3 menu-panel rounded-2xl p-3.5 w-[220px] max-w-[calc(100vw-2rem)] flex flex-col gap-2.5 shadow-xl"
           >
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-semibold text-white">Музика</span>
@@ -117,54 +112,6 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
               <span className="text-sm font-semibold text-white">Звуки</span>
               <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label="Увімкнути/вимкнути звукові ефекти" />
             </div>
-
-            <div className="h-px bg-white/10" />
-
-            {user ? (
-              <div className="flex flex-col gap-2.5">
-                <div className="flex items-center gap-2.5">
-                  <div className="avatar-medallion shrink-0">
-                    <ArtImage
-                      src={`/assets/avatars/${avatar.id}.png`}
-                      fallback={avatar.icon}
-                      alt=""
-                      className="w-9 h-9 rounded-full object-contain flex items-center justify-center text-xl"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-display font-bold text-sm text-white truncate">{displayName}</p>
-                    <p className="text-[11px] text-emerald-300/90">Акаунт активний</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleAccountClick}
-                    className="knowledge-secondary-button flex-1 rounded-xl py-2 text-xs font-display font-bold"
-                  >
-                    Відкрити профіль
-                  </button>
-                  <button
-                    onClick={handleLogoutClick}
-                    className="knowledge-secondary-button-muted rounded-xl px-3 py-2 text-xs font-display font-bold"
-                  >
-                    Вийти
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1.5">
-                <p className="font-display font-bold text-sm text-white">Акаунт</p>
-                <p className="text-[11px] text-violet-200/70 mb-1">Зберігай прогрес між пристроями</p>
-                <button
-                  onClick={handleAccountClick}
-                  className="knowledge-cta-button w-full py-3 rounded-xl font-display font-extrabold text-sm text-indigo-950 min-h-[48px] flex items-center justify-center gap-1.5"
-                >
-                  <span aria-hidden="true">👤</span>
-                  <span className="sm:hidden">Увійти в акаунт</span>
-                  <span className="hidden sm:inline">Увійти або створити акаунт</span>
-                </button>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -186,6 +133,38 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           />
           <h1 className="font-display gold-text text-4xl font-extrabold mt-2 tracking-wide">Королівство Математики</h1>
           <p className="text-violet-200 mt-1.5 text-base">Мандруй, розв'язуй, опановуй магію чисел</p>
+
+          {/* Акаунт — окрема точка входу, не частина меню звуку (яке
+              відповідає лише за музику/sfx). Темно-фіолетова pill із тонкою
+              золотою рамкою (той самий вигляд, що й лічильники нижче) —
+              навмисно НЕ золота заливка, щоб не змагатися з єдиною
+              головною золотою дією екрана ("ГРАТИ"). */}
+          <button
+            onClick={handleAccountClick}
+            aria-label={user ? `Профіль акаунта: ${displayName}` : "Увійти в акаунт"}
+            className="menu-resource-pill mt-3 mx-auto rounded-full pl-2 pr-4 py-1.5 flex items-center gap-2 active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70"
+          >
+            {user ? (
+              <>
+                <ArtImage
+                  src={`/assets/avatars/${avatar.id}.png`}
+                  fallback={avatar.icon}
+                  alt=""
+                  className="w-7 h-7 rounded-full object-contain flex items-center justify-center text-base"
+                />
+                <span className="text-sm font-semibold text-white max-w-[130px] truncate">{displayName}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" aria-hidden="true" />
+              </>
+            ) : (
+              <>
+                <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-base" aria-hidden="true">👤</span>
+                <span className="text-sm font-semibold text-white">
+                  <span className="sm:hidden">Акаунт</span>
+                  <span className="hidden sm:inline">Увійти в акаунт</span>
+                </span>
+              </>
+            )}
+          </button>
         </div>
 
         <div className="w-full grid grid-cols-3 gap-3">
