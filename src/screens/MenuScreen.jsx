@@ -170,7 +170,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
               src="/assets/icons/ui/user.png"
               fallback="👤"
               alt=""
-              className="system-icon-glow w-6 h-6 object-contain flex items-center justify-center text-lg text-amber-100/90"
+              className="system-icon-glow w-8 h-8 object-contain flex items-center justify-center text-lg text-amber-100/90"
             />
           )}
         </button>
