@@ -1,10 +1,32 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
+import helmet from "helmet";
 import { prisma } from "./db.js";
 import authRouter from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Базові безпечні HTTP-заголовки — перед усім іншим.
+app.use(helmet());
+
+// Дозволені origin'и — лише зі списку в CORS_ORIGIN (кома-розділений,
+// напр. "https://kingdom.frontstart.com.ua,http://localhost:5173").
+// Якщо змінна не задана — CORS_ORIGIN відсутній -> `origin: false`,
+// тобто НІЯКИЙ браузерний cross-origin запит не пройде (безпечний
+// дефолт "закрито", а не випадковий "*"). curl/Postman/сервер-до-сервера
+// CORS не стосується — це обмеження лише для браузера.
+const allowedOrigins = (process.env.CORS_ORIGIN ?? "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: allowedOrigins.length ? allowedOrigins : false,
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 

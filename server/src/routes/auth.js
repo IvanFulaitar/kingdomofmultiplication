@@ -3,6 +3,9 @@ import { prisma } from "../db.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { signToken } from "../utils/jwt.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { validate } from "../middleware/validate.js";
+import { authRateLimit } from "../middleware/authRateLimit.js";
+import { registerSchema, loginSchema } from "../schemas/auth.js";
 
 const router = Router();
 
@@ -11,35 +14,21 @@ function toPublicUser(user) {
   return { id: user.id, email: user.email, createdAt: user.createdAt };
 }
 
-// Груба перевірка формату email — повноцінна zod-валідація приходить
-// наступним кроком (backend-mvp-plan.md, розділ 5.7, разом з rate-limit/
-// CORS/helmet); тут лише мінімум, щоб не пускати очевидний сміттєвий ввід.
-function isValidEmail(email) {
-  return typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 // POST /api/auth/register — { email, password } -> { token, user }
-router.post("/register", async (req, res, next) => {
+// validate() уже перевірив формат і нормалізував email (trim+lowercase)
+// до того, як запит сюди дістався — req.body.email тут завжди чистий.
+router.post("/register", authRateLimit, validate(registerSchema), async (req, res, next) => {
   try {
-    const { email, password } = req.body ?? {};
+    const { email, password } = req.body;
 
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ error: "Некоректний email" });
-    }
-    if (typeof password !== "string" || password.length < 8) {
-      return res.status(400).json({ error: "Пароль має містити щонайменше 8 символів" });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return res.status(409).json({ error: "Користувач із таким email вже існує" });
     }
 
     const passwordHash = await hashPassword(password);
     const user = await prisma.user.create({
-      data: { email: normalizedEmail, passwordHash },
+      data: { email, passwordHash },
     });
 
     const token = signToken({ sub: user.id, email: user.email });
@@ -50,16 +39,11 @@ router.post("/register", async (req, res, next) => {
 });
 
 // POST /api/auth/login — { email, password } -> { token, user }
-router.post("/login", async (req, res, next) => {
+router.post("/login", authRateLimit, validate(loginSchema), async (req, res, next) => {
   try {
-    const { email, password } = req.body ?? {};
+    const { email, password } = req.body;
 
-    if (!isValidEmail(email) || typeof password !== "string") {
-      return res.status(400).json({ error: "Некоректний email або пароль" });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     // Навмисно ОДНАКОВА помилка і коли юзера нема, і коли пароль
     // неправильний — щоб відповідь API не підказувала зловмиснику, які
