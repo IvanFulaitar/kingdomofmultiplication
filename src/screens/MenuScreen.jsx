@@ -26,12 +26,20 @@ function ToggleSwitch({ checked, onChange, label }) {
   );
 }
 
+// Один раз показане ненав'язливе нагадування про акаунт (розділ 6 брифу) —
+// власний ключ, окремо від прогресу й від токена, щоб не зачіпати
+// migrateSave()/схему збереження заради одного прапорця "вже бачив".
+const ACCOUNT_NUDGE_KEY = "kingdom-multiplication-account-nudge-dismissed";
+
 export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount }) {
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
   const [musicOn, setMusicOn] = useState(() => isMusicEnabled());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [nudgeDismissed, setNudgeDismissed] = useState(() => {
+    try { return localStorage.getItem(ACCOUNT_NUDGE_KEY) === "1"; } catch { return true; }
+  });
   const settingsRef = useRef(null);
   const settingsToggleRef = useRef(null);
   const xpPct = (into / need) * 100;
@@ -40,12 +48,31 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   // "логін"-подібну частину, без технічної адреси пошти на екрані.
   const displayName = user?.email ? user.email.split("@")[0] : "";
 
+  // Ненав'язливе нагадування (розділ 6 брифу) — лише коли є вже корисний
+  // прогрес (не одразу після встановлення), і лише поки не залогінений і
+  // ще не бачив/не закривав його раніше. Навмисно рахуємо з даних, які вже
+  // й так є в progress — без нового лічильника відкриттів застосунку.
+  const completedLevels = Object.values(progress.levels ?? {}).filter((l) => (l?.stars ?? 0) > 0).length;
+  const boughtExtraAvatar = (progress.ownedAvatars?.length ?? 1) > 1;
+  const hasMeaningfulProgress = completedLevels >= 3 || level >= 2 || boughtExtraAvatar;
+  const showAccountNudge = !user && !nudgeDismissed && hasMeaningfulProgress;
+
   // Акаунт (email/пароль) — необов'язкова фіча (frontend-backend-
   // integration-plan.md): лише щоб не втратити прогрес при зміні
   // телефону, гра й далі повністю грається без нього.
   function handleAccountClick() {
     playUiClick();
     onAccount?.();
+  }
+
+  function dismissAccountNudge() {
+    setNudgeDismissed(true);
+    try { localStorage.setItem(ACCOUNT_NUDGE_KEY, "1"); } catch { /* немає localStorage — просто не запам'ятається між сесіями */ }
+  }
+
+  function handleNudgeLoginClick() {
+    dismissAccountNudge();
+    handleAccountClick();
   }
 
   function closeSettings(returnFocus) {
@@ -85,35 +112,65 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
 
+      {/* Профіль + звук — рядок із двох однакових системних кнопок у
+          верхньому правому куті (розділ 2/5/8 брифу): однаковий розмір
+          (48×48), форма, товщина рамки, вирівняні по одній осі. Профіль —
+          компактна іконка/аватар, БЕЗ постійного тексту й БЕЗ золотої
+          заливки, щоб не виглядати головною дією поруч із "ГРАТИ". */}
       <div
-        ref={settingsRef}
-        className="absolute z-30"
+        className="absolute z-30 flex items-center gap-2.5"
         style={{ top: "max(1rem, env(safe-area-inset-top))", right: "max(1.25rem, env(safe-area-inset-right))" }}
       >
         <button
-          ref={settingsToggleRef}
-          onClick={() => setSettingsOpen((o) => !o)}
-          aria-label="Налаштування звуку"
-          aria-expanded={settingsOpen}
-          className="rpg-panel rpg-panel-gold w-10 h-10 rounded-xl flex items-center justify-center text-lg active:scale-95 transition"
+          onClick={handleAccountClick}
+          aria-label={user ? `Профіль: ${displayName}` : "Акаунт і синхронізація прогресу"}
+          title={user ? `Профіль: ${displayName}` : "Акаунт"}
+          className="system-icon-button rpg-panel w-12 h-12 rounded-xl flex items-center justify-center"
         >
-          {sfxOn || musicOn ? "🔊" : "🔇"}
+          {user ? (
+            <span className="system-icon-glow relative inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
+              <ArtImage
+                src={`/assets/avatars/${avatar.id}.png`}
+                fallback={avatar.icon}
+                alt=""
+                className="w-8 h-8 rounded-full object-contain flex items-center justify-center text-base"
+              />
+              <span
+                className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-indigo-950 shadow-[0_0_5px_rgba(52,211,153,0.9)]"
+                aria-hidden="true"
+              />
+            </span>
+          ) : (
+            <span className="system-icon-glow text-lg text-amber-100/90" aria-hidden="true">👤</span>
+          )}
         </button>
-        {settingsOpen && (
-          <div
-            role="menu"
-            className="absolute right-0 mt-3 menu-panel rounded-2xl p-3.5 w-[220px] max-w-[calc(100vw-2rem)] flex flex-col gap-2.5 shadow-xl"
+
+        <div ref={settingsRef} className="relative">
+          <button
+            ref={settingsToggleRef}
+            onClick={() => setSettingsOpen((o) => !o)}
+            aria-label="Налаштування звуку"
+            aria-expanded={settingsOpen}
+            className="system-icon-button rpg-panel w-12 h-12 rounded-xl flex items-center justify-center text-lg"
           >
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-semibold text-white">Музика</span>
-              <ToggleSwitch checked={musicOn} onChange={toggleMusic} label="Увімкнути/вимкнути музику" />
+            <span className="system-icon-glow">{sfxOn || musicOn ? "🔊" : "🔇"}</span>
+          </button>
+          {settingsOpen && (
+            <div
+              role="menu"
+              className="absolute right-0 mt-3 menu-panel rounded-2xl p-3.5 w-[220px] max-w-[calc(100vw-2rem)] flex flex-col gap-2.5 shadow-xl"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-white">Музика</span>
+                <ToggleSwitch checked={musicOn} onChange={toggleMusic} label="Увімкнути/вимкнути музику" />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-white">Звуки</span>
+                <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label="Увімкнути/вимкнути звукові ефекти" />
+              </div>
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-semibold text-white">Звуки</span>
-              <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label="Увімкнути/вимкнути звукові ефекти" />
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <span className="app-version-tag absolute top-4 left-4 z-20 select-none leading-tight" aria-hidden="true">
@@ -133,38 +190,6 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           />
           <h1 className="font-display gold-text text-4xl font-extrabold mt-2 tracking-wide">Королівство Математики</h1>
           <p className="text-violet-200 mt-1.5 text-base">Мандруй, розв'язуй, опановуй магію чисел</p>
-
-          {/* Акаунт — окрема точка входу, не частина меню звуку (яке
-              відповідає лише за музику/sfx). Темно-фіолетова pill із тонкою
-              золотою рамкою (той самий вигляд, що й лічильники нижче) —
-              навмисно НЕ золота заливка, щоб не змагатися з єдиною
-              головною золотою дією екрана ("ГРАТИ"). */}
-          <button
-            onClick={handleAccountClick}
-            aria-label={user ? `Профіль акаунта: ${displayName}` : "Увійти в акаунт"}
-            className="menu-resource-pill mt-3 mx-auto rounded-full pl-2 pr-4 py-1.5 flex items-center gap-2 active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/70"
-          >
-            {user ? (
-              <>
-                <ArtImage
-                  src={`/assets/avatars/${avatar.id}.png`}
-                  fallback={avatar.icon}
-                  alt=""
-                  className="w-7 h-7 rounded-full object-contain flex items-center justify-center text-base"
-                />
-                <span className="text-sm font-semibold text-white max-w-[130px] truncate">{displayName}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" aria-hidden="true" />
-              </>
-            ) : (
-              <>
-                <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-base" aria-hidden="true">👤</span>
-                <span className="text-sm font-semibold text-white">
-                  <span className="sm:hidden">Акаунт</span>
-                  <span className="hidden sm:inline">Увійти в акаунт</span>
-                </span>
-              </>
-            )}
-          </button>
         </div>
 
         <div className="w-full grid grid-cols-3 gap-3">
@@ -204,6 +229,31 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             Прогрес →
           </button>
         </div>
+
+        {/* Ненав'язливе нагадування про акаунт (розділ 6 брифу) — лише коли
+            вже є користь, яку варто зберегти, ніколи одразу після старту;
+            "Не зараз" ховає назавжди (окремий ключ у localStorage). Не
+            модальне, не блокує гру, не перекриває "ГРАТИ" нижче. */}
+        {showAccountNudge && (
+          <div className="w-full rpg-panel rounded-2xl px-4 py-3.5 flex items-center gap-3">
+            <span className="text-xl shrink-0" aria-hidden="true">☁️</span>
+            <p className="flex-1 text-sm text-violet-100">Хочеш зберегти прогрес між пристроями?</p>
+            <div className="flex flex-col items-end gap-1.5 shrink-0">
+              <button
+                onClick={handleNudgeLoginClick}
+                className="knowledge-secondary-button rounded-lg px-3 py-1.5 text-xs font-display font-bold"
+              >
+                Увійти
+              </button>
+              <button
+                onClick={dismissAccountNudge}
+                className="text-[11px] text-violet-300/70 hover:text-white transition"
+              >
+                Не зараз
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="w-full menu-panel rounded-3xl pt-8 pb-4 px-4 relative">
           <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 menu-quest-banner px-8 py-1 whitespace-nowrap">

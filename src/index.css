@@ -199,6 +199,27 @@ html, body {
   box-shadow: 0 0 0 1px rgba(245,185,66,0.55), 0 0 18px rgba(245,185,66,0.25), 0 10px 24px -8px rgba(0,0,0,0.55);
 }
 
+/* Компактна квадратна "системна" кнопка кута екрана (профіль/звук у
+   MenuScreen.jsx) — навмисно СЛАБША за rpg-panel-gold: тонка рамка, без
+   зовнішнього сяйва в стані спокою, щоб не виглядати головною дією поруч
+   із золотою "ГРАТИ". Клас на самій кнопці (поверх .rpg-panel), а
+   .system-icon-glow — на вкладеній іконці/emoji для м'якого сяйва при
+   наведенні. */
+.system-icon-button {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+@media (hover: hover) {
+  .system-icon-button:hover { border-color: rgba(245, 185, 66, 0.6); }
+  .system-icon-button:hover .system-icon-glow {
+    filter: drop-shadow(0 0 5px rgba(245, 185, 66, 0.65));
+  }
+}
+.system-icon-button:active { transform: scale(0.96); }
+.system-icon-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(30, 27, 75, 0.9), 0 0 0 4px rgba(245, 185, 66, 0.75);
+}
+
 /* Банер-заголовок із загостреними краями (як стрічка на макеті) */
 .rpg-banner {
   clip-path: polygon(4% 0%, 96% 0%, 100% 50%, 96% 100%, 4% 100%, 0% 50%);
