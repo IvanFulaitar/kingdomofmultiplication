@@ -3,9 +3,21 @@
   "appSubtitle": "Мандруй, розв'язуй, опановуй магію чисел",
   "back": "Назад",
   "close": "Закрити",
+  "coinAlt": "монета",
+  "starAlt": "зірка",
   "cancel": "Скасувати",
   "loading": "Завантаження…",
   "chooseLanguage": "Оберіть мову",
   "languageChanged": "Мову змінено",
-  "selected": "Обрано"
+  "selected": "Обрано",
+  "exitConfirmTitle": "Вийти з випробування?",
+  "exitConfirmMessage": "Прогрес поточної спроби буде втрачено. Ти точно хочеш вийти?",
+  "exitTrainingTitle": "Завершити тренування?",
+  "exitTrainingMessage": "Результат цієї незавершеної гри не буде збережено. Ти точно хочеш вийти?",
+  "exitProgressLabel": "Поточний прогрес",
+  "exitNotFinished": "Спроба не завершена",
+  "exitProgressWithTotal": "{{label}}: {{current}} з {{total}}",
+  "exitProgressNoTotal": "{{label}}: {{current}}",
+  "exitContinue": "Продовжити гру",
+  "exitButton": "Вийти"
 }

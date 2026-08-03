@@ -36,7 +36,7 @@ function ToggleSwitch({ checked, onChange, label }) {
 const ACCOUNT_NUDGE_KEY = "kingdom-multiplication-account-nudge-dismissed";
 
 export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount }) {
-  const { t, i18n } = useTranslation(["menu", "common"]);
+  const { t, i18n } = useTranslation(["menu", "quests", "common"]);
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
@@ -346,7 +346,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
                   <span className={`w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0 border ${done ? "bg-emerald-600/25 border-emerald-400/50 menu-quest-check-glow" : "bg-indigo-950/60 border-amber-400/30"}`}>
                     {done ? "✅" : q.icon}
                   </span>
-                  <span className={`flex-1 ${done ? "text-violet-200/65 line-through decoration-1" : "text-white"}`}>{q.label}</span>
+                  <span className={`flex-1 ${done ? "text-violet-200/65 line-through decoration-1" : "text-white"}`}>{t(`quests:${q.labelKey}`)}</span>
                   <span className={`text-xs font-semibold rounded-full px-2.5 py-1 border ${done ? "text-emerald-300 bg-emerald-600/20 border-emerald-400/40" : "text-white/80 menu-quest-badge-active"}`}>
                     {Math.min(p, q.target)}/{q.target}
                   </span>

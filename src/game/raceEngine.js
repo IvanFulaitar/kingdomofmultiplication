@@ -90,12 +90,17 @@ export function opponentGain({ tierConfig, catchupBounds, playerProgress, oppone
 
 // --- Події перегонів ------------------------------------------------------
 
+// labelKey/descKey замість готового тексту (race.json, src/i18n/locales/) —
+// цей об'єкт обчислюється один раз при завантаженні модуля, тож
+// "заморожений" перекладений текст не реагував би на зміну мови пізніше
+// (той самий принцип, що й у mastery.js/regions.js). Переклад відбувається
+// в RaceScreen.jsx у точці показу.
 export const RACE_EVENTS = {
-  boost: { id: "boost", label: "Прискорення!", desc: "Швидка відповідь дає ще більше проргесу", icon: "⚡" },
-  turn: { id: "turn", label: "Крутий поворот!", desc: "Цього разу всі трохи сповільнюються", icon: "🌀" },
-  star: { id: "star", label: "Золота зірка!", desc: "Правильна відповідь дасть монету", icon: "⭐" },
-  dash: { id: "dash", label: "Фінішний ривок!", desc: "Останній приклад — з бонусом", icon: "🏆" },
-  slippery: { id: "slippery", label: "Слизька ділянка!", desc: "Помилка не забере прогрес", icon: "❄️" },
+  boost: { id: "boost", labelKey: "eventBoostLabel", descKey: "eventBoostDesc", icon: "⚡" },
+  turn: { id: "turn", labelKey: "eventTurnLabel", descKey: "eventTurnDesc", icon: "🌀" },
+  star: { id: "star", labelKey: "eventStarLabel", descKey: "eventStarDesc", icon: "⭐" },
+  dash: { id: "dash", labelKey: "eventDashLabel", descKey: "eventDashDesc", icon: "🏆" },
+  slippery: { id: "slippery", labelKey: "eventSlipperyLabel", descKey: "eventSlipperyDesc", icon: "❄️" },
 };
 
 const RANDOM_EVENT_IDS = ["boost", "turn", "star", "slippery"];
@@ -149,30 +154,33 @@ export function starsForRace({ place, accuracy }) {
   return 1;
 }
 
-export const PLACE_HEADLINE = {
-  1: "🥇 Перше місце!",
-  2: "🥈 Друге місце",
-  3: "🥉 Третє місце",
+// Ключі (race.json) замість готового тексту — з тієї ж причини, що й
+// RACE_EVENTS вище.
+export const PLACE_HEADLINE_KEY = {
+  1: "placeHeadline1",
+  2: "placeHeadline2",
+  3: "placeHeadline3",
 };
 
 // Емоційна фраза під підсумком місця — завжди тепла, ніколи не карає за
-// програш (лише м'яко підбадьорює спробувати ще раз).
-export function raceMoodPhrase({ place, accuracy }) {
-  if (place === 1) return accuracy >= 0.85 ? "Чудовий результат!" : "Гарна спроба!";
-  if (place === 2) return "Гарна спроба!";
-  return "Ще трохи — і буде перемога!";
+// програш (лише м'яко підбадьорює спробувати ще раз). `t` передається з
+// компонента (RaceScreen.jsx), бо ця функція викликається під час рендера.
+export function raceMoodPhrase(t, { place, accuracy }) {
+  if (place === 1) return accuracy >= 0.85 ? t("race:moodGreat") : t("race:moodGood");
+  if (place === 2) return t("race:moodGood");
+  return t("race:moodTryAgain");
 }
 
 // Контекстна підказка на екрані результату (розділ "UX-покращення" брифу).
 // Лише порада — ніколи не перемикає складність примусово, гравець завжди
 // обирає сам на наступному екрані вибору.
-export function raceResultHint({ place, accuracy, difficulty }) {
+export function raceResultHint(t, { place, accuracy, difficulty }) {
   if (place === 1 && accuracy >= 0.85 && difficulty !== "champion") {
-    return "Готовий до складнішого заїзду?";
+    return t("race:hintHarder");
   }
   if (place !== 1) {
-    if (accuracy < 0.5 && difficulty !== "training") return "Спробуй складність нижче";
-    return "Ще раз? Є шанс відігратися!";
+    if (accuracy < 0.5 && difficulty !== "training") return t("race:hintEasier");
+    return t("race:hintRetry");
   }
   return null;
 }

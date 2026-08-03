@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AVATARS } from "../data/cosmetics.js";
 import { CELL, generateMaze, tierForCompletions, cellNeighbors, mainPathAnchorIndex } from "../game/mazeGen.js";
 import { generateMazeQuestion, pickKind } from "../game/mazeQuestions.js";
@@ -22,21 +23,23 @@ const BONUS_TYPES = new Set([
   CELL.COIN, CELL.CHEST, CELL.SECRET, CELL.HEART, CELL.HINT, CELL.TREASURE, CELL.PORTAL, CELL.KEY,
 ]);
 
-const NAMED_LABEL = {
-  [CELL.KEY]: "Перейти до ключа",
-  [CELL.CHEST]: "Перейти до скрині",
-  [CELL.SECRET]: "Перейти до таємної скрині",
-  [CELL.TRAP]: "Перейти ризикованим шляхом",
-  [CELL.PORTAL]: "Перейти до порталу",
-  [CELL.TREASURE]: "Перейти до кімнати скарбів",
-  [CELL.HEART]: "Перейти до джерела життя",
-  [CELL.HINT]: "Перейти до порадника",
-  [CELL.COIN]: "Перейти за монетами",
-  [CELL.EXIT]: "Перейти до виходу",
+// Ключі (не готові рядки — див. коментар у mastery.js/MyKnowledgeScreen.jsx
+// про те, чому текст не можна "заморожувати" в модульній константі: ці
+// об'єкти обчислюються один раз при завантаженні модуля).
+const NAMED_LABEL_KEY = {
+  [CELL.KEY]: "ariaKey",
+  [CELL.CHEST]: "ariaChest",
+  [CELL.SECRET]: "ariaSecret",
+  [CELL.TRAP]: "ariaTrap",
+  [CELL.PORTAL]: "ariaPortal",
+  [CELL.TREASURE]: "ariaTreasure",
+  [CELL.HEART]: "ariaHeart",
+  [CELL.HINT]: "ariaHint",
+  [CELL.COIN]: "ariaCoin",
+  [CELL.EXIT]: "ariaExit",
 };
-const DIR_LABEL = {
-  up: "Перейти у комірку зверху", down: "Перейти у комірку знизу",
-  left: "Перейти у комірку ліворуч", right: "Перейти у комірку праворуч",
+const DIR_LABEL_KEY = {
+  up: "ariaDirUp", down: "ariaDirDown", left: "ariaDirLeft", right: "ariaDirRight",
 };
 const DIR_ARROW = { up: "▲", down: "▼", left: "◀", right: "▶" };
 
@@ -70,9 +73,10 @@ function directionOf(maze, fromKey, toKey) {
   if (to.col < from.col) return "left";
   return "right";
 }
-function cellAriaLabel(maze, fromKey, toKey) {
+function cellAriaLabel(t, maze, fromKey, toKey) {
   const type = maze.cells[toKey].type;
-  return NAMED_LABEL[type] ?? DIR_LABEL[directionOf(maze, fromKey, toKey)];
+  const key = NAMED_LABEL_KEY[type] ?? DIR_LABEL_KEY[directionOf(maze, fromKey, toKey)];
+  return t(`maze:${key}`);
 }
 function cellBadge(maze, key) {
   const type = maze.cells[key].type;
@@ -89,16 +93,16 @@ function cellRiskClass(maze, key) {
   return "";
 }
 
-function questionCardTitle(forwardOptions, maze) {
+function questionCardTitle(t, forwardOptions, maze) {
   const types = forwardOptions.map((k) => maze.cells[k].type);
-  if (types.includes(CELL.KEY)) return "Знайди ключ";
-  if (types.includes(CELL.EXIT)) return "Відкрий фінальні двері";
-  if (types.includes(CELL.SECRET)) return "Таємний шлях...";
-  if (types.includes(CELL.CHEST)) return "Відкрий скриню";
-  if (types.includes(CELL.TREASURE)) return "Кімната скарбів попереду";
-  if (types.includes(CELL.PORTAL)) return "Загадковий портал";
-  if (types.includes(CELL.TRAP)) return "Обережно, попереду небезпека!";
-  return "Розв'яжи, щоб відкрити шлях";
+  if (types.includes(CELL.KEY)) return t("maze:titleFindKey");
+  if (types.includes(CELL.EXIT)) return t("maze:titleFinalDoor");
+  if (types.includes(CELL.SECRET)) return t("maze:titleSecretPath");
+  if (types.includes(CELL.CHEST)) return t("maze:titleOpenChest");
+  if (types.includes(CELL.TREASURE)) return t("maze:titleTreasureAhead");
+  if (types.includes(CELL.PORTAL)) return t("maze:titlePortal");
+  if (types.includes(CELL.TRAP)) return t("maze:titleDangerAhead");
+  return t("maze:titleSolveToOpen");
 }
 
 function MazeHeart({ filled }) {
@@ -157,6 +161,7 @@ function AnswerGrid({ options, correct, feedback, eliminated, onAnswer, trapFlav
 }
 
 export default function MazeScreen({ avatar, completions = 0, onBack, onComplete }) {
+  const { t } = useTranslation(["maze", "battle", "common"]);
   const heroIcon = AVATARS.find((av) => av.id === avatar)?.icon ?? "🧙";
 
   const [maze, setMaze] = useState(() => generateMaze(tierForCompletions(completions)));
@@ -342,14 +347,14 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     const already = collected.has(k);
     switch (cell.type) {
       case CELL.COIN:
-        if (!already) { markCollected(k); setCoins((c) => c + 5); showToast("+5 монет"); playCoin(); }
+        if (!already) { markCollected(k); setCoins((c) => c + 5); showToast(t("maze:toastCoins", { n: 5 })); playCoin(); }
         break;
       case CELL.HEART:
         if (!already) {
           markCollected(k);
           setLives((l) => {
-            if (l < 3) { showToast("Джерело відновило життя!"); return l + 1; }
-            showToast("Джерело сяє, але життя й так повні");
+            if (l < 3) { showToast(t("maze:toastHeartRestored")); return l + 1; }
+            showToast(t("maze:toastHeartFull"));
             return l;
           });
         }
@@ -358,22 +363,22 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
         if (!already) {
           markCollected(k);
           setHintsGranted((g) => {
-            if (g >= 3) { showToast("Гном лише махає рукою — підказок і так максимум"); return g; }
+            if (g >= 3) { showToast(t("maze:toastHintMax")); return g; }
             setHints((h) => h + 1);
-            showToast("Мандрівний гном дає підказку!");
+            showToast(t("maze:toastHintGranted"));
             playHintSfx();
             return g + 1;
           });
         }
         break;
       case CELL.KEY:
-        if (!already) { markCollected(k); setHasKey(true); showToast("Ключ здобуто!"); playKeyPickup(); }
+        if (!already) { markCollected(k); setHasKey(true); showToast(t("maze:toastKeyFound")); playKeyPickup(); }
         break;
       case CELL.CHEST:
-        if (!already) { markCollected(k); setChestsFound((c) => c + 1); setCoins((c) => c + 15); showToast("Скриню відкрито! +15 монет"); playChestOpen(); }
+        if (!already) { markCollected(k); setChestsFound((c) => c + 1); setCoins((c) => c + 15); showToast(t("maze:toastChestOpened", { n: 15 })); playChestOpen(); }
         break;
       case CELL.SECRET:
-        if (!already) { markCollected(k); setChestsFound((c) => c + 1); setSecretFound(true); setCoins((c) => c + 25); showToast("Таємну скриню знайдено!"); playChestOpen(); }
+        if (!already) { markCollected(k); setChestsFound((c) => c + 1); setSecretFound(true); setCoins((c) => c + 25); showToast(t("maze:toastSecretFound", { n: 25 })); playChestOpen(); }
         break;
       case CELL.TRAP:
         if (!already) { setTrapCellKey(k); playTrapSfx(); } // окрема зустріч "Уникни пастки"
@@ -481,7 +486,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
         setFeedback(null);
         markCollected(trapCellKey);
         setTrapCellKey(null);
-        showToast("Уникнув пастки!");
+        showToast(t("maze:toastAvoidedTrap"));
       }, 650);
     } else {
       setLives((l) => l - 1);
@@ -498,7 +503,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     playPortal();
     const target = maze.portalTarget;
     setPortalPending(null);
-    showToast("Портал переносить тебе вперед!");
+    showToast(t("maze:toastPortal"));
     setMoveCount((n) => n + 1);
     setVisited((v) => new Set(v).add(target));
     setHero(target);
@@ -523,16 +528,16 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     setFeedback({ correct, chosenValue: value, treasure: true });
     setTimeout(() => {
       setFeedback(null);
-      setTreasureRound((t) => {
-        if (!t) return null;
-        const bonus = t.bonus + (correct ? 10 : 0);
-        if (t.step >= 3) {
+      setTreasureRound((prevRound) => {
+        if (!prevRound) return null;
+        const bonus = prevRound.bonus + (correct ? 10 : 0);
+        if (prevRound.step >= 3) {
           setCoins((c) => c + bonus);
-          showToast(`Скарбниця: +${bonus} монет!`);
+          showToast(t("maze:toastTreasureBonus", { bonus }));
           setQuestionSeed((s) => s + 1);
           return null;
         }
-        return { step: t.step + 1, bonus };
+        return { step: prevRound.step + 1, bonus };
       });
     }, 650);
   }
@@ -588,11 +593,11 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
 
       <div className="relative z-10 max-w-md mx-auto px-5 py-8 pb-14 min-h-dvh flex flex-col">
         <div className="battle-header">
-          <button onClick={() => { if (canInteract) { playModalOpen(); setShowExitConfirm(true); } }} aria-label="Назад" className="rpg-panel w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition">←</button>
+          <button onClick={() => { if (canInteract) { playModalOpen(); setShowExitConfirm(true); } }} aria-label={t("common:back")} className="rpg-panel w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition">←</button>
           <div className="rpg-panel rpg-panel-gold battle-title rounded-xl px-4 py-2 text-center">
-            <div className="font-display gold-text font-extrabold text-base leading-tight truncate">✦ Лабіринт ✦</div>
+            <div className="font-display gold-text font-extrabold text-base leading-tight truncate">{t("maze:title")}</div>
             <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">
-              {phase === "playing" ? `Крок ${moveCount + 1} з ${maze.mainPathLength}` : maze.tierName}
+              {phase === "playing" ? t("maze:stepProgress", { current: moveCount + 1, total: maze.mainPathLength }) : t(`maze:${maze.tierNameKey}`)}
             </div>
           </div>
           <div className="rpg-panel battle-lives rounded-xl px-2.5 py-2">
@@ -605,13 +610,13 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
             {maze.requiresKey && (
               <div className="rpg-panel rounded-xl px-3 py-1.5 maze-status-pill text-violet-100">
                 <span className="w-4 h-4 inline-block shrink-0"><MazeIcon type="key" className="w-full h-full" /></span>
-                Ключ: {hasKey ? "1/1" : "0/1"}
+                {t("maze:keyStatus", { value: hasKey ? "1/1" : "0/1" })}
               </div>
             )}
             {chestsTotal > 0 && (
               <div className="rpg-panel rounded-xl px-3 py-1.5 maze-status-pill text-violet-100">
                 <span className="w-4 h-4 inline-block shrink-0"><MazeIcon type="chest" className="w-full h-full" /></span>
-                Скрині: {chestsFound}/{chestsTotal}
+                {t("maze:chestStatus", { found: chestsFound, total: chestsTotal })}
               </div>
             )}
           </div>
@@ -646,7 +651,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                       disabled={!isTappable}
                       tabIndex={isTappable ? 0 : -1}
                       data-cell-key={cell.key}
-                      aria-label={isTappable ? cellAriaLabel(maze, hero, cell.key) : undefined}
+                      aria-label={isTappable ? cellAriaLabel(t, maze, hero, cell.key) : undefined}
                       onClick={() => handleCellTap(cell.key)}
                       style={{ gridColumn: cell.col * 2 + 1, gridRow: cell.row * 2 + 1 }}
                       className={`maze-cell ${stateClass} ${riskClass} ${isTappable ? "maze-cell-tappable" : ""} ${isTappable && strongPulse && tappable.size === 1 ? "maze-cell-strong-pulse" : ""} ${isLockedExit ? "maze-cell-locked" : ""}`}
@@ -698,7 +703,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
               {inTreasure && treasureQuestion && (
                 <>
                   <div className="maze-treasure-banner rounded-2xl px-4 py-2 text-center text-emerald-100 text-xs font-bold">
-                    ✦ Кімната скарбів — питання {treasureRound.step}/3 ✦
+                    {t("maze:treasureRoomBanner", { step: treasureRound.step })}
                   </div>
                   <QuestCard prompt={treasureQuestion.prompt} />
                   <AnswerGrid options={treasureQuestion.options} correct={treasureQuestion.correct} feedback={feedback} onAnswer={handleTreasureAnswer} />
@@ -708,7 +713,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
               {inTrap && trapQuestion && (
                 <>
                   <div className="maze-treasure-banner rounded-2xl px-4 py-2 text-center text-sky-100 text-xs font-bold" style={{ borderColor: "rgba(56,189,248,0.5)" }}>
-                    ✦ Уникни пастки! ✦
+                    {t("maze:avoidTrapBanner")}
                   </div>
                   <QuestCard prompt={trapQuestion.prompt} />
                   <AnswerGrid options={trapQuestion.options} correct={trapQuestion.correct} feedback={feedback} onAnswer={handleTrapAnswer} trapFlavor />
@@ -718,30 +723,30 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
               {!!portalPending && (
                 <div className="rpg-panel rpg-panel-gold rounded-3xl p-5 text-center w-full">
                   <div className="w-14 h-14 mx-auto mb-2"><MazeIcon type="portal" className="w-full h-full" /></div>
-                  <div className="font-display font-bold text-amber-100 mb-3">Портал веде далі лабіринтом!</div>
+                  <div className="font-display font-bold text-amber-100 mb-3">{t("maze:portalText")}</div>
                   <button onClick={handlePortalConfirm} className="play-button w-full text-indigo-950 font-display font-extrabold text-base py-3 rounded-2xl">
-                    Стрибнути →
+                    {t("maze:jumpButton")}
                   </button>
                 </div>
               )}
 
               {showQuestionCard && (
                 <>
-                  <QuestCard title={questionCardTitle(forwardOptions, maze)} prompt={question.prompt} />
+                  <QuestCard title={questionCardTitle(t, forwardOptions, maze)} prompt={question.prompt} />
                   <AnswerGrid options={question.options} correct={question.correct} feedback={feedback} eliminated={eliminated} onAnswer={handleAnswer} />
                 </>
               )}
 
               {showMoveHint && (
                 <div className="maze-move-hint rounded-2xl px-5 py-3 text-center screen-in">
-                  {unlockedForward ? "✦ Шлях відкрито — обери сусідню комірку ✦" : "Обери сусідню комірку"}
+                  {unlockedForward ? t("maze:pathOpenHint") : t("maze:chooseCellHint")}
                 </div>
               )}
 
               {showQuestionCard && (
                 <button onClick={handleUseHint} disabled={hints <= 0 || !!feedback} className="maze-hint-btn rounded-xl px-3 py-2 flex items-center gap-1.5 text-xs font-bold text-amber-100">
                   <ArtImage src="/assets/icons/ui/hint_lightbulb.png" fallback="💡" alt="" className="w-4 h-4 object-contain" />
-                  Підказка ×{hints}
+                  {t("maze:hintButton", { count: hints })}
                 </button>
               )}
 
@@ -749,11 +754,11 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                 {feedback && (
                   <div className={`font-display font-bold text-sm ${feedback.correct ? "text-emerald-300" : feedback.trap ? "text-sky-300" : "text-rose-300"}`}>
                     {feedback.correct
-                      ? feedback.treasure ? "+10 монет!" : "✦ Правильно! ✦"
-                      : feedback.treasure ? "Цього разу без бонусу"
-                      : feedback.trap ? "Ой, це коштувало життя…"
-                      : feedback.lifeLost ? "Ой, це коштувало життя…"
-                      : "Не той шлях, спробуй ще раз"}
+                      ? feedback.treasure ? t("maze:feedbackTreasureBonus") : t("battle:correct")
+                      : feedback.treasure ? t("maze:feedbackTreasureNone")
+                      : feedback.trap ? t("maze:feedbackLifeLost")
+                      : feedback.lifeLost ? t("maze:feedbackLifeLost")
+                      : t("maze:feedbackWrongRetry")}
                   </div>
                 )}
               </div>
@@ -769,13 +774,13 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                   <div className="maze-finale-door-leaf left" />
                   <div className="maze-finale-door-leaf right" />
                 </div>
-                <div className="font-display gold-text font-bold text-lg text-center">Магічні двері відчиняються…</div>
+                <div className="font-display gold-text font-bold text-lg text-center">{t("maze:doorsOpening")}</div>
               </>
             )}
             {finaleStep === 1 && (
               <>
                 <ArtImage src={`/assets/avatars/${avatar}.png`} fallback={heroIcon} alt="" className="w-28 h-28 object-contain gentle-bounce" />
-                <div className="font-display gold-text font-bold text-lg text-center">Герой виходить із лабіринту!</div>
+                <div className="font-display gold-text font-bold text-lg text-center">{t("maze:heroExits")}</div>
               </>
             )}
             {finaleStep === 2 && (
@@ -784,7 +789,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                   <span className="victory-orbit" />
                   <div className="w-16 h-16"><MazeIcon type="chest" className="w-full h-full" /></div>
                 </div>
-                <div className="font-display gold-text font-bold text-lg text-center">Скриня відчиняється!</div>
+                <div className="font-display gold-text font-bold text-lg text-center">{t("maze:chestOpening")}</div>
               </>
             )}
             {finaleStep === 3 && (
@@ -801,26 +806,26 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                     />
                   ))}
                 </div>
-                <div className="font-display gold-text font-bold text-lg text-center">{starsEarned} з 3 зірок!</div>
+                <div className="font-display gold-text font-bold text-lg text-center">{t("maze:starsEarnedText", { count: starsEarned })}</div>
               </>
             )}
-            {finaleStep < 4 && <div className="text-violet-300/50 text-xs">(тапни, щоб продовжити)</div>}
+            {finaleStep < 4 && <div className="text-violet-300/50 text-xs">{t("maze:tapToContinue")}</div>}
 
             {finaleStep >= 4 && (
               <div className="rpg-panel rpg-panel-gold rounded-3xl p-5 text-center screen-in w-full" onClick={(e) => e.stopPropagation()}>
-                <div className="font-display gold-text font-extrabold text-xl mb-3">Лабіринт пройдено!</div>
+                <div className="font-display gold-text font-extrabold text-xl mb-3">{t("maze:completedTitle")}</div>
                 <div className="flex justify-center gap-2 mb-4">
                   {[0, 1, 2].map((i) => (
                     <ArtImage key={i} src="/assets/icons/ui/star.png" fallback="" alt="" className={`w-11 h-11 object-contain ${i < starsEarned ? "" : "opacity-20 grayscale"}`} />
                   ))}
                 </div>
                 <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-4 text-left text-sm text-violet-100 space-y-1">
-                  <div>Клітинок пройдено: <b className="text-white">{visited.size}</b></div>
-                  <div>Скринь знайдено: <b className="text-white">{chestsFound}/{chestsTotal}</b></div>
-                  <div>Помилок: <b className="text-white">{mistakes}</b></div>
-                  <div>Таємний шлях: <b className="text-white">{secretFound ? "знайдено!" : "не знайдено"}</b></div>
+                  <div>{t("maze:cellsVisited", { count: visited.size })}</div>
+                  <div>{t("maze:chestsFoundStat", { found: chestsFound, total: chestsTotal })}</div>
+                  <div>{t("maze:mistakesStat", { count: mistakes })}</div>
+                  <div>{t("maze:secretPathStat", { value: secretFound ? t("maze:secretFoundYes") : t("maze:secretFoundNo") })}</div>
                 </div>
-                <div className="text-violet-200 text-sm mb-4">Нагорода: {totalCoins} монет, {totalXp} XP</div>
+                <div className="text-violet-200 text-sm mb-4">{t("maze:rewardLine", { coins: totalCoins, xp: totalXp })}</div>
                 <button
                   onClick={() => {
                     // Захист від подвійного натискання (launch-plan.md, розділ 16) —
@@ -832,7 +837,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                   disabled={rewardClaimed}
                   className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl disabled:opacity-70"
                 >
-                  {rewardClaimed ? "Забираємо…" : "Забрати нагороду"}
+                  {rewardClaimed ? t("maze:claimingReward") : t("maze:claimReward")}
                 </button>
               </div>
             )}
@@ -841,10 +846,10 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
 
         {phase === "failed" && (
           <div className="rpg-panel rounded-3xl p-5 mt-5 text-center screen-in">
-            <div className="font-display coral-text font-extrabold text-xl mb-1">Життя закінчились</div>
-            <div className="text-violet-200 text-sm mb-4">Спробуй пройти лабіринт ще раз — усе вийде!</div>
+            <div className="font-display coral-text font-extrabold text-xl mb-1">{t("maze:failedTitle")}</div>
+            <div className="text-violet-200 text-sm mb-4">{t("maze:failedSubtitle")}</div>
             <button onClick={handleRetry} className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl">
-              Спробувати ще раз
+              {t("maze:retryButton")}
             </button>
           </div>
         )}
@@ -853,11 +858,11 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
       {showExitConfirm && (
         <ExitConfirmModal
           modeType="training"
-          levelName="Лабіринт"
+          levelName={t("maze:levelName")}
           currentProgress={moveCount}
           totalProgress={maze.mainPathLength}
           destination="training"
-          destinationLabel="Вийти до тренувань"
+          destinationLabel={t("maze:exitToTraining")}
           onContinue={() => setShowExitConfirm(false)}
           onExit={onBack}
         />

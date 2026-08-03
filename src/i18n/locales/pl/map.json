@@ -1,0 +1,8 @@
+{
+  "title": "Mapa królestwa",
+  "lockedRequirement": "Ukończ wszystkie poziomy „{{region}}”",
+  "locked": "Zablokowane",
+  "levelsCompleted": "{{done}}/{{total}} poziomów ukończono",
+  "nextLevel": "➜ Następny poziom",
+  "tableOf": "tabliczka {{sub}}"
+}

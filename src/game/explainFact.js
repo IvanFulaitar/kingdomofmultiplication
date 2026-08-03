@@ -11,6 +11,10 @@
 // адитивний перший крок: коротке пояснення показується одразу після
 // будь-якої помилки, без зміни решти механіки бою.
 
+// Плоский JS-модуль (не React-компонент) — так само, як generateQuestion.js,
+// перекладаємо через i18n-синглтон напряму, не useTranslation().
+import i18n from "../i18n/index.js";
+
 // Розбирає "AxB" (formatKey із generateQuestion.js) на [a, b]. Повертає
 // null для будь-якого іншого формату (наприклад, "combined"-приклади типу
 // "7x8+3" чи "trap-7x8+3") — для них пояснення поки не показуємо.
@@ -27,7 +31,7 @@ export function explainFact(a, b) {
 
   if (big <= 5) {
     const groups = Array(a).fill(b).join(" + ");
-    return `${a} × ${b} — це ${a} груп по ${b}: ${groups} = ${correct}.`;
+    return i18n.t("battle:explainSmallGroups", { a, b, groups, correct });
   }
 
   const rest = big - 5;

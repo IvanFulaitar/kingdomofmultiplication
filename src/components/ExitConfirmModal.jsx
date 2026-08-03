@@ -1,23 +1,14 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { playModalClose } from "../game/sfx.js";
 import ArtImage from "./ArtImage.jsx";
 
+// titleKey/messageKey замість готового тексту — той самий "story"/"battle"
+// набір копії, лише "training" відрізняється формулюванням.
 const MODE_COPY = {
-  story: {
-    title: "Вийти з випробування?",
-    message: "Прогрес поточної спроби буде втрачено. Ти точно хочеш вийти?",
-    progressLabel: "Поточний прогрес",
-  },
-  battle: {
-    title: "Вийти з випробування?",
-    message: "Прогрес поточної спроби буде втрачено. Ти точно хочеш вийти?",
-    progressLabel: "Поточний прогрес",
-  },
-  training: {
-    title: "Завершити тренування?",
-    message: "Результат цієї незавершеної гри не буде збережено. Ти точно хочеш вийти?",
-    progressLabel: "Поточний прогрес",
-  },
+  story: { titleKey: "exitConfirmTitle", messageKey: "exitConfirmMessage" },
+  battle: { titleKey: "exitConfirmTitle", messageKey: "exitConfirmMessage" },
+  training: { titleKey: "exitTrainingTitle", messageKey: "exitTrainingMessage" },
 };
 
 const DESTINATION_ICONS = {
@@ -37,6 +28,7 @@ export default function ExitConfirmModal({
   onContinue,
   onExit,
 }) {
+  const { t } = useTranslation("common");
   const [exiting, setExiting] = useState(false);
 
   // Поки модалка відкрита, сайт позаду не повинен прокручуватись.
@@ -48,10 +40,10 @@ export default function ExitConfirmModal({
 
   const copy = MODE_COPY[modeType] ?? MODE_COPY.story;
   const hasTotal = typeof totalProgress === "number";
-  const exitLabel = currentProgress > 0 ? destinationLabel : "Вийти";
+  const exitLabel = currentProgress > 0 ? destinationLabel : t("exitButton");
   const progressText = hasTotal
-    ? `${copy.progressLabel}: ${currentProgress} з ${totalProgress}`
-    : `${copy.progressLabel}: ${currentProgress}`;
+    ? t("exitProgressWithTotal", { label: t("exitProgressLabel"), current: currentProgress, total: totalProgress })
+    : t("exitProgressNoTotal", { label: t("exitProgressLabel"), current: currentProgress });
 
   function confirmExit() {
     if (exiting) return;
@@ -69,14 +61,14 @@ export default function ExitConfirmModal({
 
         <div className="text-xs font-display font-bold text-amber-200/80 mb-1 truncate">{levelName}</div>
         <h2 className="font-display gold-text text-2xl font-extrabold leading-tight mb-3">
-          {title ?? copy.title}
+          {title ?? t(copy.titleKey)}
         </h2>
         <p className="text-violet-100 text-base leading-snug mb-4">
-          {copy.message}
+          {t(copy.messageKey)}
         </p>
 
         <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-5">
-          <div className="text-[11px] uppercase tracking-wide text-amber-200/70 font-bold mb-1">Спроба не завершена</div>
+          <div className="text-[11px] uppercase tracking-wide text-amber-200/70 font-bold mb-1">{t("exitNotFinished")}</div>
           <div className="font-body text-white text-sm font-bold">{progressText}</div>
         </div>
 
@@ -86,7 +78,7 @@ export default function ExitConfirmModal({
             className="exit-continue-button relative rounded-2xl py-3.5 px-4 font-display font-extrabold text-indigo-950 flex items-center justify-center gap-2.5"
           >
             <span className="exit-continue-shield" aria-hidden="true" />
-            Продовжити гру
+            {t("exitContinue")}
           </button>
           <button
             onClick={confirmExit}

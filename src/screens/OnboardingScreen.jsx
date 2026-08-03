@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { generateQuestion, factsUsedIn } from "../game/generateQuestion.js";
 import {
   playUiClick, playUiPrimary, playAttack, playEnemyHit, playHeartLost,
@@ -26,10 +27,12 @@ import { REGIONS } from "../data/regions.js";
 
 const DIAGNOSTIC_QUESTIONS = 10;
 
+// labelKey (не готовий рядок) — той самий принцип, що й у mastery.js/
+// regions.js: цей масив обчислюється один раз при завантаженні модуля.
 const CONFIDENCE_LEVELS = [
-  { id: "beginner", icon: "🌱", label: "Я тільки вчу таблицю множення", levelId: 1 },
-  { id: "intermediate", icon: "🌿", label: "Я вже трохи знаю", levelId: 4 },
-  { id: "confident", icon: "🔥", label: "Я хочу перевірити себе", levelId: 7 },
+  { id: "beginner", icon: "🌱", labelKey: "confidenceBeginner", levelId: 1 },
+  { id: "intermediate", icon: "🌿", labelKey: "confidenceIntermediate", levelId: 4 },
+  { id: "confident", icon: "🔥", labelKey: "confidenceConfident", levelId: 7 },
 ];
 
 // Ті самі kind, що НЕ відповідають одному факту "AxB" (App.jsx, recordFact) —
@@ -51,12 +54,11 @@ function Heart({ filled }) {
 }
 
 export default function OnboardingScreen({ onComplete }) {
+  const { t } = useTranslation(["onboarding", "regions"]);
   const [step, setStep] = useState("welcome"); // welcome | confidence | diagnostic | tutorial
   // Компактний перемикач мови — лише на першому екрані (розділ 5 брифу
   // локалізації), щоб дитина могла виправити автовизначену мову ще ДО
-  // проходження навчання. Решта тексту onboarding поки НЕ перекладена
-  // (окремий наступний прохід) — перемикач тут працює на майбутнє й на
-  // випадки, коли дитина вже знає, що хоче іншу мову інтерфейсу меню.
+  // проходження навчання.
   const [langPickerOpen, setLangPickerOpen] = useState(false);
   const [confidence, setConfidence] = useState(null);
 
@@ -199,14 +201,14 @@ export default function OnboardingScreen({ onComplete }) {
             />
             <div>
               <h1 className="font-display gold-text text-3xl font-extrabold tracking-wide mb-2">
-                Ласкаво просимо до Королівства Математики!
+                {t("onboarding:welcomeTitle")}
               </h1>
               <p className="text-violet-200 text-base leading-relaxed">
-                Розв'язуй завдання, перемагай охоронців і відкривай нові землі.
+                {t("onboarding:welcomeSubtitle")}
               </p>
             </div>
             <button onClick={startConfidence} className="next-challenge-button w-full py-4 rounded-2xl font-display font-extrabold text-lg mt-4">
-              Почати пригоду
+              {t("onboarding:startAdventure")}
             </button>
           </div>
         )}
@@ -214,8 +216,8 @@ export default function OnboardingScreen({ onComplete }) {
         {step === "confidence" && (
           <div className="flex-1 flex flex-col justify-center gap-5">
             <div className="text-center mb-2">
-              <h2 className="font-display gold-text text-2xl font-extrabold mb-1.5">Наскільки добре ти знаєш множення?</h2>
-              <p className="text-violet-200 text-sm">Це допоможе підібрати перші приклади якраз для тебе</p>
+              <h2 className="font-display gold-text text-2xl font-extrabold mb-1.5">{t("onboarding:confidenceTitle")}</h2>
+              <p className="text-violet-200 text-sm">{t("onboarding:confidenceSubtitle")}</p>
             </div>
             <div className="flex flex-col gap-3.5">
               {CONFIDENCE_LEVELS.map((lvl) => (
@@ -227,7 +229,7 @@ export default function OnboardingScreen({ onComplete }) {
                   <span className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-indigo-950/50 border border-white/10">
                     {lvl.icon}
                   </span>
-                  <span className="font-display font-bold text-base flex-1">{lvl.label}</span>
+                  <span className="font-display font-bold text-base flex-1">{t(`onboarding:${lvl.labelKey}`)}</span>
                 </button>
               ))}
             </div>
@@ -237,7 +239,7 @@ export default function OnboardingScreen({ onComplete }) {
         {step === "diagnostic" && dQuestion && (
           <div className="flex-1 flex flex-col">
             <div className="text-center mb-1">
-              <span className="text-xs text-violet-200/80 font-semibold">Коротка перевірка — без штрафів</span>
+              <span className="text-xs text-violet-200/80 font-semibold">{t("onboarding:diagnosticBadge")}</span>
             </div>
             <div className="flex justify-center gap-1.5 mt-2 mb-6">
               {Array.from({ length: DIAGNOSTIC_QUESTIONS }).map((_, i) => (
@@ -247,7 +249,7 @@ export default function OnboardingScreen({ onComplete }) {
             <div className="flex-1 flex flex-col items-center justify-center gap-6">
               <div className="quest-page relative text-indigo-950 rounded-3xl px-8 py-9 max-w-full">
                 <div className="text-xs text-center text-amber-800/70 font-semibold mb-1.5 tracking-wide">
-                  Приклад {dIndex + 1} з {DIAGNOSTIC_QUESTIONS}
+                  {t("onboarding:diagnosticProgress", { current: dIndex + 1, total: DIAGNOSTIC_QUESTIONS })}
                 </div>
                 <div className={`font-display font-extrabold text-center tracking-wide ${dQuestion.prompt.length > 40 ? "text-lg" : dQuestion.prompt.length > 14 ? "text-3xl" : "text-5xl"}`}>
                   {dQuestion.prompt}
@@ -282,8 +284,8 @@ export default function OnboardingScreen({ onComplete }) {
             {!tWon && (
               <>
                 <div className="text-center mb-4">
-                  <h2 className="font-display gold-text text-xl font-extrabold mb-1">Твій перший бій!</h2>
-                  <p className="text-violet-200 text-sm">Обери правильну відповідь, щоб завдати шкоди</p>
+                  <h2 className="font-display gold-text text-xl font-extrabold mb-1">{t("onboarding:tutorialTitle")}</h2>
+                  <p className="text-violet-200 text-sm">{t("onboarding:tutorialSubtitle")}</p>
                 </div>
                 <div className="rpg-panel rpg-panel-gold rounded-3xl p-5 mb-5 flex items-center justify-center gap-6">
                   <ArtImage
@@ -348,10 +350,10 @@ export default function OnboardingScreen({ onComplete }) {
 
                 {/* 2-3. Заголовок + підзаголовок + коротке пояснення (2 рядки) */}
                 <div className="knowledge-result-fade-up" style={{ "--kr-delay": "0.1s" }}>
-                  <h2 className="font-display gold-text text-3xl font-extrabold">Навчання завершено!</h2>
-                  <p className="font-body text-violet-100 text-base font-semibold mt-1.5">Ти готовий до пригоди!</p>
+                  <h2 className="font-display gold-text text-3xl font-extrabold">{t("onboarding:doneTitle")}</h2>
+                  <p className="font-body text-violet-100 text-base font-semibold mt-1.5">{t("onboarding:doneSubtitle")}</p>
                   <p className="font-body text-violet-200/80 text-sm mt-1.5 max-w-xs mx-auto leading-relaxed">
-                    Розв'язуй завдання, перемагай охоронців і відкривай нові землі королівства.
+                    {t("onboarding:doneBody")}
                   </p>
                 </div>
 
@@ -364,17 +366,17 @@ export default function OnboardingScreen({ onComplete }) {
                 >
                   <div className="flex flex-col items-center gap-1 w-[72px]">
                     <ArtImage src="/assets/icons/ui/book.png" fallback="📖" alt="" className="w-7 h-7 object-contain flex items-center justify-center text-xl" />
-                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">Розв'язуй</span>
+                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">{t("onboarding:cycleStep1")}</span>
                   </div>
                   <span className="text-amber-300/70 text-sm -mt-4" aria-hidden="true">→</span>
                   <div className="flex flex-col items-center gap-1 w-[72px]">
                     <StarIcon filled />
-                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">Перемагай</span>
+                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">{t("onboarding:cycleStep2")}</span>
                   </div>
                   <span className="text-amber-300/70 text-sm -mt-4" aria-hidden="true">→</span>
                   <div className="flex flex-col items-center gap-1 w-[72px]">
                     <ArtImage src="/assets/icons/ui/map_scroll.png" fallback="🗺️" alt="" className="w-7 h-7 object-contain flex items-center justify-center text-xl" />
-                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">Відкривай землі</span>
+                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">{t("onboarding:cycleStep3")}</span>
                   </div>
                 </div>
 
@@ -382,22 +384,22 @@ export default function OnboardingScreen({ onComplete }) {
                     іконки (StarIcon/coin.png), назви текстом (не лише
                     іконка), як і всюди в грі. */}
                 <div className="w-full knowledge-result-fade-up" style={{ "--kr-delay": "0.28s" }}>
-                  <h3 className="font-display font-bold text-sm text-violet-100 mb-2">Твоя перша нагорода</h3>
+                  <h3 className="font-display font-bold text-sm text-violet-100 mb-2">{t("onboarding:firstRewardTitle")}</h3>
                   <div className="rpg-panel rounded-2xl w-full grid grid-cols-3 divide-x divide-white/10 px-2 py-4">
                     <div className="flex flex-col items-center px-1.5 gap-1">
                       <StarIcon filled />
                       <span className="font-display font-extrabold text-xl gold-text">+1</span>
-                      <span className="text-[11px] text-violet-200/70 leading-tight">Зірка</span>
+                      <span className="text-[11px] text-violet-200/70 leading-tight">{t("onboarding:rewardStar")}</span>
                     </div>
                     <div className="flex flex-col items-center px-1.5 gap-1">
                       <ArtImage src="/assets/icons/ui/coin.png" fallback="🪙" alt="" className="w-6 h-6 object-contain flex items-center justify-center" />
                       <span className="font-display font-extrabold text-xl gold-text">+15</span>
-                      <span className="text-[11px] text-violet-200/70 leading-tight">Монет</span>
+                      <span className="text-[11px] text-violet-200/70 leading-tight">{t("onboarding:rewardCoins")}</span>
                     </div>
                     <div className="flex flex-col items-center px-1.5 gap-1">
                       <span className="text-xl" aria-hidden="true">✨</span>
                       <span className="font-display font-extrabold text-xl gold-text">+30</span>
-                      <span className="text-[11px] text-violet-200/70 leading-tight">Досвіду</span>
+                      <span className="text-[11px] text-violet-200/70 leading-tight">{t("onboarding:rewardXp")}</span>
                     </div>
                   </div>
                 </div>
@@ -415,8 +417,8 @@ export default function OnboardingScreen({ onComplete }) {
                     className="w-12 h-12 rounded-xl object-cover shrink-0 text-2xl flex items-center justify-center"
                   />
                   <div className="min-w-0">
-                    <p className="font-display font-bold text-sm text-emerald-200">Відкрито: {REGIONS[0].name}</p>
-                    <p className="text-xs text-violet-200/70 mt-0.5">Твоя перша пригода вже чекає</p>
+                    <p className="font-display font-bold text-sm text-emerald-200">{t("onboarding:regionUnlocked", { name: t(`regions:${REGIONS[0].nameKey}`) })}</p>
+                    <p className="text-xs text-violet-200/70 mt-0.5">{t("onboarding:regionUnlockedSubtitle")}</p>
                   </div>
                 </div>
 
@@ -427,13 +429,13 @@ export default function OnboardingScreen({ onComplete }) {
                   <button
                     onClick={finish}
                     disabled={finishing}
-                    aria-label="Завершити навчання і перейти до карти королівства"
+                    aria-label={t("onboarding:finishAria")}
                     className="next-challenge-button onboarding-cta-pulse w-full py-4 rounded-2xl font-display font-extrabold text-xl min-h-[64px] disabled:opacity-80 disabled:pointer-events-none"
                     style={{ animationDelay: "0.46s" }}
                   >
-                    ПОЧАТИ ПРИГОДУ
+                    {t("onboarding:finishButton")}
                   </button>
-                  <p className="text-xs text-violet-300/70 mt-2">Перейти до карти королівства</p>
+                  <p className="text-xs text-violet-300/70 mt-2">{t("onboarding:finishHint")}</p>
                 </div>
               </div>
             )}

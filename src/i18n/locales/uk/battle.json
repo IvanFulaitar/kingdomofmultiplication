@@ -1,0 +1,18 @@
+{
+  "taskProgress": "Завдання {{current}} з {{total}}",
+  "enemyHealth": "Здоров'я ворога",
+  "chooseAnswer": "Обери правильну відповідь",
+  "correct": "✦ Правильно! ✦",
+  "incorrect": "Неправильно",
+  "exitToMap": "Вийти до карти",
+  "compareQuestion": "Який вираз має більше значення?",
+  "wordProblemBasket": "У {{a}} кошиках лежить по {{b}} яблук у кожному. Скільки яблук усього?",
+  "wordProblemBoxPencils": "У {{a}} коробках по {{b}} олівців. Скільки всього олівців?",
+  "wordProblemShelfBooks": "На {{a}} полицях стоїть по {{b}} книжок. Скільки книжок усього?",
+  "wordProblemGnomeMushrooms": "{{a}} гноми зібрали по {{b}} грибів кожен. Скільки грибів разом?",
+  "wordProblemGardenTrees": "У саду {{a}} дерев, і на кожному по {{b}} яблук. Скільки яблук усього?",
+  "wordProblemCartFlour": "{{a}} вози везуть по {{b}} мішків борошна. Скільки мішків усього?",
+  "wordProblemCageRabbits": "У {{a}} клітках сидить по {{b}} кроликів. Скільки кроликів усього?",
+  "wordProblemPlateCookies": "На {{a}} тарілках лежить по {{b}} печива. Скільки печива усього?",
+  "explainSmallGroups": "{{a}} × {{b}} — це {{a}} груп по {{b}}: {{groups}} = {{correct}}."
+}

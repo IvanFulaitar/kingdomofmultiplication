@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import TopBar from "../components/TopBar.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 import WeakPracticeScreen from "./WeakPracticeScreen.jsx";
@@ -26,29 +27,23 @@ import {
 // повторює слово "повторити" (логічна неузгодженість №1 у технічному
 // завданні: "Потрібно повторити: 0" одночасно з порадою "повторити" таблицю
 // у статусі "Майже засвоєно").
-const RECOMMEND_TEXT = {
-  weak: (n) => `Радимо повторити таблицю на ${n}`,
-  almost: (n) => `Радимо покращити таблицю на ${n}`,
-  untried: (n) => `Радимо почати з таблиці на ${n}`,
-};
-const RECOMMEND_BADGE = { weak: "Повторити", almost: "Варто покращити", untried: "Рекомендуємо" };
+// Ключі (не готові рядки — цей об'єкт створюється один раз при завантаженні
+// модуля, "заморожений" текст не реагував би на зміну мови пізніше).
+const RECOMMEND_KEY = { weak: "recommendWeak", almost: "recommendAlmost", untried: "recommendUntried" };
+const RECOMMEND_BADGE_KEY = { weak: "badgeWeak", almost: "badgeAlmost", untried: "badgeUntried" };
 
 // Текст головної кнопки тренування (розділ 2.7 + логічна неузгодженість №4):
 // якщо серед прикладів є й такі, де даних ще замало, чесно про це кажемо —
 // а не називаємо звичайною "Слабкі приклади", коли насправді туди
 // потрапило й щось геть нове.
-const PRACTICE_CTA = {
-  weak: "Потренувати слабкі приклади",
-  improve: "Покращити найслабші приклади",
-  review: "Продовжити тренування",
-};
+const PRACTICE_CTA_KEY = { weak: "ctaWeak", improve: "ctaImprove", review: "ctaReview" };
 
 // Скільки коротких завдань пропонуємо і скільки це триватиме — рахуємо з
 // РЕАЛЬНОГО розміру пулу (той самий, що відкриє WeakPracticeScreen.jsx),
 // щоб цифри тут і там завжди збігались (логічна неузгодженість №3).
-function practiceBlurb(count) {
+function practiceBlurb(t, count) {
   const minutes = Math.max(1, Math.round((count * 15) / 60));
-  return `${count} коротких завдань · приблизно ${minutes} ${minutes === 1 ? "хвилина" : "хвилини"}`;
+  return `${t("knowledge:tasksCount", { count })} · ${t("knowledge:approxMinutes", { count: minutes })}`;
 }
 
 // overallMastery() дає лише число (зважене середнє по 8 таблицях), без
@@ -87,6 +82,7 @@ function ProgressBar({ score, tier, className = "", large = false }) {
 }
 
 export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward }) {
+  const { t } = useTranslation(["knowledge", "common"]);
   const facts = progress.facts ?? {};
   const [selected, setSelected] = useState(null); // номер обраної таблиці, або null (огляд)
   const [sortMode, setSortMode] = useState("number"); // "number" | "weakest"
@@ -135,10 +131,10 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
         <div className="center-vignette" />
         <div className="relative z-10 max-w-md sm:max-w-2xl mx-auto px-6 py-8 pb-16">
           <div className="mb-1.5">
-            <TopBar onBack={onBack} title="Мої знання" />
+            <TopBar onBack={onBack} title={t("knowledge:screenTitle")} />
           </div>
           <p className="text-violet-200/70 text-xs text-center mb-5">
-            Переглядай прогрес і повторюй складні приклади
+            {t("knowledge:overviewSubtitle")}
           </p>
 
           {/* Зведена панель (розділ 2.2) — головний інформаційний блок
@@ -146,14 +142,14 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
               рядки розподілу по статусах, натискна рекомендація. */}
           <div className="rpg-panel rounded-2xl px-5 py-4 mb-5">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-display font-bold text-sm text-violet-100">Загальне засвоєння</span>
+              <span className="font-display font-bold text-sm text-violet-100">{t("knowledge:overallMastery")}</span>
               <span className="font-display font-extrabold text-2xl gold-text">{formatPercent(overall.score)}</span>
             </div>
             <ProgressBar score={overall.score} tier={overallTier(overall)} className="mb-3.5" large />
             <div className="flex flex-col gap-1 text-xs text-violet-200/85 mb-3.5">
-              <span>🟢 Добре знаю: {overall.goodCount} з 8</span>
-              <span>🟡 Майже засвоєно: {overall.almostCount}</span>
-              <span>🔴 Потрібно повторити: {overall.weakCount}</span>
+              <span>{t("knowledge:goodKnow", { count: overall.goodCount })}</span>
+              <span>{t("knowledge:almostLearned", { count: overall.almostCount })}</span>
+              <span>{t("knowledge:needsRepeat", { count: overall.weakCount })}</span>
             </div>
             {recommendation && (
               <button
@@ -161,33 +157,33 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
                 className="knowledge-recommend-banner knowledge-recommend-banner-tappable rounded-xl px-3.5 py-2.5 text-sm font-semibold flex items-center gap-2 w-full text-left"
               >
                 <span aria-hidden="true">💡</span>
-                <span className="flex-1">{RECOMMEND_TEXT[recommendation.reason](recommendation.number)}</span>
+                <span className="flex-1">{t(`knowledge:${RECOMMEND_KEY[recommendation.reason]}`, { n: recommendation.number })}</span>
                 <span className="knowledge-chevron shrink-0" aria-hidden="true">›</span>
               </button>
             )}
             {!recommendation && overall.attempts > 0 && (
               <div className="knowledge-recommend-banner-good rounded-xl px-3.5 py-2.5 text-sm font-semibold flex items-center gap-2">
                 <span aria-hidden="true">🎉</span>
-                <span>Усі таблиці добре засвоєні — чудова робота!</span>
+                <span>{t("knowledge:allGood")}</span>
               </div>
             )}
           </div>
 
           {/* Сортування (розділ 2.4) — компактний segmented control. */}
-          <div className="knowledge-segmented mb-4" role="group" aria-label="Порядок сортування таблиць">
+          <div className="knowledge-segmented mb-4" role="group" aria-label={t("knowledge:sortGroupLabel")}>
             <button
               onClick={() => { playUiClick(); setSortMode("number"); }}
               aria-pressed={sortMode === "number"}
               className={`knowledge-segmented-btn ${sortMode === "number" ? "knowledge-segmented-btn-active" : ""}`}
             >
-              За номером
+              {t("knowledge:sortByNumber")}
             </button>
             <button
               onClick={() => { playUiClick(); setSortMode("weakest"); }}
               aria-pressed={sortMode === "weakest"}
               className={`knowledge-segmented-btn ${sortMode === "weakest" ? "knowledge-segmented-btn-active" : ""}`}
             >
-              Найслабші спочатку
+              {t("knowledge:sortByWeakest")}
             </button>
           </div>
 
@@ -199,19 +195,23 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
                 <button
                   key={n}
                   onClick={() => { playUiPrimary(); setSelected(n); }}
-                  aria-label={`Таблиця на ${n}, ${m.attempts > 0 ? `засвоєння ${m.score} відсотків, ${m.label.toLowerCase()}` : "ще не вивчалась"}`}
+                  aria-label={
+                    m.attempts > 0
+                      ? t("knowledge:tableCardAriaKnown", { n, score: m.score, label: t(`knowledge:${m.labelKey}`) })
+                      : t("knowledge:tableCardAriaUnknown", { n })
+                  }
                   className={`knowledge-card knowledge-card-${m.tier} rounded-2xl px-4 py-3.5 min-h-[76px] flex items-center gap-4 text-left`}
                 >
                   <TierIcon status={m} className="w-11 h-11 object-contain flex items-center justify-center text-2xl shrink-0" />
                   <div className="flex-1 min-w-0">
                     {isRecommended && (
-                      <span className="knowledge-badge-recommend inline-block mb-1">{RECOMMEND_BADGE[recommendation.reason]}</span>
+                      <span className="knowledge-badge-recommend inline-block mb-1">{t(`knowledge:${RECOMMEND_BADGE_KEY[recommendation.reason]}`)}</span>
                     )}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-display font-bold text-base truncate">Таблиця на {n}</span>
+                      <span className="font-display font-bold text-base truncate">{t("knowledge:tableName", { n })}</span>
                       <span className="font-display font-bold text-sm shrink-0 ml-2">{m.attempts > 0 ? formatPercent(m.score) : "—"}</span>
                     </div>
-                    <div className="text-xs text-white/60 mt-0.5 truncate">{m.label}</div>
+                    <div className="text-xs text-white/60 mt-0.5 truncate">{t(`knowledge:${m.labelKey}`)}</div>
                     <ProgressBar score={m.attempts > 0 ? m.score : 0} tier={m.tier} className="mt-1.5" />
                   </div>
                   <span className="knowledge-chevron knowledge-chevron-lg shrink-0" aria-hidden="true">›</span>
@@ -226,9 +226,9 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
                 onClick={() => startPractice({ type: "all" })}
                 className="knowledge-cta-button w-full py-3.5 rounded-2xl font-display font-extrabold text-lg text-indigo-950"
               >
-                {PRACTICE_CTA[overviewMode]}
+                {t(`knowledge:${PRACTICE_CTA_KEY[overviewMode]}`)}
               </button>
-              <div className="text-center text-xs text-violet-200/70 mt-2">{practiceBlurb(overviewPool.length)}</div>
+              <div className="text-center text-xs text-violet-200/70 mt-2">{practiceBlurb(t, overviewPool.length)}</div>
             </div>
           )}
         </div>
@@ -271,11 +271,11 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
       <div className="center-vignette" />
       <div className="relative z-10 max-w-md sm:max-w-2xl mx-auto px-6 py-8 pb-16">
         <div className="mb-2">
-          <TopBar onBack={() => { playUiBack(); setSelected(null); setExpandedFact(null); }} title={`Таблиця на ${selected}`} />
+          <TopBar onBack={() => { playUiBack(); setSelected(null); setExpandedFact(null); }} title={t("knowledge:tableName", { n: selected })} />
         </div>
         <p className="text-violet-200/85 text-sm text-center mb-5">
-          <span className="sm:hidden">Перевір, що вже знаєш</span>
-          <span className="hidden sm:inline">Переглянь, які приклади вже засвоєні, а які варто повторити</span>
+          <span className="sm:hidden">{t("knowledge:detailSubtitleShort")}</span>
+          <span className="hidden sm:inline">{t("knowledge:detailSubtitleLong")}</span>
         </p>
 
         {/* Компактний підсумок (розділ 3.2) — головне число більше, решта —
@@ -283,13 +283,13 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
             країв (grid, не суцільний justify-between). */}
         <div className="rpg-panel rounded-2xl px-5 py-4 mb-5">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="font-display font-bold text-sm text-violet-100">Засвоєння</span>
+            <span className="font-display font-bold text-sm text-violet-100">{t("knowledge:masteryLabel")}</span>
             <span className="font-display font-extrabold text-2xl gold-text">{tableSummary.attempts > 0 ? formatPercent(tableSummary.score) : "—"}</span>
           </div>
           <ProgressBar score={tableSummary.attempts > 0 ? tableSummary.score : 0} tier={tableSummary.tier} className="mb-3.5" large />
           <div className="grid grid-cols-2 gap-3 text-xs text-violet-200/75">
-            <span>Правильних: {totalCorrect} із {totalAttempts}</span>
-            <span className="text-right">Середній час: {formatSeconds(avgTimeMs)}</span>
+            <span>{t("knowledge:correctOfTotal", { correct: totalCorrect, total: totalAttempts })}</span>
+            <span className="text-right">{t("knowledge:avgTime", { value: formatSeconds(avgTimeMs) })}</span>
           </div>
         </div>
 
@@ -306,7 +306,11 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
                 <button
                   onClick={() => { playUiClick(); setExpandedFact(isExpanded ? null : m); }}
                   aria-expanded={isExpanded}
-                  aria-label={`${selected} помножити на ${m}, ${insufficient ? "ще недостатньо даних" : `засвоєння ${computeMastery(stat)} відсотків, ${status.label.toLowerCase()}`}`}
+                  aria-label={
+                    insufficient
+                      ? t("knowledge:factAriaUnknown", { a: selected, b: m })
+                      : t("knowledge:factAriaKnown", { a: selected, b: m, score: computeMastery(stat), label: t(`knowledge:${status.labelKey}`) })
+                  }
                   className="w-full min-h-[72px] px-4 py-3 flex items-center gap-3 text-left"
                 >
                   <TierIcon
@@ -322,12 +326,12 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
                     </div>
                     {insufficient ? (
                       <div className="text-xs text-white/50 mt-0.5">
-                        <div>Ще недостатньо даних</div>
+                        <div>{t("knowledge:insufficientData")}</div>
                         {attempts > 0 && <div>{formatAttempts(attempts)}</div>}
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-white/60 flex-1">{status.label}</span>
+                        <span className="text-xs text-white/60 flex-1">{t(`knowledge:${status.labelKey}`)}</span>
                         {showRepeatBadge && (
                           <span
                             role="button"
@@ -336,7 +340,7 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
                             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); startPractice({ type: "fact", a: selected, b: m }); } }}
                             className="knowledge-badge-practice shrink-0"
                           >
-                            Потренувати
+                            {t("knowledge:trainThis")}
                           </span>
                         )}
                       </div>
@@ -350,10 +354,10 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
                   <div className="px-4 pb-3.5 pt-1 knowledge-fact-details">
                     {!insufficient && (
                       <div className="grid grid-cols-2 gap-2 text-xs text-violet-200/85 mb-2.5">
-                        <span>Точність: {formatPercent(((stat.correct ?? 0) / attempts) * 100)}</span>
-                        <span>Спроб: {attempts}</span>
-                        <span>Середній час: {formatSeconds(averageResponseTime(stat))}</span>
-                        <span>Востаннє: {formatLastAnswered(stat?.lastAnsweredAt)}</span>
+                        <span>{t("knowledge:accuracyWithValue", { value: formatPercent(((stat.correct ?? 0) / attempts) * 100) })}</span>
+                        <span>{t("knowledge:attemptsWithValue", { count: attempts })}</span>
+                        <span>{t("knowledge:avgTime", { value: formatSeconds(averageResponseTime(stat)) })}</span>
+                        <span>{t("knowledge:lastAnsweredWithValue", { value: formatLastAnswered(stat?.lastAnsweredAt) })}</span>
                       </div>
                     )}
                     <p className="font-body text-xs text-amber-100/90 leading-snug rpg-panel rounded-lg px-3 py-2 mb-2.5">
@@ -364,13 +368,13 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
                         onClick={(e) => { e.stopPropagation(); startPractice({ type: "fact", a: selected, b: m }); }}
                         className="knowledge-secondary-button flex-1 rounded-xl py-2.5 text-sm font-display font-bold"
                       >
-                        Потренувати цей приклад
+                        {t("knowledge:trainThisExample")}
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setExpandedFact(null); }}
                         className="knowledge-secondary-button-muted px-4 rounded-xl py-2.5 text-sm font-display font-bold"
                       >
-                        Закрити
+                        {t("common:close")}
                       </button>
                     </div>
                   </div>
@@ -386,9 +390,9 @@ export default function MyKnowledgeScreen({ progress, onBack, onAnswer, onReward
               onClick={() => startPractice({ type: "table", number: selected })}
               className="knowledge-cta-button w-full py-3.5 rounded-2xl font-display font-extrabold text-lg text-indigo-950"
             >
-              Потренувати таблицю на {selected}
+              {t("knowledge:trainTableButton", { n: selected })}
             </button>
-            <div className="text-center text-xs text-violet-200/70 mt-2">{practiceBlurb(tablePool.length)}</div>
+            <div className="text-center text-xs text-violet-200/70 mt-2">{practiceBlurb(t, tablePool.length)}</div>
           </div>
         )}
       </div>

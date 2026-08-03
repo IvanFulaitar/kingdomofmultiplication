@@ -1,0 +1,36 @@
+{
+  "welcomeTitle": "Welcome to the Kingdom of Multiplication!",
+  "welcomeSubtitle": "Solve challenges, defeat guardians, and discover new lands.",
+  "startAdventure": "Start Adventure",
+
+  "confidenceTitle": "How well do you know multiplication?",
+  "confidenceSubtitle": "This will help pick the first examples just right for you",
+  "confidenceBeginner": "I'm just learning the times tables",
+  "confidenceIntermediate": "I already know a bit",
+  "confidenceConfident": "I want to test myself",
+
+  "diagnosticBadge": "Quick check — no penalties",
+  "diagnosticProgress": "Question {{current}} of {{total}}",
+
+  "tutorialTitle": "Your first battle!",
+  "tutorialSubtitle": "Choose the correct answer to deal damage",
+
+  "doneTitle": "Training complete!",
+  "doneSubtitle": "You're ready for adventure!",
+  "doneBody": "Solve challenges, defeat guardians, and discover new lands of the kingdom.",
+  "cycleStep1": "Solve",
+  "cycleStep2": "Defeat",
+  "cycleStep3": "Discover lands",
+
+  "firstRewardTitle": "Your first reward",
+  "rewardStar": "Star",
+  "rewardCoins": "Coins",
+  "rewardXp": "XP",
+
+  "regionUnlocked": "Unlocked: {{name}}",
+  "regionUnlockedSubtitle": "Your first adventure is already waiting",
+
+  "finishButton": "START ADVENTURE",
+  "finishAria": "Finish training and go to the kingdom map",
+  "finishHint": "Go to the kingdom map"
+}

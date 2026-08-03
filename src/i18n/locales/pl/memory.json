@@ -1,0 +1,16 @@
+{
+  "title": "✦ Matematyczna pamięć ✦",
+  "hintsLabel": "Podpowiedzi",
+  "movesCount": "Ruchy: <b>{{count}}</b>",
+  "pairsCount": "Pary: <b>{{found}}/{{total}}</b>",
+  "matchFound": "Para znaleziona!",
+  "tryRemember": "Spróbuj je zapamiętać",
+  "wizardTipTitle": "Rada czarodzieja",
+  "wizardTipBody": "Zapamiętuj pozycje kart, aby szybciej znajdować pary!",
+  "doneTitle": "Wszystkie pary znalezione! 🎉",
+  "rewardLine": "Nagroda: {{coins}} monet, {{xp}} XP",
+  "claimingReward": "Odbieramy…",
+  "claimReward": "Odbierz nagrodę",
+  "levelName": "Matematyczna pamięć",
+  "exitToTraining": "Wyjdź do treningu"
+}

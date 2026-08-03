@@ -1,0 +1,22 @@
+{
+  "defeatTitle": "Цього разу не вийшло",
+  "enemyStoodFirm": "{{enemy}} встояв — правильних відповідей:",
+  "tryAgainBold": "Спробуй ще раз",
+  "tryAgainRest": "— слабкі приклади тепер траплятимуться частіше.",
+  "levelProgress": "✦ Прогрес рівня ✦",
+  "correctAnswersHint": "Правильних відповідей: {{count}}. Наступного разу буде ще краще!",
+  "retry": "Спробувати ще раз",
+  "toMap": "До карти",
+  "victoryTitle": "Перемога!",
+  "enemyDefeated": "{{enemy}} переможено",
+  "coins": "Монети",
+  "xp": "Досвід",
+  "heroLevel": "Рівень героя {{level}}",
+  "newLevel": "Новий рівень!",
+  "playAgain": "Зіграти ще раз",
+  "toKingdomMap": "До карти королівства",
+  "allMapComplete": "Уся доступна карта завершена",
+  "openNewRegion": "Відкрити новий регіон",
+  "nextChallenge": "Наступний виклик",
+  "nextChallengeSubtitle": "{{title}} — виклик {{current}}/{{total}}"
+}

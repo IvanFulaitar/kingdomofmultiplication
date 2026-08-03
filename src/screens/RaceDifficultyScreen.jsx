@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   RACE_DIFFICULTY_ORDER, RACE_DIFFICULTIES,
   getSavedRaceDifficulty, saveRaceDifficulty,
@@ -21,20 +22,22 @@ function DiffIcon({ theme, icon }) {
 
 // Рекомендація — лише підказка (ніколи не перемикає складність сама):
 // фраза називає конкретний цільовий режим, як і просить бриф.
-function recommendationText(recommendation) {
+function recommendationText(t, recommendation) {
   if (!recommendation) return null;
   const targetCfg = RACE_DIFFICULTIES[recommendation.to];
-  if (recommendation.type === "harder") return `Спробуй ${targetCfg.label} — нагорода більша!`;
-  return `${targetCfg.label} допоможе підготуватись`;
+  const label = t(`race:${targetCfg.labelKey}`);
+  if (recommendation.type === "harder") return t("race:recommendHarder", { label });
+  return t("race:recommendPrep", { label });
 }
 
 // Три великі картки складності + кнопка запуску — не пускає заїзд одним
 // натисканням на картку (щоб дитина випадково не обрала не той режим):
 // спершу оберіть картку, потім підтвердіть окремою кнопкою запуску.
 export default function RaceDifficultyScreen({ progress, onBack, onStart }) {
+  const { t } = useTranslation(["race", "common"]);
   const championUnlocked = isChampionRaceUnlocked(progress);
   const recommendation = getRaceRecommendation(progress.raceHistory ?? []);
-  const recoText = recommendationText(recommendation);
+  const recoText = recommendationText(t, recommendation);
 
   const [selected, setSelected] = useState(() => {
     const saved = getSavedRaceDifficulty();
@@ -67,12 +70,12 @@ export default function RaceDifficultyScreen({ progress, onBack, onStart }) {
             🏁
           </div>
           <div className="rpg-panel rpg-panel-gold rounded-2xl py-3 px-1">
-            <TopBar onBack={onBack} title="Обери складність" />
+            <TopBar onBack={onBack} title={t("race:chooseDifficulty")} />
           </div>
         </div>
 
         <p className="text-center text-xs text-violet-200/80 leading-snug mb-6 px-4">
-          Від складності залежить нагорода й сила суперників
+          {t("race:chooseDifficultySubtitle")}
         </p>
 
         <div className="flex flex-col gap-4">
@@ -92,7 +95,7 @@ export default function RaceDifficultyScreen({ progress, onBack, onStart }) {
                   isSelected ? "race-diff-card-selected" : ""
                 } ${unlocked ? "" : "race-diff-card-locked"}`}
               >
-                {isSelected && <span className="race-diff-selected-badge">✓ Обрано</span>}
+                {isSelected && <span className="race-diff-selected-badge">{t("race:selectedBadge")}</span>}
                 {isSelected && <span className="race-diff-check">✓</span>}
                 {showRecoPill && <span className="race-diff-reco-pill">{recoText}</span>}
 
@@ -100,10 +103,10 @@ export default function RaceDifficultyScreen({ progress, onBack, onStart }) {
                   <DiffIcon theme={cfg.theme} icon={cfg.icon} />
                   <div className="flex-1 min-w-0 text-left">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-display font-extrabold text-base text-white">{cfg.label}</span>
-                      <span className="text-[11px] text-violet-200/80 font-semibold">«{cfg.tagline}»</span>
+                      <span className="font-display font-extrabold text-base text-white">{t(`race:${cfg.labelKey}`)}</span>
+                      <span className="text-[11px] text-violet-200/80 font-semibold">«{t(`race:${cfg.taglineKey}`)}»</span>
                     </div>
-                    <p className="text-xs text-violet-100/90 leading-snug mt-1">{cfg.description}</p>
+                    <p className="text-xs text-violet-100/90 leading-snug mt-1">{t(`race:${cfg.descriptionKey}`)}</p>
                   </div>
                   {!unlocked && <LockBadge />}
                 </div>
@@ -115,7 +118,7 @@ export default function RaceDifficultyScreen({ progress, onBack, onStart }) {
                         cfg.theme === "training" ? "race-diff-badge-training" : cfg.theme === "champion" ? "race-diff-badge-risk" : "race-diff-badge-recommended"
                       }`}
                     >
-                      {cfg.footerNote}
+                      {t(`race:${cfg.footerNoteKey}`)}
                     </span>
                     <span className="flex items-center gap-1.5 text-xs font-bold text-amber-200 shrink-0">
                       <ArtImage src="/assets/icons/ui/coin.png" fallback="🪙" alt="" className="w-4 h-4 object-contain" />
@@ -127,15 +130,15 @@ export default function RaceDifficultyScreen({ progress, onBack, onStart }) {
                     </span>
                   </div>
                 ) : (
-                  <div className="text-[11px] text-amber-200/90 font-semibold relative z-[1]">🔒 {cfg.lockHint}</div>
+                  <div className="text-[11px] text-amber-200/90 font-semibold relative z-[1]">🔒 {t(`race:${cfg.lockHintKey}`)}</div>
                 )}
 
                 {/* Рядок параметрів — завжди видимий, щоб усі картки мали
                     однакову висоту незалежно від того, яку обрано. */}
                 <div className="race-diff-params rounded-xl px-3 py-2 text-left text-[11px] leading-relaxed relative z-[1]">
                   {unlocked
-                    ? `${cfg.rounds} раундів • ${cfg.timeLimit} с на відповідь • ${cfg.theme === "champion" ? "змішані приклади" : "приклади в межах теми"}`
-                    : "Параметри стануть відомі після розблокування"}
+                    ? t("race:paramsLine", { rounds: cfg.rounds, time: cfg.timeLimit, mix: cfg.theme === "champion" ? t("race:mixMixed") : t("race:mixTopic") })
+                    : t("race:paramsLockedHint")}
                 </div>
               </button>
             );
@@ -153,10 +156,10 @@ export default function RaceDifficultyScreen({ progress, onBack, onStart }) {
             {chosenCfg && <span className="next-challenge-shine" />}
             <span className="relative z-10 block text-center" key={selected ?? "none"}>
               <span className="block text-lg sm:text-xl font-extrabold leading-tight tracking-wide race-diff-btn-fade">
-                {chosenCfg ? chosenCfg.startLabel : "ПОЧАТИ ЗАЇЗД"}
+                {chosenCfg ? t(`race:${chosenCfg.startLabelKey}`) : t("race:startFallback")}
               </span>
               <span className="block text-xs sm:text-sm font-body font-extrabold text-amber-950/75 mt-0.5 race-diff-btn-fade">
-                {chosenCfg ? `${chosenCfg.rounds} раундів • ${chosenCfg.reward.xp} XP • ×${chosenCfg.reward.multiplier}` : "Спершу обери картку вище"}
+                {chosenCfg ? t("race:chosenSummary", { rounds: chosenCfg.rounds, xp: chosenCfg.reward.xp, multiplier: chosenCfg.reward.multiplier }) : t("race:pickCardFirst")}
               </span>
             </span>
           </button>

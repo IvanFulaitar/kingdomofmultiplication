@@ -1,0 +1,36 @@
+{
+  "welcomeTitle": "Witaj w Królestwie Mnożenia!",
+  "welcomeSubtitle": "Rozwiązuj zadania, pokonuj strażników i odkrywaj nowe krainy.",
+  "startAdventure": "Rozpocznij przygodę",
+
+  "confidenceTitle": "Jak dobrze znasz mnożenie?",
+  "confidenceSubtitle": "To pomoże dobrać pierwsze przykłady odpowiednie dla ciebie",
+  "confidenceBeginner": "Dopiero uczę się tabliczki mnożenia",
+  "confidenceIntermediate": "Już trochę umiem",
+  "confidenceConfident": "Chcę sprawdzić swoje umiejętności",
+
+  "diagnosticBadge": "Krótki test — bez kar",
+  "diagnosticProgress": "Przykład {{current}} z {{total}}",
+
+  "tutorialTitle": "Twoja pierwsza bitwa!",
+  "tutorialSubtitle": "Wybierz poprawną odpowiedź, aby zadać obrażenia",
+
+  "doneTitle": "Nauka ukończona!",
+  "doneSubtitle": "Jesteś gotowy na przygodę!",
+  "doneBody": "Rozwiązuj zadania, pokonuj strażników i odkrywaj nowe krainy królestwa.",
+  "cycleStep1": "Rozwiązuj",
+  "cycleStep2": "Pokonuj",
+  "cycleStep3": "Odkrywaj krainy",
+
+  "firstRewardTitle": "Twoja pierwsza nagroda",
+  "rewardStar": "Gwiazdka",
+  "rewardCoins": "Monet",
+  "rewardXp": "Doświadczenia",
+
+  "regionUnlocked": "Odblokowano: {{name}}",
+  "regionUnlockedSubtitle": "Twoja pierwsza przygoda już czeka",
+
+  "finishButton": "ROZPOCZNIJ PRZYGODĘ",
+  "finishAria": "Zakończ naukę i przejdź do mapy królestwa",
+  "finishHint": "Przejdź do mapy królestwa"
+}

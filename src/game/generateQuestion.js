@@ -1,5 +1,11 @@
 import { REGIONS } from "../data/regions.js";
 import { rand, shuffle } from "./random.js";
+// Ця функція викликається з чистого JS (не React-компонента), тому текст
+// перекладаємо через i18n-синглтон напряму (i18n.t()), а не useTranslation() —
+// синглтон уже ініціалізований у main.jsx до першого рендера й завжди
+// відображає ПОТОЧНУ мову на момент виклику (кожне питання генерується
+// заново, тож зміна мови підхоплюється автоматично без жодного кешування).
+import i18n from "../i18n/index.js";
 
 export const QUESTIONS_PER_LEVEL = 8;
 export const TIME_PER_QUESTION = 9;
@@ -140,15 +146,17 @@ function pickQuestionType(levelId) {
   return "wordProblem";
 }
 
-const WORD_PROBLEM_TEMPLATES = [
-  (a, b) => `У ${a} кошиках лежить по ${b} яблук у кожному. Скільки яблук усього?`,
-  (a, b) => `У ${a} коробках по ${b} олівців. Скільки всього олівців?`,
-  (a, b) => `На ${a} полицях стоїть по ${b} книжок. Скільки книжок усього?`,
-  (a, b) => `${a} гноми зібрали по ${b} грибів кожен. Скільки грибів разом?`,
-  (a, b) => `У саду ${a} дерев, і на кожному по ${b} яблук. Скільки яблук усього?`,
-  (a, b) => `${a} вози везуть по ${b} мішків борошна. Скільки мішків усього?`,
-  (a, b) => `У ${a} клітках сидить по ${b} кроликів. Скільки кроликів усього?`,
-  (a, b) => `На ${a} тарілках лежить по ${b} печива. Скільки печива усього?`,
+// Ключі battle.json (uk/en/pl) — кожна мова формулює речення природно,
+// а не буквальним перекладом слово-в-слово (розділ 10 брифу локалізації).
+const WORD_PROBLEM_KEYS = [
+  "wordProblemBasket",
+  "wordProblemBoxPencils",
+  "wordProblemShelfBooks",
+  "wordProblemGnomeMushrooms",
+  "wordProblemGardenTrees",
+  "wordProblemCartFlour",
+  "wordProblemCageRabbits",
+  "wordProblemPlateCookies",
 ];
 
 function generateClassicQuestion(levelId, weakFacts = [], recentNormalized = []) {
@@ -178,7 +186,7 @@ function generateClassicQuestion(levelId, weakFacts = [], recentNormalized = [])
     return {
       pair: `cmp-${first.pair}_${second.pair}`,
       kind: "compare",
-      prompt: "Який вираз має більше значення?",
+      prompt: i18n.t("battle:compareQuestion"),
       correct,
       options: shuffle([left, right]),
     };
@@ -207,8 +215,9 @@ function generateClassicQuestion(levelId, weakFacts = [], recentNormalized = [])
   }
 
   if (type === "wordProblem") {
-    const template = WORD_PROBLEM_TEMPLATES[Math.floor(Math.random() * WORD_PROBLEM_TEMPLATES.length)];
-    return { pair, kind: "wordProblem", prompt: template(a, b), correct: answer, options: buildWrongAnswers(answer, a, b) };
+    const key = WORD_PROBLEM_KEYS[Math.floor(Math.random() * WORD_PROBLEM_KEYS.length)];
+    const prompt = i18n.t(`battle:${key}`, { a, b });
+    return { pair, kind: "wordProblem", prompt, correct: answer, options: buildWrongAnswers(answer, a, b) };
   }
 
   return { pair, kind: "classic", prompt: `${a} × ${b} = ?`, correct: answer, options: buildWrongAnswers(answer, a, b) };

@@ -1,0 +1,16 @@
+{
+  "title": "✦ Математична пам'ять ✦",
+  "hintsLabel": "Підказки",
+  "movesCount": "Ходів: <b>{{count}}</b>",
+  "pairsCount": "Пар: <b>{{found}}/{{total}}</b>",
+  "matchFound": "Пара знайдена!",
+  "tryRemember": "Спробуй запам'ятати їх",
+  "wizardTipTitle": "Порада чарівника",
+  "wizardTipBody": "Запам'ятовуй позиції карток, щоб знаходити пари швидше!",
+  "doneTitle": "Усі пари знайдено! 🎉",
+  "rewardLine": "Нагорода: {{coins}} монет, {{xp}} XP",
+  "claimingReward": "Забираємо…",
+  "claimReward": "Забрати нагороду",
+  "levelName": "Математична пам'ять",
+  "exitToTraining": "Вийти до тренувань"
+}

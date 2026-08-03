@@ -8,15 +8,18 @@
 // чемпіонському рівні (див. questionMix + game/practice.js).
 export const RACE_DIFFICULTY_ORDER = ["training", "adventure", "champion"];
 
+// label/tagline/description/footerNote/startLabel/lockHint -> *Key
+// (race.json, src/i18n/locales/) — id лишається стабільним (raceDifficulty
+// localStorage-ключ, progress.raceBest[id]), не перекладається.
 export const RACE_DIFFICULTIES = {
   training: {
     id: "training",
     order: 1,
-    label: "Тренувальний заїзд",
-    tagline: "Легкий",
-    description: "Суперники їдуть повільніше. Добре для знайомства з режимом і новою математичною темою.",
-    footerNote: "Для старту",
-    startLabel: "ПОЧАТИ ТРЕНУВАЛЬНИЙ ЗАЇЗД",
+    labelKey: "trainingLabel",
+    taglineKey: "trainingTagline",
+    descriptionKey: "trainingDescription",
+    footerNoteKey: "trainingFooterNote",
+    startLabelKey: "trainingStartLabel",
     theme: "training",
     icon: "shield",
     rounds: 7,
@@ -28,11 +31,11 @@ export const RACE_DIFFICULTIES = {
   adventure: {
     id: "adventure",
     order: 2,
-    label: "Пригодницький заїзд",
-    tagline: "Звичайний",
-    description: "Збалансований заїзд. Суперники тримають темп, а перемога залежить від швидкості й точності.",
-    footerNote: "Рекомендовано",
-    startLabel: "ПОЧАТИ ПРИГОДНИЦЬКИЙ ЗАЇЗД",
+    labelKey: "adventureLabel",
+    taglineKey: "adventureTagline",
+    descriptionKey: "adventureDescription",
+    footerNoteKey: "adventureFooterNote",
+    startLabelKey: "adventureStartLabel",
     theme: "adventure",
     icon: "flag",
     rounds: 7,
@@ -44,11 +47,11 @@ export const RACE_DIFFICULTIES = {
   champion: {
     id: "champion",
     order: 3,
-    label: "Чемпіонський заїзд",
-    tagline: "Складний",
-    description: "Швидкі суперники, менше часу та складніші приклади. Для тих, хто готовий боротися за найбільшу нагороду.",
-    footerNote: "Високий ризик",
-    startLabel: "ПОЧАТИ ЧЕМПІОНСЬКИЙ ЗАЇЗД",
+    labelKey: "championLabel",
+    taglineKey: "championTagline",
+    descriptionKey: "championDescription",
+    footerNoteKey: "championFooterNote",
+    startLabelKey: "championStartLabel",
     theme: "champion",
     icon: "bolt",
     rounds: 9,
@@ -56,7 +59,7 @@ export const RACE_DIFFICULTIES = {
     catchup: { min: -1, max: 3 }, // майже не сповільнюються, якщо гравець відстає
     questionMix: "hard",
     reward: { coins: 40, xp: 65, multiplier: 2, bonusChestChance: 0.25 },
-    lockHint: "Переможи у пригодницькому заїзді",
+    lockHintKey: "championLockHint",
   },
 };
 

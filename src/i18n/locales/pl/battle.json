@@ -1,0 +1,18 @@
+{
+  "taskProgress": "Zadanie {{current}} z {{total}}",
+  "enemyHealth": "Zdrowie przeciwnika",
+  "chooseAnswer": "Wybierz poprawną odpowiedź",
+  "correct": "✦ Poprawnie! ✦",
+  "incorrect": "Niepoprawnie",
+  "exitToMap": "Wyjdź do mapy",
+  "compareQuestion": "Które wyrażenie ma większą wartość?",
+  "wordProblemBasket": "W {{a}} koszykach leży po {{b}} jabłek w każdym. Ile jabłek jest w sumie?",
+  "wordProblemBoxPencils": "W {{a}} pudełkach jest po {{b}} ołówków. Ile ołówków w sumie?",
+  "wordProblemShelfBooks": "Na {{a}} półkach stoi po {{b}} książek. Ile książek w sumie?",
+  "wordProblemGnomeMushrooms": "{{a}} krasnoludków zebrało po {{b}} grzybów każdy. Ile grzybów razem?",
+  "wordProblemGardenTrees": "W ogrodzie jest {{a}} drzew, a na każdym po {{b}} jabłek. Ile jabłek w sumie?",
+  "wordProblemCartFlour": "{{a}} wozów wiezie po {{b}} worków mąki. Ile worków w sumie?",
+  "wordProblemCageRabbits": "W {{a}} klatkach siedzi po {{b}} królików. Ile królików w sumie?",
+  "wordProblemPlateCookies": "Na {{a}} talerzach leży po {{b}} ciastek. Ile ciastek w sumie?",
+  "explainSmallGroups": "{{a}} × {{b}} to {{a}} grup po {{b}}: {{groups}} = {{correct}}."
+}

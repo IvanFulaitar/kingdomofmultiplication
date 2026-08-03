@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AVATARS } from "../data/cosmetics.js";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel, factsUsedIn } from "../game/generateQuestion.js";
@@ -30,6 +31,7 @@ function ProgressDot({ state }) {
 const RECENT_FACTS_HISTORY = 2;
 
 export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExit, onFinish, onGameOver }) {
+  const { t } = useTranslation(["battle", "regions", "common"]);
   const timeLimit = timeForLevel(levelId);
   const heroIcon = AVATARS.find((av) => av.id === avatar)?.icon ?? "🧙";
   const enemy = LEVEL_META[levelId].enemy;
@@ -160,14 +162,14 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
         <div className="battle-header">
           <button
             onClick={() => { playModalOpen(); setShowExitConfirm(true); }}
-            aria-label="Назад"
+            aria-label={t("common:back")}
             className="rpg-panel w-11 h-11 rounded-xl flex items-center justify-center text-xl text-amber-100 active:scale-95 transition"
           >
             ←
           </button>
           <div className="rpg-panel rpg-panel-gold battle-title rounded-xl px-4 py-2 text-center">
-            <div className="font-display gold-text font-extrabold text-base leading-tight truncate">{meta.title}</div>
-            <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">Завдання {qIndex + 1} з {QUESTIONS_PER_LEVEL}</div>
+            <div className="font-display gold-text font-extrabold text-base leading-tight truncate">{t(`regions:${meta.titleKey}`)}</div>
+            <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">{t("battle:taskProgress", { current: qIndex + 1, total: QUESTIONS_PER_LEVEL })}</div>
           </div>
           <div className="rpg-panel battle-lives rounded-xl px-2.5 py-2">
             {[0, 1, 2].map((i) => <LifeHeart key={i} filled={i < lives} />)}
@@ -203,11 +205,11 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
           </div>
 
           <div className="rpg-panel rounded-lg px-3 py-1 mt-3 mx-auto w-fit text-xs font-display font-bold text-amber-100">
-            {enemy.name}
+            {t(`regions:${enemy.nameKey}`)}
           </div>
 
           <div className="flex items-center justify-between text-[11px] text-white/50 mt-2.5 mb-1 px-0.5">
-            <span>Здоров'я ворога</span>
+            <span>{t("battle:enemyHealth")}</span>
             <span className="font-semibold text-rose-200">{Math.round(enemyHealthPct)}/100 HP</span>
           </div>
           <div className="h-3.5 hp-track rounded-full overflow-hidden">
@@ -228,7 +230,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
             <span className="absolute top-2 right-3 text-lg text-amber-700/30 font-display">+</span>
             <span className="absolute bottom-2 left-3 text-lg text-amber-700/30 font-display">−</span>
             <span className="absolute bottom-2 right-3 text-lg text-amber-700/30 font-display">?</span>
-            <div className="text-xs text-center text-amber-800/70 font-semibold mb-1.5 tracking-wide">Обери правильну відповідь</div>
+            <div className="text-xs text-center text-amber-800/70 font-semibold mb-1.5 tracking-wide">{t("battle:chooseAnswer")}</div>
             <div
               className={`font-display font-extrabold text-center tracking-wide ${
                 question.prompt.length > 40 ? "text-lg leading-snug" : question.prompt.length > 14 ? "text-3xl" : "text-5xl"
@@ -264,7 +266,7 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
           <div className={`feedback-pop ${feedback?.explanation ? "min-h-6" : "h-6"}`} key={feedback ? (feedback.correct ? "ok" : "no") : "none"}>
             {feedback && (
               <div className={`font-display font-bold text-sm text-center ${feedback.correct ? "text-emerald-300" : "text-rose-300"}`}>
-                {feedback.correct ? "✦ Правильно! ✦" : "Неправильно"}
+                {feedback.correct ? t("battle:correct") : t("battle:incorrect")}
               </div>
             )}
             {feedback?.explanation && (
@@ -278,11 +280,11 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
       {showExitConfirm && (
         <ExitConfirmModal
           modeType="story"
-          levelName={meta.title}
+          levelName={t(`regions:${meta.titleKey}`)}
           currentProgress={qIndex}
           totalProgress={QUESTIONS_PER_LEVEL}
           destination="map"
-          destinationLabel="Вийти до карти"
+          destinationLabel={t("battle:exitToMap")}
           onContinue={() => setShowExitConfirm(false)}
           onExit={onExit}
         />

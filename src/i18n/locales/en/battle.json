@@ -1,0 +1,18 @@
+{
+  "taskProgress": "Task {{current}} of {{total}}",
+  "enemyHealth": "Enemy health",
+  "chooseAnswer": "Choose the correct answer",
+  "correct": "✦ Correct! ✦",
+  "incorrect": "Incorrect",
+  "exitToMap": "Exit to the map",
+  "compareQuestion": "Which expression has the greater value?",
+  "wordProblemBasket": "There are {{a}} baskets with {{b}} apples in each. How many apples in total?",
+  "wordProblemBoxPencils": "There are {{a}} boxes with {{b}} pencils in each. How many pencils in total?",
+  "wordProblemShelfBooks": "There are {{b}} books on each of the {{a}} shelves. How many books in total?",
+  "wordProblemGnomeMushrooms": "{{a}} gnomes each collected {{b}} mushrooms. How many mushrooms together?",
+  "wordProblemGardenTrees": "There are {{a}} trees in the garden, each with {{b}} apples. How many apples in total?",
+  "wordProblemCartFlour": "{{a}} carts each carry {{b}} sacks of flour. How many sacks in total?",
+  "wordProblemCageRabbits": "There are {{b}} rabbits in each of the {{a}} cages. How many rabbits in total?",
+  "wordProblemPlateCookies": "There are {{b}} cookies on each of the {{a}} plates. How many cookies in total?",
+  "explainSmallGroups": "{{a}} × {{b}} is {{a}} groups of {{b}}: {{groups}} = {{correct}}."
+}

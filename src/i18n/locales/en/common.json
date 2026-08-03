@@ -3,9 +3,21 @@
   "appSubtitle": "Travel, solve, and master the magic of numbers",
   "back": "Back",
   "close": "Close",
+  "coinAlt": "coin",
+  "starAlt": "star",
   "cancel": "Cancel",
   "loading": "Loading…",
   "chooseLanguage": "Choose language",
   "languageChanged": "Language changed",
-  "selected": "Selected"
+  "selected": "Selected",
+  "exitConfirmTitle": "Exit the challenge?",
+  "exitConfirmMessage": "Progress in this attempt will be lost. Are you sure you want to exit?",
+  "exitTrainingTitle": "End training?",
+  "exitTrainingMessage": "The result of this unfinished game won't be saved. Are you sure you want to exit?",
+  "exitProgressLabel": "Current progress",
+  "exitNotFinished": "Attempt not finished",
+  "exitProgressWithTotal": "{{label}}: {{current}} of {{total}}",
+  "exitProgressNoTotal": "{{label}}: {{current}}",
+  "exitContinue": "Continue playing",
+  "exitButton": "Exit"
 }

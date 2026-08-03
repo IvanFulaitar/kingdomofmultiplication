@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import TopBar from "../components/TopBar.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 import { buildFactQuestion } from "../game/generateQuestion.js";
@@ -27,31 +28,27 @@ import { playUiPrimary, playUiBack, playAttack, playHeartLost, playVictory } fro
 //   інакше (обидва null)   -> buildOverviewPracticePool (кнопка головного екрана)
 const SINGLE_FACT_REPEAT = 5;
 
-const TITLE_BY_MODE = {
-  weak: "Слабкі приклади",
-  improve: "Приклади для покращення",
-  review: "Тренування на закріплення",
+// Ключі (не готові рядки — див. коментар у MyKnowledgeScreen.jsx про те,
+// чому текст не можна "заморожувати" в модульній константі).
+const TITLE_BY_MODE_KEY = {
+  weak: "titleByModeWeak",
+  improve: "titleByModeImprove",
+  review: "titleByModeReview",
 };
-
-// Логічна неузгодженість №4 технічного завдання: якщо режим НЕ складається
-// виключно зі слабких прикладів (наприклад, туди потрапили ще й недостатньо
-// перевірені), чесно кажемо про це підписом, а не називаємо все підряд
-// "Слабкі приклади".
-const BADGE_TEXT = "Персональне тренування";
 
 // Дитині не показуємо технічні тіери/відсотки — лише дружнє, зрозуміле
 // пояснення "навіщо саме цей приклад" (розділ 4.6).
-const WHY_TEXT = {
-  insufficient: "Цей приклад ще мало тренували",
-  weak: "Цей приклад ще недостатньо закріплений",
-  almost: "Цей приклад майже засвоєний — ще трохи практики",
-  good: "Невелике повторення для впевненості",
-  master: "Невелике повторення для впевненості",
+const WHY_KEY = {
+  insufficient: "whyInsufficient",
+  weak: "whyWeak",
+  almost: "whyAlmost",
+  good: "whyGoodMaster",
+  master: "whyGoodMaster",
 };
 
-function formatTableList(numbers) {
+function formatTableList(t, numbers) {
   if (numbers.length <= 1) return numbers.join("");
-  return `${numbers.slice(0, -1).join(", ")} і ${numbers[numbers.length - 1]}`;
+  return `${numbers.slice(0, -1).join(", ")} ${t("knowledge:listAnd")} ${numbers[numbers.length - 1]}`;
 }
 
 // Ранг тіера для порівняння "було -> стало" (розділ 5 тех. завдання для
@@ -63,14 +60,15 @@ const TIER_RANK = { untried: 0, insufficient: 0, weak: 1, almost: 2, good: 3, ma
 
 // Підзаголовок свята одразу під заголовком (розділ 2) — тон завжди
 // підбадьорливий, ніколи не звинувачувальний, навіть при низькій точності.
-function celebrationSubtitle(accuracy) {
-  if (accuracy >= 100) return "Бездоганно! Усі відповіді правильні";
-  if (accuracy >= 80) return "Чудовий результат! Ти добре попрацював";
-  if (accuracy >= 60) return "Гарна робота! Ще трохи практики — і буде ще краще";
-  return "Молодець, що тренуєшся! Спробуй ще раз, і результат покращиться";
+function celebrationSubtitle(t, accuracy) {
+  if (accuracy >= 100) return t("knowledge:celebrationPerfect");
+  if (accuracy >= 80) return t("knowledge:celebrationGreat");
+  if (accuracy >= 60) return t("knowledge:celebrationGood");
+  return t("knowledge:celebrationKeepTrying");
 }
 
 export default function WeakPracticeScreen({ progress, tableNumber = null, singleFact = null, onAnswer, onReward, onExit, onReplay }) {
+  const { t } = useTranslation(["knowledge", "battle", "results", "common"]);
   const facts = progress.facts ?? {};
 
   // Пул питань і режим ("weak"/"improve"/"review"/"table"/"single")
@@ -140,16 +138,16 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
         <div className="center-vignette" />
         <div className="relative z-10 max-w-md mx-auto px-6 py-8 pb-16">
           <div className="mb-6">
-            <TopBar onBack={onExit} title="Тренування" />
+            <TopBar onBack={onExit} title={t("knowledge:emptyPoolTitle")} />
           </div>
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 py-16">
             <span className="text-5xl">🌟</span>
-            <h2 className="font-display gold-text text-xl font-extrabold">Поки що немає що повторити</h2>
+            <h2 className="font-display gold-text text-xl font-extrabold">{t("knowledge:emptyPoolHeading")}</h2>
             <p className="text-violet-200 text-sm max-w-xs">
-              Спробуй трохи більше прикладів у грі — тоді тут з'являться ті, які варто підтренувати.
+              {t("knowledge:emptyPoolBody")}
             </p>
             <button onClick={() => { playUiPrimary(); onExit(); }} className="next-challenge-button w-full py-4 rounded-2xl font-display font-extrabold text-lg mt-2">
-              Гаразд
+              {t("knowledge:okButton")}
             </button>
           </div>
         </div>
@@ -244,7 +242,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
     const improvedFacts = factsAfter.filter((f) => f.afterScore > f.score);
 
     const accuracy = pool.length ? (firstTryCorrectCount / pool.length) * 100 : 0;
-    const anyLeveledUp = totalAfter.some((t) => t.leveledUp) || improvedFacts.some((f) => f.leveledUp);
+    const anyLeveledUp = totalAfter.some((tb) => tb.leveledUp) || improvedFacts.some((f) => f.leveledUp);
 
     // Розділ 6 — персональна рекомендація: пріоритет підвищення рівня >
     // ідеальний результат > конкретний факт, що заважав > загальна
@@ -255,15 +253,15 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
       .sort((a, b) => a.afterScore - b.afterScore)[0];
     let motivationText;
     if (anyLeveledUp) {
-      motivationText = "Новий рівень засвоєння відкрито!";
+      motivationText = t("knowledge:motivationLeveledUp");
     } else if (accuracy >= 100) {
       motivationText = mode === "single"
-        ? "Чудово! Спробуй перевірити цей приклад ще раз завтра, щоб надійно його закріпити"
-        : "Чудово! Спробуй перевірити ці приклади ще раз завтра, щоб надійно їх закріпити";
+        ? t("knowledge:motivationPerfectSingle")
+        : t("knowledge:motivationPerfectMulti");
     } else if (mistakeFact) {
-      motivationText = `Радимо ще раз повторити ${mistakeFact.a} × ${mistakeFact.b} — це допоможе краще його запам'ятати`;
+      motivationText = t("knowledge:motivationMistakeFact", { a: mistakeFact.a, b: mistakeFact.b });
     } else {
-      motivationText = "Продовжуй у тому ж дусі — кожна практика наближає до нового рівня";
+      motivationText = t("knowledge:motivationGeneric");
     }
 
     // Розділ 7/8 — не змушувати повторювати вже ідеально виконане:
@@ -272,10 +270,10 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
     // поступляться місцем іншим); 100% в режимі одного факту -> взагалі
     // ховаємо кнопку повтору, повернення до "Моїх знань" і так веде далі.
     const secondaryLabel = accuracy >= 100
-      ? (mode === "single" ? null : "Наступний приклад")
+      ? (mode === "single" ? null : t("knowledge:secondaryNextExample"))
       : accuracy >= 80
-        ? "Закріпити ще раз"
-        : "Потренувати ще раз";
+        ? t("knowledge:secondaryReinforce")
+        : t("knowledge:secondaryPracticeAgain");
 
     return (
       <div className="relative overflow-hidden min-h-dvh screen-in">
@@ -288,8 +286,8 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
             <span className="knowledge-result-twinkle knowledge-result-twinkle-2" aria-hidden="true">✦</span>
           </div>
           <div className="knowledge-result-fade-up" style={{ "--kr-delay": "0.1s" }}>
-            <h2 className="font-display gold-text text-3xl font-extrabold">Тренування завершено!</h2>
-            <p className="font-body text-violet-100 text-sm mt-1.5 max-w-xs mx-auto">{celebrationSubtitle(accuracy)}</p>
+            <h2 className="font-display gold-text text-3xl font-extrabold">{t("knowledge:doneTitle")}</h2>
+            <p className="font-body text-violet-100 text-sm mt-1.5 max-w-xs mx-auto">{celebrationSubtitle(t, accuracy)}</p>
           </div>
 
           {/* 2. Загальна статистика */}
@@ -298,38 +296,38 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
             style={{ "--kr-delay": "0.22s" }}
           >
             <div className="flex flex-col items-center px-1.5">
-              <span className="font-display font-extrabold text-xl sm:text-2xl gold-text">{firstTryCorrectCount} із {pool.length}</span>
-              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">Правильно</span>
+              <span className="font-display font-extrabold text-xl sm:text-2xl gold-text">{t("knowledge:correctOfTotal", { correct: firstTryCorrectCount, total: pool.length })}</span>
+              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">{t("knowledge:statsCorrect")}</span>
             </div>
             <div className="flex flex-col items-center px-1.5">
               <span className="font-display font-extrabold text-xl sm:text-2xl gold-text">{formatPercent(accuracy)}</span>
-              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">Точність</span>
+              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">{t("knowledge:accuracyStat")}</span>
             </div>
             <div className="flex flex-col items-center px-1.5">
               <span className="font-display font-extrabold text-xl sm:text-2xl gold-text">{bestStreak}</span>
-              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">Найкраща серія</span>
+              <span className="text-[11px] text-violet-200/70 mt-1 leading-tight">{t("knowledge:statsBestStreak")}</span>
             </div>
           </div>
 
           {/* 3-4. Твій прогрес — таблиця(і) і покращені приклади в ОДНІЙ панелі */}
           <div className="w-full text-left knowledge-result-fade-up" style={{ "--kr-delay": "0.32s" }}>
-            <h3 className="font-display font-bold text-base text-violet-50">Твій прогрес</h3>
-            <p className="text-xs text-violet-200/70 mt-0.5 mb-3">Ось що покращилося після тренування</p>
+            <h3 className="font-display font-bold text-base text-violet-50">{t("knowledge:yourProgress")}</h3>
+            <p className="text-xs text-violet-200/70 mt-0.5 mb-3">{t("knowledge:progressSubtitle")}</p>
 
             <div className="rpg-panel rounded-2xl px-4 py-4 flex flex-col gap-4">
               {totalAfter.map(({ n, before, after, leveledUp, delta }) => (
                 <div key={n}>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-display font-bold text-sm text-violet-50">Таблиця на {n}</span>
+                    <span className="font-display font-bold text-sm text-violet-50">{t("knowledge:tableName", { n })}</span>
                     <span className="font-display font-extrabold text-sm gold-text knowledge-score-transition">{formatPercent(after.score)}</span>
                   </div>
                   {delta === 0 ? (
                     <p className="text-xs text-violet-200/70 mt-1 mb-1.5">
-                      {firstTryCorrectCount > 0 ? "Ще одна успішна відповідь наближає до наступного рівня" : "Прогрес закріплено"}
+                      {firstTryCorrectCount > 0 ? t("knowledge:oneMoreAnswer") : t("knowledge:progressLocked")}
                     </p>
                   ) : (
                     <div className="flex items-center justify-between gap-2 mt-1 mb-1.5">
-                      <span className="text-xs text-violet-200/60">Було {formatPercent(before.score)}</span>
+                      <span className="text-xs text-violet-200/60">{t("knowledge:wasScore", { value: formatPercent(before.score) })}</span>
                       <span className={`text-xs font-bold ${delta > 0 ? "text-emerald-300" : "text-rose-300"}`}>
                         {delta > 0 ? "+" : ""}{Math.round(delta)}%
                       </span>
@@ -352,7 +350,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
                         alt=""
                         className="w-4 h-4 object-contain inline-flex items-center justify-center knowledge-tier-glow"
                       />
-                      Новий рівень: {after.label}!
+                      {t("knowledge:newLevelTable", { label: t(`knowledge:${after.labelKey}`) })}
                     </div>
                   )}
                 </div>
@@ -360,7 +358,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
 
               {improvedFacts.length > 0 && (
                 <div className="pt-1 border-t border-white/10 flex flex-col gap-3">
-                  <h4 className="font-display font-bold text-xs text-violet-100 -mb-1">Покращені приклади</h4>
+                  <h4 className="font-display font-bold text-xs text-violet-100 -mb-1">{t("knowledge:improvedExamples")}</h4>
                   {improvedFacts.map((f) => (
                     <div key={f.pair}>
                       <div className="flex items-center justify-between gap-2">
@@ -368,7 +366,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
                         <span className="font-display font-bold text-sm gold-text">{formatPercent(f.afterScore)}</span>
                       </div>
                       <div className="flex items-center justify-between gap-2 mt-1 mb-1.5">
-                        <span className="text-xs text-violet-200/60">Було {formatPercent(f.score)}</span>
+                        <span className="text-xs text-violet-200/60">{t("knowledge:wasScore", { value: formatPercent(f.score) })}</span>
                         <span className="text-xs font-bold text-emerald-300">+{Math.round(f.afterScore - f.score)}%</span>
                       </div>
                       <div className="knowledge-progress-track">
@@ -385,7 +383,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
                             alt=""
                             className="w-4 h-4 object-contain inline-flex items-center justify-center knowledge-tier-glow"
                           />
-                          Новий статус: {f.afterStatus.label}
+                          {t("knowledge:newStatusFact", { label: t(`knowledge:${f.afterStatus.labelKey}`) })}
                         </div>
                       )}
                     </div>
@@ -407,7 +405,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
               onClick={() => { playUiPrimary(); onExit(); }}
               className="knowledge-cta-button w-full py-3.5 rounded-2xl font-display font-extrabold text-lg text-indigo-950 min-h-[56px]"
             >
-              Повернутися до "Моїх знань"
+              {t("knowledge:backToKnowledge")}
             </button>
             {secondaryLabel && onReplay && (
               <button
@@ -424,12 +422,12 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
   }
 
   const title = mode === "single"
-    ? `Приклад ${singleFact.a} × ${singleFact.b}`
+    ? t("knowledge:exampleTitle", { a: singleFact.a, b: singleFact.b })
     : mode === "table"
-      ? `Таблиця на ${tableNumber}`
-      : (TITLE_BY_MODE[mode] ?? "Персональне тренування");
+      ? t("knowledge:tableName", { n: tableNumber })
+      : t(`knowledge:${TITLE_BY_MODE_KEY[mode] ?? "personalTraining"}`);
   const showTablesList = (mode === "weak" || mode === "improve" || mode === "review") && summaryTables.length > 1;
-  const whyText = WHY_TEXT[pool[index].tier] ?? "Невелике повторення для впевненості";
+  const whyText = t(`knowledge:${WHY_KEY[pool[index].tier] ?? "whyGoodMaster"}`);
 
   return (
     <div className="relative overflow-hidden min-h-dvh screen-in">
@@ -439,9 +437,9 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
           <TopBar onBack={() => { playUiBack(); onExit(); }} title={title} />
         </div>
         <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
-          <span className="knowledge-badge-recommend">{BADGE_TEXT}</span>
+          <span className="knowledge-badge-recommend">{t("knowledge:personalTraining")}</span>
           {showTablesList && (
-            <span className="text-xs text-violet-200/70">Таблиці: {formatTableList(summaryTables)}</span>
+            <span className="text-xs text-violet-200/70">{t("knowledge:tablesLabel", { list: formatTableList(t, summaryTables) })}</span>
           )}
         </div>
 
@@ -451,7 +449,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
           aria-valuenow={index + 1}
           aria-valuemin={1}
           aria-valuemax={pool.length}
-          aria-label={`Приклад ${index + 1} з ${pool.length}`}
+          aria-label={t("knowledge:exampleProgressAria", { current: index + 1, total: pool.length })}
         >
           {pool.map((_, i) => (
             <span
@@ -463,7 +461,7 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
 
         <div className="flex-1 flex flex-col items-center justify-center gap-6">
           <div className="flex flex-col items-center gap-3 w-full">
-            <span className="text-xs font-semibold text-violet-200/60 uppercase tracking-wide">Обери правильну відповідь</span>
+            <span className="text-xs font-semibold text-violet-200/60 uppercase tracking-wide">{t("battle:chooseAnswer")}</span>
             <div className="quest-page knowledge-quest-page relative text-indigo-950 rounded-3xl px-8 py-9 max-w-full">
               <div className="font-display font-extrabold text-center text-5xl tracking-wide">{question.prompt}</div>
             </div>
@@ -499,30 +497,30 @@ export default function WeakPracticeScreen({ progress, tableNumber = null, singl
 
           <div className="min-h-16 flex flex-col items-center gap-1.5">
             {feedback?.correct === true && (
-              <div className="font-display font-bold text-sm text-center text-emerald-300">✦ Правильно! ✦</div>
+              <div className="font-display font-bold text-sm text-center text-emerald-300">{t("battle:correct")}</div>
             )}
             {feedback?.correct === false && feedback.stage === 1 && (
               <>
-                <div className="font-display font-bold text-sm text-center text-rose-200">Спробуй ще раз</div>
+                <div className="font-display font-bold text-sm text-center text-rose-200">{t("results:tryAgainBold")}</div>
                 <p className="font-body text-xs text-amber-100 text-center leading-snug max-w-xs">{feedback.hint}</p>
               </>
             )}
             {feedback?.correct === false && feedback.stage === 2 && (
               <>
-                <div className="font-display font-bold text-sm text-center text-rose-200">Ось як це порахувати</div>
+                <div className="font-display font-bold text-sm text-center text-rose-200">{t("knowledge:hereIsHow")}</div>
                 <p className="font-body text-xs text-amber-100 text-center leading-snug max-w-xs">{feedback.explanation}</p>
                 <button
                   onClick={() => { playUiPrimary(); advanceOrFinish(firstTryCorrectCount, bestStreak); }}
                   className="knowledge-secondary-button rounded-xl px-5 py-2 text-sm font-display font-bold mt-1"
                 >
-                  Продовжити
+                  {t("knowledge:continueButton")}
                 </button>
               </>
             )}
           </div>
 
           <div className="rpg-panel rounded-xl px-4 py-2.5 text-xs text-violet-200/80 text-center w-full">
-            <span className="font-semibold text-violet-100">Навіщо цей приклад? </span>
+            <span className="font-semibold text-violet-100">{t("knowledge:whyThisExample")}</span>
             {whyText}
           </div>
         </div>

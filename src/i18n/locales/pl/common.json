@@ -3,9 +3,21 @@
   "appSubtitle": "Podróżuj, rozwiązuj i opanuj magię liczb",
   "back": "Wstecz",
   "close": "Zamknij",
+  "coinAlt": "moneta",
+  "starAlt": "gwiazdka",
   "cancel": "Anuluj",
   "loading": "Ładowanie…",
   "chooseLanguage": "Wybierz język",
   "languageChanged": "Zmieniono język",
-  "selected": "Wybrano"
+  "selected": "Wybrano",
+  "exitConfirmTitle": "Wyjść z próby?",
+  "exitConfirmMessage": "Postęp bieżącej próby zostanie utracony. Na pewno chcesz wyjść?",
+  "exitTrainingTitle": "Zakończyć trening?",
+  "exitTrainingMessage": "Wynik tej niedokończonej gry nie zostanie zapisany. Na pewno chcesz wyjść?",
+  "exitProgressLabel": "Bieżący postęp",
+  "exitNotFinished": "Próba niedokończona",
+  "exitProgressWithTotal": "{{label}}: {{current}} z {{total}}",
+  "exitProgressNoTotal": "{{label}}: {{current}}",
+  "exitContinue": "Kontynuuj grę",
+  "exitButton": "Wyjdź"
 }

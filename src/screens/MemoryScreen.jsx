@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { buildMemoryCards } from "../game/memory.js";
 import {
   preloadSfxGroup, playCardFlip, playPairMatch, playPairWrong, playMemoryComplete, playHintSfx, playModalOpen,
@@ -7,6 +8,7 @@ import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
 export default function MemoryScreen({ onBack, onComplete }) {
+  const { t } = useTranslation(["memory", "common"]);
   const [cards] = useState(() => buildMemoryCards());
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
@@ -120,7 +122,7 @@ export default function MemoryScreen({ onBack, onComplete }) {
               <ArtImage src="/assets/icons/achievements/brain.png" fallback="🧠" alt="" className="w-8 h-8 object-contain" />
             </div>
             <div className="rpg-panel rpg-panel-gold rounded-2xl px-4 py-3 text-center">
-              <h2 className="font-display gold-text font-extrabold text-base sm:text-lg tracking-wide truncate">✦ Математична пам'ять ✦</h2>
+              <h2 className="font-display gold-text font-extrabold text-base sm:text-lg tracking-wide truncate">{t("memory:title")}</h2>
             </div>
           </div>
 
@@ -131,14 +133,16 @@ export default function MemoryScreen({ onBack, onComplete }) {
           >
             <span className="hint-count-badge absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold text-white">{hints}</span>
             <ArtImage src="/assets/icons/ui/hint_lightbulb.png" fallback="💡" alt="" className="w-6 h-6 object-contain" />
-            <span className="text-[10px] font-semibold text-white/80">Підказки</span>
+            <span className="text-[10px] font-semibold text-white/80">{t("memory:hintsLabel")}</span>
           </button>
         </div>
 
         <div className="rpg-panel rounded-2xl px-4 py-3 mt-4 flex items-center">
           <div className="flex-1 flex items-center gap-2 justify-center">
             <span className="text-lg">👣</span>
-            <span className="text-sm text-white/70">Ходів: <span className="text-lg font-bold text-white">{moves}</span></span>
+            <span className="text-sm text-white/70">
+              <Trans i18nKey="memory:movesCount" values={{ count: moves }} components={{ b: <span className="text-lg font-bold text-white" /> }} />
+            </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0 px-2">
             <div className="w-px h-6 bg-amber-400/40" />
@@ -147,7 +151,9 @@ export default function MemoryScreen({ onBack, onComplete }) {
           </div>
           <div className="flex-1 flex items-center gap-2 justify-center">
             <span className="text-lg">⭐</span>
-            <span className="text-sm text-white/70">Пар: <span className="text-lg font-bold text-white">{pairsFound}/{pairsTotal}</span></span>
+            <span className="text-sm text-white/70">
+              <Trans i18nKey="memory:pairsCount" values={{ found: pairsFound, total: pairsTotal }} components={{ b: <span className="text-lg font-bold text-white" /> }} />
+            </span>
           </div>
         </div>
 
@@ -158,8 +164,8 @@ export default function MemoryScreen({ onBack, onComplete }) {
         </div>
 
         <div className="h-7 text-center mt-4 feedback-pop" key={resultMsg ?? "none"}>
-          {resultMsg === "match" && <span className="text-emerald-300 font-display font-bold text-sm">Пара знайдена!</span>}
-          {resultMsg === "miss" && <span className="text-rose-300 font-display font-bold text-sm">Спробуй запам'ятати їх</span>}
+          {resultMsg === "match" && <span className="text-emerald-300 font-display font-bold text-sm">{t("memory:matchFound")}</span>}
+          {resultMsg === "miss" && <span className="text-rose-300 font-display font-bold text-sm">{t("memory:tryRemember")}</span>}
         </div>
 
         <div className="grid grid-cols-3 gap-2.5 mt-1">
@@ -214,9 +220,9 @@ export default function MemoryScreen({ onBack, onComplete }) {
             />
             <div className="flex-1 min-w-0 pb-1">
               <div className="font-display font-bold text-amber-300 text-sm flex items-center gap-1.5">
-                <span className="text-base">💡</span> Порада чарівника
+                <span className="text-base">💡</span> {t("memory:wizardTipTitle")}
               </div>
-              <div className="text-xs text-violet-100 mt-1 leading-relaxed">Запам'ятовуй позиції карток, щоб знаходити пари швидше!</div>
+              <div className="text-xs text-violet-100 mt-1 leading-relaxed">{t("memory:wizardTipBody")}</div>
             </div>
             <div className="shrink-0 w-14 h-16 rounded-md bg-gradient-to-br from-amber-100 to-amber-300 border-2 border-amber-600/60 shadow-lg flex flex-col items-center justify-center relative mb-1">
               <div className="absolute -top-1 right-1.5 w-2 h-3 bg-violet-600 rounded-b" />
@@ -227,14 +233,14 @@ export default function MemoryScreen({ onBack, onComplete }) {
 
         {done && (
           <div className="rpg-panel rpg-panel-gold rounded-3xl p-5 mt-4 text-center screen-in">
-            <div className="font-display gold-text font-extrabold text-xl mb-1">Усі пари знайдено! 🎉</div>
-            <div className="text-violet-200 text-sm mb-4">Нагорода: 20 монет, 20 XP</div>
+            <div className="font-display gold-text font-extrabold text-xl mb-1">{t("memory:doneTitle")}</div>
+            <div className="text-violet-200 text-sm mb-4">{t("memory:rewardLine", { coins: 20, xp: 20 })}</div>
             <button
               onClick={handleClaimReward}
               disabled={rewardClaimed}
               className="play-button w-full text-indigo-950 font-display font-extrabold text-lg py-3.5 rounded-2xl disabled:opacity-70"
             >
-              {rewardClaimed ? "Забираємо…" : "Забрати нагороду"}
+              {rewardClaimed ? t("memory:claimingReward") : t("memory:claimReward")}
             </button>
           </div>
         )}
@@ -242,11 +248,11 @@ export default function MemoryScreen({ onBack, onComplete }) {
       {showExitConfirm && (
         <ExitConfirmModal
           modeType="training"
-          levelName="Математична пам'ять"
+          levelName={t("memory:levelName")}
           currentProgress={pairsFound}
           totalProgress={pairsTotal}
           destination="training"
-          destinationLabel="Вийти до тренувань"
+          destinationLabel={t("memory:exitToTraining")}
           onContinue={() => setShowExitConfirm(false)}
           onExit={onBack}
         />

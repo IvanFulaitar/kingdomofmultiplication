@@ -1,0 +1,36 @@
+{
+  "welcomeTitle": "Ласкаво просимо до Королівства Математики!",
+  "welcomeSubtitle": "Розв'язуй завдання, перемагай охоронців і відкривай нові землі.",
+  "startAdventure": "Почати пригоду",
+
+  "confidenceTitle": "Наскільки добре ти знаєш множення?",
+  "confidenceSubtitle": "Це допоможе підібрати перші приклади якраз для тебе",
+  "confidenceBeginner": "Я тільки вчу таблицю множення",
+  "confidenceIntermediate": "Я вже трохи знаю",
+  "confidenceConfident": "Я хочу перевірити себе",
+
+  "diagnosticBadge": "Коротка перевірка — без штрафів",
+  "diagnosticProgress": "Приклад {{current}} з {{total}}",
+
+  "tutorialTitle": "Твій перший бій!",
+  "tutorialSubtitle": "Обери правильну відповідь, щоб завдати шкоди",
+
+  "doneTitle": "Навчання завершено!",
+  "doneSubtitle": "Ти готовий до пригоди!",
+  "doneBody": "Розв'язуй завдання, перемагай охоронців і відкривай нові землі королівства.",
+  "cycleStep1": "Розв'язуй",
+  "cycleStep2": "Перемагай",
+  "cycleStep3": "Відкривай землі",
+
+  "firstRewardTitle": "Твоя перша нагорода",
+  "rewardStar": "Зірка",
+  "rewardCoins": "Монет",
+  "rewardXp": "Досвіду",
+
+  "regionUnlocked": "Відкрито: {{name}}",
+  "regionUnlockedSubtitle": "Твоя перша пригода вже чекає",
+
+  "finishButton": "ПОЧАТИ ПРИГОДУ",
+  "finishAria": "Завершити навчання і перейти до карти королівства",
+  "finishHint": "Перейти до карти королівства"
+}

@@ -1,0 +1,16 @@
+{
+  "title": "✦ Math Memory ✦",
+  "hintsLabel": "Hints",
+  "movesCount": "Moves: <b>{{count}}</b>",
+  "pairsCount": "Pairs: <b>{{found}}/{{total}}</b>",
+  "matchFound": "Match found!",
+  "tryRemember": "Try to remember them",
+  "wizardTipTitle": "Wizard's tip",
+  "wizardTipBody": "Remember card positions to find pairs faster!",
+  "doneTitle": "All pairs found! 🎉",
+  "rewardLine": "Reward: {{coins}} coins, {{xp}} XP",
+  "claimingReward": "Claiming…",
+  "claimReward": "Claim reward",
+  "levelName": "Math Memory",
+  "exitToTraining": "Exit to Training"
+}

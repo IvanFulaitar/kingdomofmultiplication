@@ -1,0 +1,22 @@
+{
+  "defeatTitle": "Tym razem się nie udało",
+  "enemyStoodFirm": "{{enemy}} się obronił — poprawnych odpowiedzi:",
+  "tryAgainBold": "Spróbuj jeszcze raz",
+  "tryAgainRest": "— słabe przykłady będą teraz pojawiać się częściej.",
+  "levelProgress": "✦ Postęp poziomu ✦",
+  "correctAnswersHint": "Poprawnych odpowiedzi: {{count}}. Następnym razem będzie jeszcze lepiej!",
+  "retry": "Spróbuj jeszcze raz",
+  "toMap": "Do mapy",
+  "victoryTitle": "Zwycięstwo!",
+  "enemyDefeated": "{{enemy}} pokonany",
+  "coins": "Monety",
+  "xp": "Doświadczenie",
+  "heroLevel": "Poziom bohatera {{level}}",
+  "newLevel": "Nowy poziom!",
+  "playAgain": "Zagraj ponownie",
+  "toKingdomMap": "Do mapy królestwa",
+  "allMapComplete": "Cała dostępna mapa ukończona",
+  "openNewRegion": "Odblokuj nowy region",
+  "nextChallenge": "Następne wyzwanie",
+  "nextChallengeSubtitle": "{{title}} — wyzwanie {{current}}/{{total}}"
+}

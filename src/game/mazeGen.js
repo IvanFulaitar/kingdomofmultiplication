@@ -24,21 +24,25 @@ export const CELL = {
 
 // Три тири складності — нові механіки з'являються поступово, а не всі
 // одразу. Перший лабіринт має лише один шлях і жодних пасток.
+// "nameKey" — ключ у maze.json (src/i18n/locales/), не готовий рядок: цей
+// масив обчислюється один раз при завантаженні модуля, тож "заморожений"
+// перекладений текст не реагував би на зміну мови пізніше (той самий
+// принцип, що й у regions.js/mastery.js).
 const TIERS = [
   {
-    name: "Перший лабіринт", rows: 3, cols: 3, extraLoop: false, requiresKey: false,
+    nameKey: "tierFirst", rows: 3, cols: 3, extraLoop: false, requiresKey: false,
     trap: false, secret: false, portal: false, treasure: false,
     coinCells: 1, heartCells: 1, hintCells: 0, chestCells: 1,
     kinds: ["classic", "missing"], fullyRevealed: true,
   },
   {
-    name: "Середній лабіринт", rows: 3, cols: 4, extraLoop: true, requiresKey: true,
+    nameKey: "tierMedium", rows: 3, cols: 4, extraLoop: true, requiresKey: true,
     trap: true, secret: false, portal: false, treasure: false,
     coinCells: 1, heartCells: 1, hintCells: 1, chestCells: 1,
     kinds: ["classic", "missing", "compare", "chain"], fullyRevealed: false,
   },
   {
-    name: "Складний лабіринт", rows: 4, cols: 4, extraLoop: true, requiresKey: true,
+    nameKey: "tierHard", rows: 4, cols: 4, extraLoop: true, requiresKey: true,
     trap: true, secret: true, portal: true, treasure: true,
     coinCells: 2, heartCells: 1, hintCells: 1, chestCells: 1,
     kinds: ["classic", "missing", "compare", "chain", "find_error", "word"], fullyRevealed: false,
@@ -219,7 +223,7 @@ export function generateMaze(tier = 0) {
   }
 
   return {
-    tier, tierName: cfg.name, rows, cols, cells, edges, parent, mainPathIndex,
+    tier, tierNameKey: cfg.nameKey, rows, cols, cells, edges, parent, mainPathIndex,
     startKey, exitKey, mainPath, mainPathLength: mainPath.length - 1,
     requiresKey: !!keyCellKey, keyCellKey, trapCellKey, secretCellKey,
     portalCellKey, portalTarget, treasureCellKey, shortcut,

@@ -1,0 +1,8 @@
+{
+  "title": "Kingdom Map",
+  "lockedRequirement": "Finish all levels of \"{{region}}\"",
+  "locked": "Locked",
+  "levelsCompleted": "{{done}}/{{total}} levels completed",
+  "nextLevel": "➜ Next level",
+  "tableOf": "table of {{sub}}"
+}

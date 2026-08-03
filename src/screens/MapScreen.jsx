@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { REGIONS, LEVEL_META, isLevelUnlocked } from "../data/regions.js";
 import { playUiClick } from "../game/sfx.js";
 import TopBar from "../components/TopBar.jsx";
@@ -17,6 +18,7 @@ function LevelStar({ filled }) {
 }
 
 export default function MapScreen({ progress, onBack, onSelect }) {
+  const { t } = useTranslation(["map", "regions"]);
   let activeAssigned = false;
 
   return (
@@ -29,7 +31,7 @@ export default function MapScreen({ progress, onBack, onSelect }) {
             👑
           </div>
           <div className="rpg-panel rpg-panel-gold rounded-2xl py-3 px-1">
-            <TopBar onBack={onBack} title="Карта королівства" />
+            <TopBar onBack={onBack} title={t("map:title")} />
           </div>
         </div>
 
@@ -56,13 +58,15 @@ export default function MapScreen({ progress, onBack, onSelect }) {
                   <div className="relative px-4 py-5 flex items-center gap-3">
                     <span className="text-4xl drop-shadow-lg shrink-0">{region.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="font-display font-extrabold text-xl text-white drop-shadow-lg truncate">{region.name}</div>
+                      <div className="font-display font-extrabold text-xl text-white drop-shadow-lg truncate">{t(`regions:${region.nameKey}`)}</div>
                       {locked ? (
                         <div className="text-xs text-white/70 mt-0.5 drop-shadow">
-                          {prevRegion ? `Пройди всі рівні «${prevRegion.name}»` : "Заблоковано"}
+                          {prevRegion
+                            ? t("map:lockedRequirement", { region: t(`regions:${prevRegion.nameKey}`) })
+                            : t("map:locked")}
                         </div>
                       ) : (
-                        <div className="text-xs text-amber-200 font-semibold mt-0.5 drop-shadow">{doneCount}/{total} рівні пройдено</div>
+                        <div className="text-xs text-amber-200 font-semibold mt-0.5 drop-shadow">{t("map:levelsCompleted", { done: doneCount, total })}</div>
                       )}
                     </div>
                     <span className="shrink-0">
@@ -107,11 +111,11 @@ export default function MapScreen({ progress, onBack, onSelect }) {
                           {unlocked ? id : <ArtImage src="/assets/icons/ui/lock.png" fallback="🔒" alt="" className="w-5 h-5 object-contain" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className={`font-display font-bold text-base truncate ${unlocked ? "text-white" : "text-white/70"}`}>{meta.title}</div>
+                          <div className={`font-display font-bold text-base truncate ${unlocked ? "text-white" : "text-white/70"}`}>{t(`regions:${meta.titleKey}`)}</div>
                           <div className={`text-xs mt-0.5 ${unlocked ? "text-violet-200" : "text-white/40"}`}>
-                            {id < 10 ? `таблиця ${meta.sub}` : meta.sub}
+                            {id < 10 ? t("map:tableOf", { sub: meta.sub }) : meta.sub}
                           </div>
-                          {isNext && <div className="text-[11px] text-amber-300 font-semibold mt-1">➜ Наступний рівень</div>}
+                          {isNext && <div className="text-[11px] text-amber-300 font-semibold mt-1">{t("map:nextLevel")}</div>}
                         </div>
                         <div className="flex gap-1 shrink-0">
                           {[0, 1, 2].map((i) => <LevelStar key={i} filled={unlocked && i < stars} />)}

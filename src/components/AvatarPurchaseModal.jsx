@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { playModalOpen, playModalClose, playPurchaseSuccess, playInsufficientCoins, playUiClick } from "../game/sfx.js";
 import ArtImage from "./ArtImage.jsx";
 
@@ -44,6 +45,7 @@ export default function AvatarPurchaseModal({
   onCancel,
   onSelect,
 }) {
+  const { t } = useTranslation(["shop", "common"]);
   const canAfford = isOwned || currentBalance >= price;
   const [phase, setPhase] = useState(() => (canAfford ? "confirm" : "insufficient"));
   const [loading, setLoading] = useState(false);
@@ -112,7 +114,7 @@ export default function AvatarPurchaseModal({
       className="exit-modal-backdrop fixed inset-0 z-[80] flex items-center justify-center px-5 py-8"
       role="dialog"
       aria-modal="true"
-      aria-label="Придбати аватара"
+      aria-label={t("shop:purchaseAvatarAria")}
       onClick={safeClose}
     >
       <div
@@ -121,7 +123,7 @@ export default function AvatarPurchaseModal({
       >
         <button
           onClick={safeClose}
-          aria-label="Закрити"
+          aria-label={t("common:close")}
           className="modal-x-button absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold z-10"
         >
           ✕
@@ -146,39 +148,43 @@ export default function AvatarPurchaseModal({
 
         {phase === "insufficient" && (
           <>
-            <h2 className="font-display gold-text text-2xl font-extrabold leading-tight mb-1">Недостатньо монет</h2>
+            <h2 className="font-display gold-text text-2xl font-extrabold leading-tight mb-1">{t("shop:insufficientTitle")}</h2>
             <div className="text-amber-200/90 font-display font-bold text-base mb-3">{avatarName}</div>
             <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-5 text-left space-y-1.5">
-              <div className="font-body text-white text-sm">Для цього аватара потрібно <b>{price}</b> монет</div>
-              <div className="font-body text-white text-sm">У тебе зараз <b>{currentBalance}</b> монет</div>
-              <div className="font-body text-rose-200 text-sm font-bold">Бракує: {missing} монет</div>
+              <div className="font-body text-white text-sm"><Trans i18nKey="shop:needCoins" values={{ price }} components={{ b: <b /> }} /></div>
+              <div className="font-body text-white text-sm"><Trans i18nKey="shop:haveCoinsNow" values={{ balance: currentBalance }} components={{ b: <b /> }} /></div>
+              <div className="font-body text-rose-200 text-sm font-bold">{t("shop:missingCoins", { missing })}</div>
             </div>
-            <p className="text-violet-200/80 text-xs mb-5">Заробляй монети, проходячи рівні та щоденні завдання</p>
+            <p className="text-violet-200/80 text-xs mb-5">{t("shop:earnCoinsHint")}</p>
             <button
               onClick={safeClose}
               className="exit-continue-button relative rounded-2xl py-3.5 px-4 font-display font-extrabold text-indigo-950 w-full"
             >
-              Зрозуміло
+              {t("shop:gotIt")}
             </button>
           </>
         )}
 
         {phase === "confirm" && (
           <>
-            <h2 className="font-display gold-text text-2xl font-extrabold leading-tight mb-1">Придбати аватара?</h2>
+            <h2 className="font-display gold-text text-2xl font-extrabold leading-tight mb-1">{t("shop:confirmTitle")}</h2>
             <div className="text-amber-200/90 font-display font-bold text-base mb-4">{avatarName}</div>
 
             <div className="flex items-center justify-center gap-2 mb-3">
               <ArtImage src="/assets/icons/ui/coin.png" fallback="🪙" alt="" className="w-6 h-6 object-contain" />
-              <span className="font-display font-extrabold text-xl text-amber-100">Ціна: {price} монет</span>
+              <span className="font-display font-extrabold text-xl text-amber-100">{t("shop:priceLabel", { price })}</span>
             </div>
 
             <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-5 text-left space-y-1.5">
-              <div className="font-body text-violet-100 text-sm">Твій баланс: <b className="text-white">{currentBalance} монет</b></div>
+              <div className="font-body text-violet-100 text-sm">
+                <Trans i18nKey="shop:balanceLine" values={{ balance: currentBalance }} components={{ b: <b className="text-white" /> }} />
+              </div>
               {lowBalance ? (
-                <div className="font-body text-amber-200 text-sm font-bold">Після покупки залишиться мало монет</div>
+                <div className="font-body text-amber-200 text-sm font-bold">{t("shop:lowBalanceWarning")}</div>
               ) : (
-                <div className="font-body text-sm">Після покупки залишиться: <b className="text-emerald-300">{remainder} монет</b></div>
+                <div className="font-body text-sm">
+                  <Trans i18nKey="shop:remainderLine" values={{ remainder }} components={{ b: <b className="text-emerald-300" /> }} />
+                </div>
               )}
             </div>
 
@@ -189,11 +195,11 @@ export default function AvatarPurchaseModal({
                 className="exit-continue-button relative rounded-2xl py-3.5 px-4 font-display font-extrabold text-indigo-950 flex items-center justify-center gap-2.5 disabled:opacity-80"
               >
                 {loading ? (
-                  "Купуємо…"
+                  t("shop:buying")
                 ) : (
                   <>
                     <ArtImage src="/assets/icons/ui/coin.png" fallback="🪙" alt="" className="w-5 h-5 object-contain" />
-                    Придбати за {price}
+                    {t("shop:buyFor", { price })}
                   </>
                 )}
               </button>
@@ -202,7 +208,7 @@ export default function AvatarPurchaseModal({
                 disabled={loading}
                 className="exit-confirm-button rounded-2xl py-3 px-4 font-display font-bold text-base disabled:opacity-60"
               >
-                Скасувати
+                {t("common:cancel")}
               </button>
             </div>
           </>
@@ -210,12 +216,14 @@ export default function AvatarPurchaseModal({
 
         {phase === "success" && (
           <>
-            <h2 className="font-display gold-text text-2xl font-extrabold leading-tight mb-1">Аватар придбано!</h2>
+            <h2 className="font-display gold-text text-2xl font-extrabold leading-tight mb-1">{t("shop:purchaseSuccessTitle")}</h2>
             <div className="text-amber-200/90 font-display font-bold text-base mb-1">{avatarName}</div>
-            <p className="text-violet-200 text-sm mb-4">Тепер його можна обрати у магазині</p>
+            <p className="text-violet-200 text-sm mb-4">{t("shop:purchaseSuccessHint")}</p>
 
             <div className="exit-progress-panel rounded-2xl px-4 py-3 mb-5">
-              <div className="font-body text-violet-100 text-sm">Твій баланс: <b className="text-white">{currentBalance} монет</b></div>
+              <div className="font-body text-violet-100 text-sm">
+                <Trans i18nKey="shop:balanceLine" values={{ balance: currentBalance }} components={{ b: <b className="text-white" /> }} />
+              </div>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -223,13 +231,13 @@ export default function AvatarPurchaseModal({
                 onClick={handleSelectNow}
                 className="exit-continue-button relative rounded-2xl py-3.5 px-4 font-display font-extrabold text-indigo-950"
               >
-                Обрати зараз
+                {t("shop:selectNow")}
               </button>
               <button
                 onClick={safeClose}
                 className="exit-confirm-button rounded-2xl py-3 px-4 font-display font-bold text-base"
               >
-                Залишити на потім
+                {t("shop:saveForLater")}
               </button>
             </div>
           </>

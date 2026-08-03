@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { playUiClick, playUiPrimary, playUiBack, playStar, playCoin, playXpGain, playLevelUp } from "../game/sfx.js";
@@ -10,13 +11,16 @@ function regionForLevel(levelId) {
   return REGIONS.find((r) => r.levels.includes(levelId));
 }
 
-function victoryActionFor(levelId) {
+// t переданий з компонента (не i18n-синглтон): функція викликається під
+// час рендера, а не з чистого генератора поза React-деревом, тож простіше
+// й ідіоматичніше дістати t() зі стандартного useTranslation() один раз.
+function victoryActionFor(t, levelId) {
   const currentIndex = levelIds.indexOf(levelId);
   const nextLevelId = levelIds[currentIndex + 1];
   if (!nextLevelId) {
     return {
-      label: "До карти королівства",
-      subtitle: "Уся доступна карта завершена",
+      label: t("results:toKingdomMap"),
+      subtitle: t("results:allMapComplete"),
       targetLevelId: null,
     };
   }
@@ -26,20 +30,21 @@ function victoryActionFor(levelId) {
   const nextMeta = LEVEL_META[nextLevelId];
   if (currentRegion?.id !== nextRegion?.id) {
     return {
-      label: "Відкрити новий регіон",
-      subtitle: `${nextRegion.name}: ${nextMeta.title}`,
+      label: t("results:openNewRegion"),
+      subtitle: `${t(`regions:${nextRegion.nameKey}`)}: ${t(`regions:${nextMeta.titleKey}`)}`,
       targetLevelId: nextLevelId,
     };
   }
 
   return {
-    label: "Наступний виклик",
-    subtitle: `${nextMeta.title} — виклик ${nextLevelId}/${levelIds.length}`,
+    label: t("results:nextChallenge"),
+    subtitle: t("results:nextChallengeSubtitle", { title: t(`regions:${nextMeta.titleKey}`), current: nextLevelId, total: levelIds.length }),
     targetLevelId: nextLevelId,
   };
 }
 
 export default function ResultsScreen({ outcome, progress, onContinue, onRetry, onNextChallenge }) {
+  const { t } = useTranslation(["results", "regions", "common"]);
   const meta = LEVEL_META[outcome.levelId];
   const heroInfo = heroLevelFromXp(progress.xp);
 
@@ -83,14 +88,14 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
           </div>
 
           <h2 className="font-display coral-text font-extrabold text-3xl mb-5 flex items-center gap-2">
-            <span className="text-lg text-amber-200/70">❖</span> Цього разу не вийшло <span className="text-lg text-amber-200/70">❖</span>
+            <span className="text-lg text-amber-200/70">❖</span> {t("results:defeatTitle")} <span className="text-lg text-amber-200/70">❖</span>
           </h2>
 
           <div className="w-full rpg-panel rpg-panel-gold rounded-3xl p-5 mb-5">
             <div className="flex items-start gap-3 text-left">
               <span className="text-2xl shrink-0">🍃</span>
               <p className="text-white text-sm leading-relaxed">
-                {meta.enemy.name} встояв — правильних відповідей:{" "}
+                {t("results:enemyStoodFirm", { enemy: t(`regions:${meta.enemy.nameKey}`) })}{" "}
                 <span className="font-bold coral-text text-base">{outcome.correctCount}/8</span>
               </p>
             </div>
@@ -102,7 +107,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
             <div className="flex items-start gap-3 text-left">
               <span className="text-2xl shrink-0">💡</span>
               <p className="text-violet-100 text-sm leading-relaxed">
-                <span className="font-bold text-amber-200">Спробуй ще раз</span> — слабкі приклади тепер траплятимуться частіше.
+                <span className="font-bold text-amber-200">{t("results:tryAgainBold")}</span> {t("results:tryAgainRest")}
               </p>
             </div>
           </div>
@@ -110,7 +115,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
           <div className="w-full rpg-panel rpg-panel-gold rounded-3xl p-5 mb-4">
             <div className="flex items-center gap-2 mb-4">
               <div className="flex-1 h-px bg-gradient-to-r from-transparent to-amber-400/40" />
-              <span className="font-display font-bold text-amber-200 text-sm shrink-0">✦ Прогрес рівня ✦</span>
+              <span className="font-display font-bold text-amber-200 text-sm shrink-0">{t("results:levelProgress")}</span>
               <div className="flex-1 h-px bg-gradient-to-l from-transparent to-amber-400/40" />
             </div>
             <div className="flex justify-between gap-1">
@@ -131,17 +136,17 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
 
           <p className="text-violet-200 text-xs mb-6 flex items-center gap-1.5 justify-center">
             <ArtImage src="/assets/icons/ui/star.png" fallback="" alt="" className="w-4 h-4 object-contain" />
-            Правильних відповідей: {outcome.correctCount}. Наступного разу буде ще краще!
+            {t("results:correctAnswersHint", { count: outcome.correctCount })}
           </p>
 
           <div className="w-full flex flex-col gap-3 mt-auto">
             <button onClick={() => { playUiClick(); onRetry(); }} className="play-button relative w-full text-indigo-950 font-display font-extrabold text-lg py-4 rounded-2xl flex items-center justify-center gap-3">
               <span className="retry-arrow-badge w-9 h-9 rounded-full flex items-center justify-center text-lg text-amber-100 shrink-0">↻</span>
-              Спробувати ще раз
+              {t("results:retry")}
             </button>
             <button onClick={() => { playUiBack(); onContinue(); }} className="map-ghost-button w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
               <ArtImage src="/assets/icons/ui/map_scroll.png" fallback="🗺️" alt="" className="w-6 h-6 object-contain" />
-              До карти
+              {t("results:toMap")}
             </button>
           </div>
         </div>
@@ -149,7 +154,7 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
     );
   }
 
-  const victoryAction = victoryActionFor(outcome.levelId);
+  const victoryAction = victoryActionFor(t, outcome.levelId);
 
   return (
     <div className="max-w-md mx-auto px-6 py-10 min-h-dvh flex flex-col items-center screen-in">
@@ -160,12 +165,12 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
         <ArtImage
           src={`/assets/monsters/${outcome.levelId}.png`}
           fallback=""
-          alt={meta.enemy.name}
+          alt={t(`regions:${meta.enemy.nameKey}`)}
           className="relative z-10 w-full h-full object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.55)]"
         />
       </div>
-      <h2 className="font-display gold-text font-extrabold text-2xl mb-1">Перемога!</h2>
-      <p className="text-white/60 mb-6">{meta.enemy.name} переможено</p>
+      <h2 className="font-display gold-text font-extrabold text-2xl mb-1">{t("results:victoryTitle")}</h2>
+      <p className="text-white/60 mb-6">{t("results:enemyDefeated", { enemy: t(`regions:${meta.enemy.nameKey}`) })}</p>
 
       <div className="flex gap-2 mb-6">
         {[0, 1, 2].map((i) => (
@@ -182,14 +187,14 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
 
       <div className="w-full rpg-panel rounded-2xl p-4 mb-4">
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-white/60">Монети</span>
+          <span className="text-white/60">{t("results:coins")}</span>
           <span className="font-bold text-amber-300 flex items-center gap-1.5">
             +{outcome.coinGain}
             <ArtImage src="/assets/icons/ui/coin.png" fallback="" alt="" className="w-5 h-5 object-contain" />
           </span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-white/60">Досвід</span>
+          <span className="text-white/60">{t("results:xp")}</span>
           <span className="font-bold text-violet-300">+{outcome.xpGain} XP</span>
         </div>
       </div>
@@ -198,9 +203,9 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
         <div className="flex justify-between text-xs text-white/50 mb-1">
           <span className="flex items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/trophy.png" fallback="" alt="" className="w-4 h-4 object-contain" />
-            Рівень героя {heroInfo.level}
+            {t("results:heroLevel", { level: heroInfo.level })}
           </span>
-          {outcome.leveledUp && <span className="text-amber-300 font-bold">Новий рівень!</span>}
+          {outcome.leveledUp && <span className="text-amber-300 font-bold">{t("results:newLevel")}</span>}
         </div>
         <div className={`h-2 bg-black/30 rounded-full overflow-hidden border border-white/5 ${outcome.leveledUp ? "level-flash" : ""}`}>
           <div className="h-full bg-gradient-to-r from-violet-500 to-violet-300 bar-grow" style={{ width: `${(heroInfo.into / heroInfo.need) * 100}%` }} />
@@ -224,12 +229,12 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
 
         <button onClick={() => { playUiClick(); onRetry(); }} className="retry-button w-full rounded-2xl py-3.5 font-display font-bold text-base flex items-center justify-center gap-2.5">
           <span className="retry-arrow-badge w-8 h-8 rounded-full flex items-center justify-center text-base text-amber-100 shrink-0">↻</span>
-          Зіграти ще раз
+          {t("results:playAgain")}
         </button>
 
         <button onClick={() => { playUiBack(); onContinue(); }} className="map-ghost-button w-full rounded-2xl py-3 font-display font-bold text-base flex items-center justify-center gap-2.5">
           <ArtImage src="/assets/icons/ui/map_scroll.png" fallback="" alt="" className="w-5 h-5 object-contain" />
-          До карти
+          {t("results:toMap")}
         </button>
       </div>
     </div>

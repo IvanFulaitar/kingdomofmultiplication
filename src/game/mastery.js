@@ -77,14 +77,17 @@ export function computeMastery(stat) {
 }
 
 // "file" — ім'я файлу в public/assets/icons/knowledge/ (без розширення,
-// самі PNG вже додані). "label" — точні формулювання з технічного завдання
-// (навмисно дружні, без слів на кшталт "погано"/"провал").
+// самі PNG вже додані). "labelKey" — ключ у knowledge.json (src/i18n/
+// locales/) із точними формулюваннями з технічного завдання (навмисно
+// дружні, без слів на кшталт "погано"/"провал"); НЕ зберігати тут готовий
+// перекладений рядок — цей об'єкт створюється один раз при завантаженні
+// модуля, тож "заморожений" текст не реагував би на зміну мови пізніше.
 const TIERS = {
-  untried: { tier: "untried", icon: "⚪", file: "knowledge_untried", label: "Ще не вивчалось" },
-  weak: { tier: "weak", icon: "🔴", file: "knowledge_weak", label: "Потрібно повторити" },
-  almost: { tier: "almost", icon: "🟡", file: "knowledge_almost", label: "Майже засвоєно" },
-  good: { tier: "good", icon: "🟢", file: "knowledge_good", label: "Добре засвоєно" },
-  master: { tier: "master", icon: "⭐", file: "knowledge_master", label: "Майстер" },
+  untried: { tier: "untried", icon: "⚪", file: "knowledge_untried", labelKey: "tierUntried" },
+  weak: { tier: "weak", icon: "🔴", file: "knowledge_weak", labelKey: "tierWeak" },
+  almost: { tier: "almost", icon: "🟡", file: "knowledge_almost", labelKey: "tierAlmost" },
+  good: { tier: "good", icon: "🟢", file: "knowledge_good", labelKey: "tierGood" },
+  master: { tier: "master", icon: "⭐", file: "knowledge_master", labelKey: "tierMaster" },
 };
 
 // opts.minAttemptsForMaster — для агрегату цілої таблиці поріг масштабується

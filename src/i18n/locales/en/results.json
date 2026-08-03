@@ -1,0 +1,22 @@
+{
+  "defeatTitle": "Not this time",
+  "enemyStoodFirm": "{{enemy}} held firm — correct answers:",
+  "tryAgainBold": "Try again",
+  "tryAgainRest": "— weak examples will show up more often now.",
+  "levelProgress": "✦ Level Progress ✦",
+  "correctAnswersHint": "Correct answers: {{count}}. Next time will be even better!",
+  "retry": "Try again",
+  "toMap": "To the map",
+  "victoryTitle": "Victory!",
+  "enemyDefeated": "{{enemy}} defeated",
+  "coins": "Coins",
+  "xp": "XP",
+  "heroLevel": "Hero level {{level}}",
+  "newLevel": "New level!",
+  "playAgain": "Play again",
+  "toKingdomMap": "To the kingdom map",
+  "allMapComplete": "The whole available map is complete",
+  "openNewRegion": "Unlock a new region",
+  "nextChallenge": "Next challenge",
+  "nextChallengeSubtitle": "{{title}} — challenge {{current}}/{{total}}"
+}

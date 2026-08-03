@@ -1,0 +1,8 @@
+{
+  "title": "Карта королівства",
+  "lockedRequirement": "Пройди всі рівні «{{region}}»",
+  "locked": "Заблоковано",
+  "levelsCompleted": "{{done}}/{{total}} рівні пройдено",
+  "nextLevel": "➜ Наступний рівень",
+  "tableOf": "таблиця {{sub}}"
+}
