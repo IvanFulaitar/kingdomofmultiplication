@@ -141,7 +141,12 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
               />
             </span>
           ) : (
-            <span className="system-icon-glow text-lg text-amber-100/90" aria-hidden="true">👤</span>
+            <ArtImage
+              src="/assets/icons/ui/user.png"
+              fallback="👤"
+              alt=""
+              className="system-icon-glow w-6 h-6 object-contain flex items-center justify-center text-lg text-amber-100/90"
+            />
           )}
         </button>
 
@@ -236,7 +241,12 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             модальне, не блокує гру, не перекриває "ГРАТИ" нижче. */}
         {showAccountNudge && (
           <div className="w-full rpg-panel rounded-2xl px-4 py-3.5 flex items-center gap-3">
-            <span className="text-xl shrink-0" aria-hidden="true">☁️</span>
+            <ArtImage
+              src="/assets/icons/ui/cloud.png"
+              fallback="☁️"
+              alt=""
+              className="w-7 h-7 object-contain flex items-center justify-center text-xl shrink-0"
+            />
             <p className="flex-1 text-sm text-violet-100">Хочеш зберегти прогрес між пристроями?</p>
             <div className="flex flex-col items-end gap-1.5 shrink-0">
               <button

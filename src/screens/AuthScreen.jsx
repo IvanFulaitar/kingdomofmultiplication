@@ -209,9 +209,14 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                   disabled={loading}
                   aria-label={showPassword ? "Приховати пароль" : "Показати пароль"}
                   aria-pressed={showPassword}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-lg text-violet-300/80 hover:text-white transition"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-violet-300/80 hover:text-white transition"
                 >
-                  {showPassword ? "🙈" : "👁"}
+                  <ArtImage
+                    src={showPassword ? "/assets/icons/ui/eye_closed.png" : "/assets/icons/ui/eye_open.png"}
+                    fallback={showPassword ? "🙈" : "👁"}
+                    alt=""
+                    className="w-5 h-5 object-contain flex items-center justify-center text-lg"
+                  />
                 </button>
               </div>
               {mode === "register" && (
