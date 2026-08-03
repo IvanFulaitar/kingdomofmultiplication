@@ -185,7 +185,7 @@ export default function OnboardingScreen({ onComplete }) {
             src="/assets/icons/ui/globe.png"
             fallback="🌐"
             alt=""
-            className="system-icon-glow w-5 h-5 object-contain flex items-center justify-center text-base"
+            className="system-icon-glow w-8 h-8 object-contain flex items-center justify-center text-base"
           />
         </button>
       )}

@@ -187,7 +187,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
               src="/assets/icons/ui/gear.png"
               fallback={sfxOn || musicOn ? "🔊" : "🔇"}
               alt=""
-              className="system-icon-glow w-6 h-6 object-contain flex items-center justify-center text-lg"
+              className="system-icon-glow w-8 h-8 object-contain flex items-center justify-center text-lg"
             />
           </button>
           {settingsOpen && (
@@ -207,7 +207,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
                   src="/assets/icons/ui/globe.png"
                   fallback="🌐"
                   alt=""
-                  className="w-5 h-5 object-contain flex items-center justify-center text-base shrink-0"
+                  className="w-8 h-8 object-contain flex items-center justify-center text-base shrink-0"
                 />
                 <span className="text-sm font-semibold text-white flex-1">{t("menu:language")}</span>
                 <span className="text-xs text-violet-300/80">{currentLanguageName}</span>
