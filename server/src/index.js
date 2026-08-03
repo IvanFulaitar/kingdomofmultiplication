@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { prisma } from "./db.js";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,17 @@ app.get("/api/health", async (req, res) => {
   } catch (err) {
     res.status(503).json({ ok: false, db: "unreachable", error: err.message });
   }
+});
+
+// Крок 2 (backend-mvp-plan.md, розділ 4) — register/login/me.
+app.use("/api/auth", authRouter);
+
+// Єдиний обробник помилок — щоб непередбачена помилка (напр. Prisma не
+// може достукатись до БД) поверталась як зрозумілий JSON 500, а не
+// обривала з'єднання чи "гола" express-сторінка стектрейсу.
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: "Внутрішня помилка сервера" });
 });
 
 app.listen(PORT, () => {
