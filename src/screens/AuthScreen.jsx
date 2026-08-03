@@ -4,18 +4,29 @@ import ArtImage from "../components/ArtImage.jsx";
 import { AVATARS } from "../data/cosmetics.js";
 import { register, login } from "../game/auth.js";
 import { ApiError } from "../game/apiClient.js";
-import { playUiClick } from "../game/sfx.js";
+import { playUiClick, playPurchaseSuccess } from "../game/sfx.js";
+import {
+  validateEmail,
+  validatePasswordForLogin,
+  validatePasswordForRegister,
+  validateConfirmPassword,
+} from "../game/authValidation.js";
 
 // Екран входу/реєстрації + профіль. Акаунт — необов'язкова фіча
 // (frontend-backend-integration-plan.md): гра й далі повністю грається
 // без нього, цей екран лише додає можливість не втратити прогрес при
 // зміні телефону. Автоматичної синхронізації самого ігрового прогресу ще
 // не існує (окремий, значно більший наступний етап) — тому тут чесно
-// показуємо лише "Акаунт активний", а не вигадане "Прогрес синхронізовано".
+// показуємо лише "Акаунт активний"/"Акаунт створено!", а не вигадане
+// "Прогрес синхронізовано" чи покроковий фейковий "sync"-статус.
 //
 // Під капотом акаунт і далі працює через email (бекенд це вимагає), але
 // підпис поля — "Логін", а після входу дитині показується лише зрозуміла
-// "логін"-подібна частина адреси (до "@"), не вся технічна пошта.
+// "логін"-подібна частина адреси (до "@"), не вся технічна пошта. Клієнтська
+// валідація (authValidation.js) навмисно дзеркалить РЕАЛЬНІ правила
+// сервера (server/src/schemas/auth.js: email-формат, пароль 8-72 символів
+// на реєстрації, без мінімуму на вході) — без вигаданого username-формату
+// чи перевірки "логін вільний" (такого ендпойнта в бекенді немає).
 //
 // user/avatarId/onLogout — якщо передано user, екран одразу показує
 // профіль замість форми. onBack — повернутись у меню. onAuthenticated(user)
@@ -26,62 +37,109 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(null);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [touched, setTouched] = useState({ email: false, password: false, confirm: false });
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [serverError, setServerError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
   const confirmRef = useRef(null);
+  const loginTabRef = useRef(null);
+  const registerTabRef = useRef(null);
+
+  // Живі результати валідації — рахуються щокадру з поточних значень полів,
+  // тому помилка зникає одразу, щойно поле стає коректним (без затримки).
+  const emailError = validateEmail(email);
+  const passwordError =
+    mode === "login" ? validatePasswordForLogin(password) : validatePasswordForRegister(password);
+  const confirmError = mode === "register" ? validateConfirmPassword(password, confirmPassword) : null;
+  const isValid = !emailError && !passwordError && !confirmError;
+
+  // Показувати помилку під полем лише після того, як користувач його
+  // покинув (blur), або після першої спроби відправити форму — не раніше.
+  const showEmailError = (touched.email || submitAttempted) && !!emailError;
+  const showPasswordError = (touched.password || submitAttempted) && !!passwordError;
+  const showConfirmError = mode === "register" && (touched.confirm || submitAttempted) && !!confirmError;
+
+  // Галочка "поле валідне" — лише там, де це справді щось підтверджує
+  // (не для пароля на вході: там немає вимог, крім "не порожній").
+  const emailShowsValid = touched.email && !emailError && email.trim().length > 0;
+  const passwordShowsValid = mode === "register" && touched.password && !passwordError;
+  const confirmShowsValid = mode === "register" && touched.confirm && !confirmError;
+
+  const formLocked = loading || success;
+  const canSubmit = isValid && !formLocked;
 
   useEffect(() => {
-    if (!error) return;
-    if (error === "Паролі не збігаються") confirmRef.current?.focus();
-    else passwordRef.current?.focus();
-  }, [error]);
+    if (!serverError) return;
+    passwordRef.current?.focus();
+  }, [serverError]);
 
   function switchMode(next) {
-    if (next === mode || loading) return;
+    if (next === mode || formLocked) return;
     playUiClick();
     setMode(next);
-    setError(null);
+    setServerError(null);
+    setSubmitAttempted(false);
   }
 
-  const fieldsFilled =
-    mode === "login"
-      ? email.trim().length > 0 && password.length > 0
-      : email.trim().length > 0 && password.length > 0 && confirmPassword.length > 0;
-  const canSubmit = fieldsFilled && !loading;
+  function handleTabKeyDown(e) {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    const next = mode === "login" ? "register" : "login";
+    switchMode(next);
+    (next === "login" ? loginTabRef : registerTabRef).current?.focus();
+  }
 
-  const emailHasError = !!error && error !== "Паролі не збігаються";
-  const passwordHasError = !!error;
-  const confirmHasError = mode === "register" && error === "Паролі не збігаються";
+  function markTouched(field) {
+    setTouched((t) => (t[field] ? t : { ...t, [field]: true }));
+  }
 
+  // Людські повідомлення для тих серверних помилок, що приходять як
+  // мережевий/HTTP-збій, а не готовий текст від apiClient.js/сервера
+  // (ті вже українською і показуються напряму — див. catch нижче).
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!canSubmit) return;
-    if (mode === "register" && password !== confirmPassword) {
-      setError("Паролі не збігаються");
+    if (formLocked) return;
+    setSubmitAttempted(true);
+    if (!isValid) {
+      if (emailError) emailRef.current?.focus();
+      else if (passwordError) passwordRef.current?.focus();
+      else confirmRef.current?.focus();
       return;
     }
-    setError(null);
+
+    setServerError(null);
     setLoading(true);
     try {
       const authedUser =
         mode === "login"
           ? await login(email.trim(), password)
           : await register(email.trim(), password);
-      onAuthenticated?.(authedUser);
+      setLoading(false);
+      setSuccess(true);
+      playPurchaseSuccess();
+      // Коротка, чесна пауза з галочкою перед переходом — без вигаданого
+      // "Зберігаємо прогрес…/Синхронізовано" (самого прогресу поки не
+      // синхронізуємо, лише акаунт створено/вхід виконано).
+      setTimeout(() => onAuthenticated?.(authedUser), 550);
     } catch (err) {
-      // Повідомлення від apiClient.js/сервера вже написані людською мовою
-      // українською (напр. "Некоректний email", "Такий email уже
-      // зареєстровано") — показуємо напряму, без ще одного шару перекладу.
-      setError(
+      setLoading(false);
+      // При невдалому вході: не чистимо email, не чистимо пароль, не
+      // видаємо, яке саме поле невірне (те саме робить і сам сервер —
+      // однакове повідомлення на "нема юзера" й "невірний пароль").
+      setServerError(
         err instanceof ApiError
           ? err.message
-          : "Не вдалося підключитися до сервера. Спробуй ще раз."
+          : "Не вдалося з'єднатися з сервером. Перевір інтернет і спробуй ще раз."
       );
-    } finally {
-      setLoading(false);
+      if (mode === "login") {
+        setPassword("");
+        setTouched((t) => ({ ...t, password: false }));
+      }
     }
   }
 
@@ -98,7 +156,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
             <TopBar onBack={onBack} title="Акаунт" />
           </div>
 
-          <div className="modal-panel rounded-[26px] max-w-[520px] mx-auto px-6 sm:px-8 py-8 mt-6 text-center">
+          <div className="rpg-panel rounded-[26px] max-w-[560px] mx-auto px-6 sm:px-8 py-8 mt-6 text-center">
             <div className="avatar-medallion inline-block mb-4">
               <ArtImage
                 src={`/assets/avatars/${avatar.id}.png`}
@@ -148,68 +206,120 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
           </p>
         </div>
 
-        <div className="modal-panel rounded-[26px] max-w-[520px] mx-auto px-6 sm:px-8 py-6">
+        <div className="rpg-panel rounded-[26px] max-w-[560px] mx-auto px-7 sm:px-8 py-7">
           <div
             className="knowledge-segmented mb-5"
-            role="group"
+            role="tablist"
             aria-label="Вхід чи реєстрація"
           >
             <button
               type="button"
+              ref={loginTabRef}
+              role="tab"
+              id="auth-tab-login"
+              aria-selected={mode === "login"}
+              aria-controls="auth-panel"
+              tabIndex={mode === "login" ? 0 : -1}
+              onKeyDown={handleTabKeyDown}
               onClick={() => switchMode("login")}
-              aria-pressed={mode === "login"}
               className={`knowledge-segmented-btn ${mode === "login" ? "knowledge-segmented-btn-active" : ""}`}
             >
               Увійти
             </button>
             <button
               type="button"
+              ref={registerTabRef}
+              role="tab"
+              id="auth-tab-register"
+              aria-selected={mode === "register"}
+              aria-controls="auth-panel"
+              tabIndex={mode === "register" ? 0 : -1}
+              onKeyDown={handleTabKeyDown}
               onClick={() => switchMode("register")}
-              aria-pressed={mode === "register"}
               className={`knowledge-segmented-btn ${mode === "register" ? "knowledge-segmented-btn-active" : ""}`}
             >
               Створити акаунт
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3.5">
-            <label className="flex flex-col gap-1.5">
+          <form
+            id="auth-panel"
+            role="tabpanel"
+            aria-labelledby={mode === "login" ? "auth-tab-login" : "auth-tab-register"}
+            onSubmit={handleSubmit}
+            noValidate
+            className="flex flex-col gap-5"
+          >
+            <label htmlFor="auth-email" className="flex flex-col gap-2">
               <span className="font-body text-sm text-violet-200/85">Логін</span>
-              <input
-                ref={emailRef}
-                type="email"
-                inputMode="email"
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                placeholder="ім'я@пошта.com"
-                aria-label="Логін"
-                className={`form-input font-body text-base rounded-xl px-4 py-4 min-h-[60px] ${emailHasError ? "form-input-error" : ""}`}
-              />
+              <div className="relative">
+                <input
+                  ref={emailRef}
+                  id="auth-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => markTouched("email")}
+                  disabled={formLocked}
+                  placeholder="ім'я@пошта.com"
+                  aria-invalid={showEmailError}
+                  aria-describedby={showEmailError ? "auth-email-error" : undefined}
+                  className={`form-input font-body text-base rounded-2xl px-5 py-4 min-h-[60px] w-full ${
+                    showEmailError ? "form-input-error" : emailShowsValid ? "form-input-valid" : ""
+                  }`}
+                />
+                {emailShowsValid && !showEmailError && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 text-lg"
+                  >
+                    ✓
+                  </span>
+                )}
+              </div>
+              {showEmailError && (
+                <p id="auth-email-error" role="alert" className="font-body text-xs text-rose-300">
+                  {emailError}
+                </p>
+              )}
             </label>
 
-            <label className="flex flex-col gap-1.5">
+            <label htmlFor="auth-password" className="flex flex-col gap-2">
               <span className="font-body text-sm text-violet-200/85">Пароль</span>
               <div className="relative">
                 <input
                   ref={passwordRef}
+                  id="auth-password"
                   type={showPassword ? "text" : "password"}
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
+                  onBlur={() => markTouched("password")}
+                  disabled={formLocked}
                   placeholder={mode === "login" ? "Введи пароль" : "Придумай пароль"}
-                  aria-label="Пароль"
-                  className={`form-input font-body text-base rounded-xl pl-4 pr-14 py-4 min-h-[60px] w-full ${passwordHasError ? "form-input-error" : ""}`}
+                  aria-invalid={showPasswordError}
+                  aria-describedby={showPasswordError ? "auth-password-error" : undefined}
+                  className={`form-input font-body text-base rounded-2xl pl-5 pr-24 py-4 min-h-[60px] w-full ${
+                    showPasswordError ? "form-input-error" : passwordShowsValid ? "form-input-valid" : ""
+                  }`}
                 />
+                {passwordShowsValid && !showPasswordError && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute right-14 top-1/2 -translate-y-1/2 text-emerald-400 text-lg"
+                  >
+                    ✓
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  disabled={loading}
+                  disabled={formLocked}
                   aria-label={showPassword ? "Приховати пароль" : "Показати пароль"}
                   aria-pressed={showPassword}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-violet-300/80 hover:text-white transition"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-violet-300/80 hover:text-white transition"
                 >
                   <ArtImage
                     src={showPassword ? "/assets/icons/ui/eye_closed.png" : "/assets/icons/ui/eye_open.png"}
@@ -219,36 +329,81 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                   />
                 </button>
               </div>
-              {mode === "register" && (
+              {mode === "register" && !showPasswordError && (
                 <span className="font-body text-xs text-violet-300/70">Не менше 8 символів</span>
+              )}
+              {showPasswordError && (
+                <p id="auth-password-error" role="alert" className="font-body text-xs text-rose-300">
+                  {passwordError}
+                </p>
               )}
             </label>
 
             {mode === "register" && (
-              <label className="flex flex-col gap-1.5">
+              <label htmlFor="auth-confirm-password" className="flex flex-col gap-2">
                 <span className="font-body text-sm text-violet-200/85">Повторити пароль</span>
-                <input
-                  ref={confirmRef}
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={loading}
-                  placeholder="Введи пароль ще раз"
-                  aria-label="Повторити пароль"
-                  className={`form-input font-body text-base rounded-xl px-4 py-4 min-h-[60px] ${confirmHasError ? "form-input-error" : ""}`}
-                />
+                <div className="relative">
+                  <input
+                    ref={confirmRef}
+                    id="auth-confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    onBlur={() => markTouched("confirm")}
+                    disabled={formLocked}
+                    placeholder="Введи пароль ще раз"
+                    aria-invalid={showConfirmError}
+                    aria-describedby={showConfirmError ? "auth-confirm-error" : undefined}
+                    className={`form-input font-body text-base rounded-2xl pl-5 pr-24 py-4 min-h-[60px] w-full ${
+                      showConfirmError ? "form-input-error" : confirmShowsValid ? "form-input-valid" : ""
+                    }`}
+                  />
+                  {confirmShowsValid && !showConfirmError && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-14 top-1/2 -translate-y-1/2 text-emerald-400 text-lg"
+                    >
+                      ✓
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    disabled={formLocked}
+                    aria-label={showConfirmPassword ? "Приховати пароль" : "Показати пароль"}
+                    aria-pressed={showConfirmPassword}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-violet-300/80 hover:text-white transition"
+                  >
+                    <ArtImage
+                      src={showConfirmPassword ? "/assets/icons/ui/eye_closed.png" : "/assets/icons/ui/eye_open.png"}
+                      fallback={showConfirmPassword ? "🙈" : "👁"}
+                      alt=""
+                      className="w-5 h-5 object-contain flex items-center justify-center text-lg"
+                    />
+                  </button>
+                </div>
+                {showConfirmError && (
+                  <p id="auth-confirm-error" role="alert" className="font-body text-xs text-rose-300">
+                    {confirmError}
+                  </p>
+                )}
               </label>
             )}
 
-            {error && (
-              <p
-                role="status"
-                aria-live="polite"
-                className="font-body text-sm text-rose-300 text-center flex items-center justify-center gap-1.5"
-              >
-                <span aria-hidden="true">⚠</span> {error}
-              </p>
+            {serverError && (
+              <div role="alert" aria-live="assertive" className="form-error-panel rounded-xl px-3.5 py-3 flex items-start gap-2.5">
+                <span aria-hidden="true" className="text-lg leading-none mt-0.5">⚠</span>
+                <p className="font-body text-sm text-rose-100 flex-1">{serverError}</p>
+                <button
+                  type="button"
+                  onClick={() => setServerError(null)}
+                  aria-label="Закрити повідомлення про помилку"
+                  className="text-rose-200/70 hover:text-white text-lg leading-none px-1"
+                >
+                  ×
+                </button>
+              </div>
             )}
 
             <button
@@ -256,15 +411,20 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
               disabled={!canSubmit}
               aria-busy={loading}
               className={
-                fieldsFilled
+                isValid && !formLocked
                   ? "knowledge-cta-button w-full py-3.5 rounded-2xl font-display font-extrabold text-lg text-indigo-950 min-h-[58px] disabled:pointer-events-none mt-1"
                   : "knowledge-secondary-button-muted w-full py-3.5 rounded-2xl font-display font-extrabold text-lg min-h-[58px] cursor-not-allowed mt-1"
               }
             >
-              {loading ? (
+              {success ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <span aria-hidden="true">✓</span>
+                  {mode === "login" ? "Готово!" : "Акаунт створено!"}
+                </span>
+              ) : loading ? (
                 <span className="inline-flex items-center justify-center gap-2">
                   <span className="auth-spinner" aria-hidden="true" />
-                  Входимо…
+                  {mode === "login" ? "Входимо…" : "Створюємо акаунт…"}
                 </span>
               ) : mode === "login" ? (
                 "Увійти"
@@ -272,6 +432,12 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                 "Створити акаунт"
               )}
             </button>
+
+            {mode === "register" && !success && (
+              <p className="font-body text-xs text-violet-300/60 text-center -mt-1">
+                Запам'ятай логін і пароль — відновити їх зараз нема як.
+              </p>
+            )}
           </form>
         </div>
       </div>
