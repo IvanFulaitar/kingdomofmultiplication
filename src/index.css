@@ -198,6 +198,13 @@ html, body {
   border-color: rgba(245, 185, 66, 0.85);
   box-shadow: 0 0 0 1px rgba(245,185,66,0.55), 0 0 18px rgba(245,185,66,0.25), 0 10px 24px -8px rgba(0,0,0,0.55);
 }
+/* Той самий патерн, що й .rpg-panel-gold, але зелено-смарагдовий тон —
+   для "щось відкрито/розблоковано" (напр. новий регіон на карті), не
+   плутати з нейтральним .rpg-panel чи акцентним золотим варіантом. */
+.rpg-panel-emerald {
+  border-color: rgba(52, 211, 153, 0.55);
+  box-shadow: 0 0 0 1px rgba(52, 211, 153, 0.25), 0 0 16px rgba(52, 211, 153, 0.18), 0 10px 24px -8px rgba(0,0,0,0.55);
+}
 
 /* Компактна квадратна "системна" кнопка кута екрана (профіль/звук у
    MenuScreen.jsx) — навмисно СЛАБША за rpg-panel-gold: тонка рамка, без
@@ -2622,9 +2629,37 @@ html, body {
   .knowledge-result-fade-up,
   .knowledge-result-sparkle,
   .knowledge-fill-animate,
-  .knowledge-tier-glow {
+  .knowledge-tier-glow,
+  .onboarding-cta-pulse {
     animation: none !important;
   }
+}
+
+/* Одноразовий (НЕ повторюваний) м'який золотий pulse на головній кнопці
+   екрана першої перемоги onboarding (OnboardingScreen.jsx, tWon) — та сама
+   форма сяйва, що й у .next-challenge-button у стані спокою, лише коротко
+   підсилена й ослаблена назад. animation-iteration-count за замовчуванням
+   1, тож не зациклюється. */
+@keyframes onboarding-cta-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(255, 236, 150, 0.95),
+      0 0 26px rgba(245, 185, 66, 0.42),
+      0 14px 26px -9px rgba(22, 13, 55, 0.95),
+      inset 0 2px 0 rgba(255, 255, 255, 0.62),
+      inset 0 -4px 8px rgba(122, 63, 8, 0.22);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(255, 236, 150, 0.95),
+      0 0 44px rgba(245, 185, 66, 0.8),
+      0 14px 26px -9px rgba(22, 13, 55, 0.95),
+      inset 0 2px 0 rgba(255, 255, 255, 0.62),
+      inset 0 -4px 8px rgba(122, 63, 8, 0.22);
+  }
+}
+.onboarding-cta-pulse {
+  animation: onboarding-cta-pulse 0.7s ease-in-out 1;
 }
 
 /* =====================================================================

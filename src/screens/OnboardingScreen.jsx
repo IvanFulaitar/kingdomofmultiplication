@@ -1,7 +1,12 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { generateQuestion, factsUsedIn } from "../game/generateQuestion.js";
-import { playUiClick, playUiPrimary, playAttack, playEnemyHit, playHeartLost, playVictory } from "../game/sfx.js";
+import {
+  playUiClick, playUiPrimary, playAttack, playEnemyHit, playHeartLost,
+  playVictory, playStar, playCoin, playXpGain,
+} from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
+import StarIcon from "../components/StarIcon.jsx";
+import { REGIONS } from "../data/regions.js";
 
 // launch-plan.md, розділ 4 "Повністю переробити перші 5 хвилин гри".
 // Перший запуск нового гравця — 4 кроки: коротке знайомство, вибір
@@ -61,7 +66,27 @@ export default function OnboardingScreen({ onComplete }) {
   const [tLives, setTLives] = useState(3);
   const [tFeedback, setTFeedback] = useState(null);
   const [tWon, setTWon] = useState(false);
+  // Захист від подвійного нарахування нагороди (розділ 6 брифу) —
+  // подвійний тап/клік по "ПОЧАТИ ПРИГОДУ" не повинен викликати onComplete
+  // двічі. Перезавантаження сторінки після завершення захищене окремо, на
+  // рівні App.jsx: progress.onboardingComplete=true більше не пускає сюди.
+  const [finishing, setFinishing] = useState(false);
   const TUTORIAL_QUESTION = { prompt: "2 × 3 = ?", correct: 6, options: [5, 6, 7, 4] };
+
+  // Короткий каскад звуків нагороди (розділ 10 брифу) — зірка, монета, XP
+  // одна за одною, синхронно з появою відповідних карток (--kr-delay
+  // нижче в JSX). playVictory() уже приглушує музику сам (music.js
+  // duckMusic через IMPORTANT-список у sfx.js) — тут лише додаткові
+  // короткі акценти, без повторного приглушення.
+  useEffect(() => {
+    if (!tWon) return;
+    const timers = [
+      setTimeout(playStar, 380),
+      setTimeout(playCoin, 520),
+      setTimeout(playXpGain, 660),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [tWon]);
 
   function startConfidence() {
     playUiPrimary();
@@ -130,6 +155,8 @@ export default function OnboardingScreen({ onComplete }) {
   }
 
   function finish() {
+    if (finishing) return; // подвійний тап — ігноруємо, нагорода вже в дорозі
+    setFinishing(true);
     playUiPrimary();
     onComplete({ facts: factsRef.current, confidenceLevel: confidence?.id ?? "beginner" });
   }
@@ -279,20 +306,111 @@ export default function OnboardingScreen({ onComplete }) {
             )}
 
             {tWon && (
-              <div className="flex-1 flex flex-col items-center justify-center text-center gap-5">
-                <span className="text-6xl">🎉</span>
-                <h2 className="font-display gold-text text-2xl font-extrabold">Перемога!</h2>
-                <p className="text-violet-200 text-sm max-w-xs">
-                  Ось так це працює: правильна відповідь завдає шкоди ворогу, а перемога дає зірки, монети й досвід.
-                </p>
-                <div className="rpg-panel rounded-2xl px-5 py-3 flex items-center gap-5 text-sm">
-                  <span>⭐ +1</span>
-                  <span>🪙 +15</span>
-                  <span>✨ +30 XP</span>
+              <div className="flex-1 flex flex-col items-center text-center gap-5 py-2">
+                {/* 1. Святкова fantasy-ілюстрація — реальна іконка (не emoji),
+                    у тому самому круглому медальйоні, що й на екрані
+                    завершення тренування "Мої знання" (перевикористано, не
+                    вигадано заново). */}
+                <div className="knowledge-result-medallion relative">
+                  <ArtImage
+                    src="/assets/icons/ui/trophy.png"
+                    fallback="🏆"
+                    alt=""
+                    className="w-10 h-10 object-contain flex items-center justify-center text-4xl"
+                  />
+                  <span className="knowledge-result-twinkle knowledge-result-twinkle-1" aria-hidden="true">✦</span>
+                  <span className="knowledge-result-twinkle knowledge-result-twinkle-2" aria-hidden="true">✦</span>
                 </div>
-                <button onClick={finish} className="next-challenge-button w-full py-4 rounded-2xl font-display font-extrabold text-lg mt-2">
-                  До Королівства!
-                </button>
+
+                {/* 2-3. Заголовок + підзаголовок + коротке пояснення (2 рядки) */}
+                <div className="knowledge-result-fade-up" style={{ "--kr-delay": "0.1s" }}>
+                  <h2 className="font-display gold-text text-3xl font-extrabold">Навчання завершено!</h2>
+                  <p className="font-body text-violet-100 text-base font-semibold mt-1.5">Ти готовий до пригоди!</p>
+                  <p className="font-body text-violet-200/80 text-sm mt-1.5 max-w-xs mx-auto leading-relaxed">
+                    Розв'язуй завдання, перемагай охоронців і відкривай нові землі королівства.
+                  </p>
+                </div>
+
+                {/* Другорядний цикл гри в 3 коротких кроки — не перевантажує
+                    екран, короткі однослівні підписи, щоб рядок вміщався й
+                    на 320px. */}
+                <div
+                  className="knowledge-result-fade-up flex items-center justify-center gap-2"
+                  style={{ "--kr-delay": "0.18s" }}
+                >
+                  <div className="flex flex-col items-center gap-1 w-[72px]">
+                    <ArtImage src="/assets/icons/ui/book.png" fallback="📖" alt="" className="w-7 h-7 object-contain flex items-center justify-center text-xl" />
+                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">Розв'язуй</span>
+                  </div>
+                  <span className="text-amber-300/70 text-sm -mt-4" aria-hidden="true">→</span>
+                  <div className="flex flex-col items-center gap-1 w-[72px]">
+                    <StarIcon filled />
+                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">Перемагай</span>
+                  </div>
+                  <span className="text-amber-300/70 text-sm -mt-4" aria-hidden="true">→</span>
+                  <div className="flex flex-col items-center gap-1 w-[72px]">
+                    <ArtImage src="/assets/icons/ui/map_scroll.png" fallback="🗺️" alt="" className="w-7 h-7 object-contain flex items-center justify-center text-xl" />
+                    <span className="text-[11px] font-semibold text-violet-200/80 leading-tight">Відкривай землі</span>
+                  </div>
+                </div>
+
+                {/* 4. Перша нагорода — три симетричні картки, справжні
+                    іконки (StarIcon/coin.png), назви текстом (не лише
+                    іконка), як і всюди в грі. */}
+                <div className="w-full knowledge-result-fade-up" style={{ "--kr-delay": "0.28s" }}>
+                  <h3 className="font-display font-bold text-sm text-violet-100 mb-2">Твоя перша нагорода</h3>
+                  <div className="rpg-panel rounded-2xl w-full grid grid-cols-3 divide-x divide-white/10 px-2 py-4">
+                    <div className="flex flex-col items-center px-1.5 gap-1">
+                      <StarIcon filled />
+                      <span className="font-display font-extrabold text-xl gold-text">+1</span>
+                      <span className="text-[11px] text-violet-200/70 leading-tight">Зірка</span>
+                    </div>
+                    <div className="flex flex-col items-center px-1.5 gap-1">
+                      <ArtImage src="/assets/icons/ui/coin.png" fallback="🪙" alt="" className="w-6 h-6 object-contain flex items-center justify-center" />
+                      <span className="font-display font-extrabold text-xl gold-text">+15</span>
+                      <span className="text-[11px] text-violet-200/70 leading-tight">Монет</span>
+                    </div>
+                    <div className="flex flex-col items-center px-1.5 gap-1">
+                      <span className="text-xl" aria-hidden="true">✨</span>
+                      <span className="font-display font-extrabold text-xl gold-text">+30</span>
+                      <span className="text-[11px] text-violet-200/70 leading-tight">Досвіду</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. Відкриття першого регіону — назва береться з REGIONS
+                    (data/regions.js), не хардкодиться окремим текстом. */}
+                <div
+                  className="rpg-panel rpg-panel-emerald knowledge-result-fade-up rounded-2xl w-full px-4 py-3 flex items-center gap-3 text-left"
+                  style={{ "--kr-delay": "0.36s" }}
+                >
+                  <ArtImage
+                    src="/assets/backgrounds/A.png"
+                    fallback={REGIONS[0].icon}
+                    alt=""
+                    className="w-12 h-12 rounded-xl object-cover shrink-0 text-2xl flex items-center justify-center"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-display font-bold text-sm text-emerald-200">Відкрито: {REGIONS[0].name}</p>
+                    <p className="text-xs text-violet-200/70 mt-0.5">Твоя перша пригода вже чекає</p>
+                  </div>
+                </div>
+
+                {/* 6. Головна дія — єдина кнопка екрана, з одноразовим
+                    золотим pulse (не зациклюється, prefers-reduced-motion
+                    вимикає). */}
+                <div className="w-full knowledge-result-fade-up mt-1" style={{ "--kr-delay": "0.46s" }}>
+                  <button
+                    onClick={finish}
+                    disabled={finishing}
+                    aria-label="Завершити навчання і перейти до карти королівства"
+                    className="next-challenge-button onboarding-cta-pulse w-full py-4 rounded-2xl font-display font-extrabold text-xl min-h-[64px] disabled:opacity-80 disabled:pointer-events-none"
+                    style={{ animationDelay: "0.46s" }}
+                  >
+                    ПОЧАТИ ПРИГОДУ
+                  </button>
+                  <p className="text-xs text-violet-300/70 mt-2">Перейти до карти королівства</p>
+                </div>
               </div>
             )}
           </div>
