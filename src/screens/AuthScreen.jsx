@@ -363,6 +363,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                 <input
                   ref={emailRef}
                   id="auth-email"
+                  name="username"
                   type="email"
                   inputMode="email"
                   autoComplete="username"
@@ -399,6 +400,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                 <input
                   ref={passwordRef}
                   id="auth-password"
+                  name={mode === "login" ? "current-password" : "new-password"}
                   type={showPassword ? "text" : "password"}
                   autoComplete={mode === "login" ? "current-password" : "new-password"}
                   value={password}
@@ -453,6 +455,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                   <input
                     ref={confirmRef}
                     id="auth-confirm-password"
+                    name="new-password-confirm"
                     type={showConfirmPassword ? "text" : "password"}
                     autoComplete="new-password"
                     value={confirmPassword}
