@@ -325,7 +325,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                     src={showPassword ? "/assets/icons/ui/eye_closed.png" : "/assets/icons/ui/eye_open.png"}
                     fallback={showPassword ? "🙈" : "👁"}
                     alt=""
-                    className="w-7 h-7 object-contain flex items-center justify-center text-2xl"
+                    className="w-11 h-11 object-contain flex items-center justify-center text-4xl"
                   />
                 </button>
               </div>
@@ -379,7 +379,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                       src={showConfirmPassword ? "/assets/icons/ui/eye_closed.png" : "/assets/icons/ui/eye_open.png"}
                       fallback={showConfirmPassword ? "🙈" : "👁"}
                       alt=""
-                      className="w-7 h-7 object-contain flex items-center justify-center text-2xl"
+                      className="w-11 h-11 object-contain flex items-center justify-center text-4xl"
                     />
                   </button>
                 </div>
