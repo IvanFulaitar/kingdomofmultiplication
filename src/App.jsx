@@ -6,6 +6,7 @@ import { getWeakFacts } from "./game/generateQuestion.js";
 import { hasNewMasteryActivity } from "./game/mastery.js";
 import { initMusic } from "./game/music.js";
 import { preloadCoreSfx, playAchievementSfx } from "./game/sfx.js";
+import { logout as authLogout } from "./game/auth.js";
 import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
   starsForMistakes, heroLevelFromXp,
@@ -28,6 +29,7 @@ const MazeScreen = lazy(() => import("./screens/MazeScreen.jsx"));
 const RaceDifficultyScreen = lazy(() => import("./screens/RaceDifficultyScreen.jsx"));
 const RaceScreen = lazy(() => import("./screens/RaceScreen.jsx"));
 const MapScreen = lazy(() => import("./screens/MapScreen.jsx"));
+const AuthScreen = lazy(() => import("./screens/AuthScreen.jsx"));
 const GameScreen = lazy(() => import("./screens/GameScreen.jsx"));
 const ResultsScreen = lazy(() => import("./screens/ResultsScreen.jsx"));
 const BadgesModal = lazy(() => import("./components/BadgesModal.jsx"));
@@ -43,6 +45,11 @@ function LoadingGate() {
 export default function App() {
   const [progress, setProgress] = useState(null);
   const [screen, setScreen] = useState("menu");
+  // Акаунт (email/пароль, frontend-backend-integration-plan.md) —
+  // необов'язкова фіча: null означає гостя, гра й далі повністю грається
+  // без входу. Відновлення сесії при старті (fetchMe()) — окремий крок 4,
+  // тут лише сам факт входу/виходу під час поточного сеансу.
+  const [user, setUser] = useState(null);
   const [activeLevel, setActiveLevel] = useState(null);
   const [raceDifficulty, setRaceDifficulty] = useState(null);
   const [outcome, setOutcome] = useState(null);
@@ -332,6 +339,16 @@ export default function App() {
     setScreen("knowledge");
   }
 
+  function handleAuthenticated(authedUser) {
+    setUser(authedUser);
+    setScreen("menu");
+  }
+
+  function handleLogout() {
+    authLogout();
+    setUser(null);
+  }
+
   function startNextChallenge(levelId) {
     if (levelId && LEVEL_META[levelId]) {
       setActiveLevel(levelId);
@@ -361,6 +378,9 @@ export default function App() {
           hasNewKnowledge={hasNewMasteryActivity(progress.facts, progress.knowledgeLastSeenAt ?? 0)}
           onExportSave={exportSave}
           onImportSave={importSave}
+          user={user}
+          onAccount={() => setScreen("auth")}
+          onLogout={handleLogout}
         />
       )}
       <Suspense fallback={<LoadingGate />}>
@@ -426,6 +446,9 @@ export default function App() {
             onComplete={(coins, xp, meta) => { completeRace(coins, xp, meta); setScreen("training"); }}
             onChangeDifficulty={() => setScreen("raceDifficulty")}
           />
+        )}
+        {screen === "auth" && (
+          <AuthScreen onBack={() => setScreen("menu")} onAuthenticated={handleAuthenticated} />
         )}
         {screen === "map" && (
           <MapScreen

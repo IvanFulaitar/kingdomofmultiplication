@@ -26,7 +26,7 @@ function ToggleSwitch({ checked, onChange, label }) {
   );
 }
 
-export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, onExportSave, onImportSave }) {
+export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, onExportSave, onImportSave, user, onAccount, onLogout }) {
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
@@ -45,6 +45,19 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   function handleImportClick() {
     playUiClick();
     importInputRef.current?.click();
+  }
+
+  // Акаунт (email/пароль) — необов'язкова фіча (frontend-backend-
+  // integration-plan.md): лише щоб не втратити прогрес при зміні
+  // телефону, гра й далі повністю грається без нього.
+  function handleAccountClick() {
+    playUiClick();
+    onAccount?.();
+  }
+
+  function handleLogoutClick() {
+    playUiClick();
+    onLogout?.();
   }
 
   function handleImportFile(e) {
@@ -133,6 +146,27 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             )}
             {importStatus === "error" && (
               <span className="text-[11px] text-red-300">Файл пошкоджений або не той формат.</span>
+            )}
+            <div className="h-px bg-white/10 my-0.5" />
+            {user ? (
+              <>
+                <span className="text-[11px] text-violet-300/70 truncate" title={user.email}>
+                  {user.email}
+                </span>
+                <button
+                  onClick={handleLogoutClick}
+                  className="text-left text-xs font-semibold text-violet-200 hover:text-white transition"
+                >
+                  Вийти з акаунта
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleAccountClick}
+                className="text-left text-xs font-semibold text-violet-200 hover:text-white transition"
+              >
+                👤 Увійти в акаунт
+              </button>
             )}
             <input
               ref={importInputRef}
