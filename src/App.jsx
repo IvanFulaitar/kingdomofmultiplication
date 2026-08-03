@@ -1,4 +1,5 @@
 import { useEffect, useState, Suspense, lazy } from "react";
+import { useTranslation } from "react-i18next";
 import { BADGES } from "./data/rewards.js";
 import { AVATARS } from "./data/cosmetics.js";
 import { LEVEL_META } from "./data/regions.js";
@@ -35,9 +36,10 @@ const ResultsScreen = lazy(() => import("./screens/ResultsScreen.jsx"));
 const BadgesModal = lazy(() => import("./components/BadgesModal.jsx"));
 
 function LoadingGate() {
+  const { t } = useTranslation("common");
   return (
     <div className="min-h-dvh bg-indigo-950 flex items-center justify-center">
-      <div className="font-body text-amber-300 text-lg animate-pulse">Відчиняємо ворота королівства…</div>
+      <div className="font-body text-amber-300 text-lg animate-pulse">{t("openingGates")}</div>
     </div>
   );
 }
