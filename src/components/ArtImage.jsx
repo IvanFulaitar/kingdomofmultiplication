@@ -20,7 +20,7 @@ export default function ArtImage({ src, fallback, alt = "", className = "", fetc
       style={style}
       onError={() => setErrored(true)}
       draggable={false}
-      fetchPriority={fetchPriority}
+      fetchpriority={fetchPriority}
     />
   );
 }
