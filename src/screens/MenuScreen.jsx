@@ -8,6 +8,7 @@ import { isMusicEnabled, setMusicEnabled } from "../game/music.js";
 import { playUiClick, playUiPrimary } from "../game/sfx.js";
 import { APP_VERSION, LAST_UPDATE } from "../version.js";
 import { SUPPORTED_LANGUAGES } from "../i18n/index.js";
+import { AUTH_ENABLED } from "../config.js";
 import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 import LanguagePickerModal from "../components/LanguagePickerModal.jsx";
@@ -30,10 +31,13 @@ function ToggleSwitch({ checked, onChange, label }) {
   );
 }
 
-// Один раз показане ненав'язливе нагадування про акаунт (розділ 6 брифу) —
-// власний ключ, окремо від прогресу й від токена, щоб не зачіпати
-// migrateSave()/схему збереження заради одного прапорця "вже бачив".
-const ACCOUNT_NUDGE_KEY = "kingdom-multiplication-account-nudge-dismissed";
+// Компактна картка "прогрес зберігається на цьому пристрої" (auth-freeze-
+// brief.md, розділ 2) — власний версійований ключ, окремо від прогресу й
+// від токена, щоб не зачіпати migrateSave()/схему збереження заради
+// одного прапорця "вже закрив". Версія в назві (_v1) — щоб для якогось
+// майбутнього важливого оновлення повідомлення можна було завести новий
+// ключ, а не випадково скинути вже зроблений вибір користувача.
+const CLOUD_NOTICE_DISMISSED_KEY = "kingdom-multiplication-cloud-notice-dismissed-v1";
 
 export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount }) {
   const { t, i18n } = useTranslation(["menu", "quests", "common"]);
@@ -44,9 +48,10 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [langPickerOpen, setLangPickerOpen] = useState(false);
   const [languageToast, setLanguageToast] = useState(null);
-  const [nudgeDismissed, setNudgeDismissed] = useState(() => {
-    try { return localStorage.getItem(ACCOUNT_NUDGE_KEY) === "1"; } catch { return true; }
+  const [cloudNoticeDismissed, setCloudNoticeDismissed] = useState(() => {
+    try { return localStorage.getItem(CLOUD_NOTICE_DISMISSED_KEY) === "1"; } catch { return true; }
   });
+  const [saveInfoOpen, setSaveInfoOpen] = useState(false);
   const settingsRef = useRef(null);
   const settingsToggleRef = useRef(null);
   const xpPct = (into / need) * 100;
@@ -56,31 +61,26 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   const displayName = user?.email ? user.email.split("@")[0] : "";
   const currentLanguageName = SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language)?.nativeName ?? "";
 
-  // Ненав'язливе нагадування (розділ 6 брифу) — лише коли є вже корисний
-  // прогрес (не одразу після встановлення), і лише поки не залогінений і
-  // ще не бачив/не закривав його раніше. Навмисно рахуємо з даних, які вже
-  // й так є в progress — без нового лічильника відкриттів застосунку.
-  const completedLevels = Object.values(progress.levels ?? {}).filter((l) => (l?.stars ?? 0) > 0).length;
-  const boughtExtraAvatar = (progress.ownedAvatars?.length ?? 1) > 1;
-  const hasMeaningfulProgress = completedLevels >= 3 || level >= 2 || boughtExtraAvatar;
-  const showAccountNudge = !user && !nudgeDismissed && hasMeaningfulProgress;
+  // Компактна картка "прогрес зберігається на цьому пристрої" (auth-
+  // freeze-brief.md, розділ 2) — інформаційна, а не заклик увійти (вхід
+  // ще вимкнено через AUTH_ENABLED), тож не гейтиться прогресом і не
+  // ховається лише для залогінених — показується один раз, поки не
+  // закрита, потім запам'ятовується назавжди (окремий ключ у localStorage).
+  const showCloudNotice = !AUTH_ENABLED && !cloudNoticeDismissed;
 
   // Акаунт (email/пароль) — необов'язкова фіча (frontend-backend-
   // integration-plan.md): лише щоб не втратити прогрес при зміні
-  // телефону, гра й далі повністю грається без нього.
+  // телефону, гра й далі повністю грається без нього. Поки AUTH_ENABLED
+  // вимкнено, кнопка веде на сторінку акаунта в стані "У розробці"
+  // (AuthScreen.jsx сам показує цей стан) — жодних auth-запитів звідси.
   function handleAccountClick() {
     playUiClick();
     onAccount?.();
   }
 
-  function dismissAccountNudge() {
-    setNudgeDismissed(true);
-    try { localStorage.setItem(ACCOUNT_NUDGE_KEY, "1"); } catch { /* немає localStorage — просто не запам'ятається між сесіями */ }
-  }
-
-  function handleNudgeLoginClick() {
-    dismissAccountNudge();
-    handleAccountClick();
+  function dismissCloudNotice() {
+    setCloudNoticeDismissed(true);
+    try { localStorage.setItem(CLOUD_NOTICE_DISMISSED_KEY, "1"); } catch { /* немає localStorage — просто не запам'ятається між сесіями */ }
   }
 
   function closeSettings(returnFocus) {
@@ -148,9 +148,21 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
       >
         <button
           onClick={handleAccountClick}
-          aria-label={user ? t("menu:profileAriaAuthed", { name: displayName }) : t("menu:profileAriaGuest")}
-          title={user ? t("menu:profileTitleAuthed", { name: displayName }) : t("menu:profileTitleGuest")}
-          className="system-icon-button rpg-panel w-12 h-12 rounded-xl flex items-center justify-center"
+          aria-label={
+            user
+              ? t("menu:profileAriaAuthed", { name: displayName })
+              : AUTH_ENABLED
+                ? t("menu:profileAriaGuest")
+                : t("menu:profileAriaComingSoon")
+          }
+          title={
+            user
+              ? t("menu:profileTitleAuthed", { name: displayName })
+              : AUTH_ENABLED
+                ? t("menu:profileTitleGuest")
+                : t("menu:profileTitleComingSoon")
+          }
+          className="system-icon-button rpg-panel w-12 h-12 rounded-xl flex items-center justify-center relative"
         >
           {user ? (
             <span className="system-icon-glow relative inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
@@ -172,6 +184,14 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
               alt=""
               className="system-icon-glow w-8 h-8 object-contain flex items-center justify-center text-lg text-amber-100/90"
             />
+          )}
+          {!AUTH_ENABLED && !user && (
+            <span
+              aria-hidden="true"
+              className="menu-nav-badge absolute -top-1.5 -right-1.5 rounded-full px-1.5 py-0.5 text-[8px] font-display font-extrabold leading-none whitespace-nowrap"
+            >
+              {t("menu:profileBadgeSoon")}
+            </span>
           )}
         </button>
 
@@ -224,6 +244,32 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
                 <span className="text-sm font-semibold text-white">{t("menu:sound")}</span>
                 <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label={t("menu:soundAriaLabel")} />
               </div>
+
+              {/* Постійний ненав'язливий статус (auth-freeze-brief.md, розділ
+                  3) — не в центральному ігровому потоці, а тут, у
+                  налаштуваннях; клік розгортає коротке пояснення інлайн,
+                  без окремої модалки. */}
+              <div className="h-px bg-white/10 my-1.5" />
+              <button
+                type="button"
+                onClick={() => setSaveInfoOpen((o) => !o)}
+                aria-expanded={saveInfoOpen}
+                className="flex items-center gap-2.5 px-1.5 py-2 rounded-lg hover:bg-white/5 transition text-left"
+              >
+                <ArtImage
+                  src="/assets/icons/ui/cloud.png"
+                  fallback="☁️"
+                  alt=""
+                  className="w-8 h-8 object-contain flex items-center justify-center text-base shrink-0"
+                />
+                <span className="text-sm font-semibold text-white flex-1">{t("menu:localSaveStatus")}</span>
+                <span className="text-violet-300/60 text-xs" aria-hidden="true">{saveInfoOpen ? "︿" : "﹀"}</span>
+              </button>
+              {saveInfoOpen && (
+                <p className="px-1.5 pb-1 -mt-0.5 text-xs text-violet-200/75 leading-snug">
+                  {t("menu:localSaveExplain")}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -296,32 +342,44 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           </button>
         </div>
 
-        {/* Ненав'язливе нагадування про акаунт (розділ 6 брифу) — лише коли
-            вже є користь, яку варто зберегти, ніколи одразу після старту;
-            "Не зараз" ховає назавжди (окремий ключ у localStorage). Не
-            модальне, не блокує гру, не перекриває "ГРАТИ" нижче. */}
-        {showAccountNudge && (
-          <div className="w-full rpg-panel rounded-2xl px-4 py-3.5 flex items-center gap-3">
-            <ArtImage
-              src="/assets/icons/ui/cloud.png"
-              fallback="☁️"
-              alt=""
-              className="w-7 h-7 object-contain flex items-center justify-center text-xl shrink-0"
-            />
-            <p className="flex-1 text-sm text-violet-100">{t("menu:accountNudgeText")}</p>
-            <div className="flex flex-col items-end gap-1.5 shrink-0">
-              <button
-                onClick={handleNudgeLoginClick}
-                className="knowledge-secondary-button rounded-lg px-3 py-1.5 text-xs font-display font-bold"
-              >
-                {t("menu:accountNudgeLogin")}
-              </button>
-              <button
-                onClick={dismissAccountNudge}
-                className="text-[11px] text-violet-300/70 hover:text-white transition"
-              >
-                {t("menu:notNow")}
-              </button>
+        {/* Компактна картка "прогрес зберігається на цьому пристрої"
+            (auth-freeze-brief.md, розділ 2/14) — чесне пояснення поточного
+            стану збереження, а не заклик кудись увійти (форма входу ще
+            вимкнена). Закривається назавжди (окремий версійований ключ у
+            localStorage). Не модальна, не блокує гру, не перекриває
+            "ГРАТИ" нижче. */}
+        {showCloudNotice && (
+          <div className="w-full rpg-panel rounded-2xl px-4 py-3.5 relative">
+            <button
+              onClick={dismissCloudNotice}
+              aria-label={t("menu:cloudNoticeCloseAria")}
+              className="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center text-violet-300/60 hover:text-white text-base leading-none transition"
+            >
+              ×
+            </button>
+            <div className="flex items-start gap-3 pr-6">
+              <ArtImage
+                src="/assets/icons/ui/cloud.png"
+                fallback="☁️"
+                alt=""
+                className="w-8 h-8 object-contain flex items-center justify-center text-xl shrink-0 mt-0.5"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <span className="font-display font-bold text-sm text-white">{t("menu:cloudNoticeTitle")}</span>
+                  <span className="menu-nav-badge rounded-full px-2 py-0.5 text-[10px] font-display font-extrabold shrink-0">
+                    {t("menu:cloudNoticeBadge")}
+                  </span>
+                </div>
+                <p className="text-xs text-violet-200/80 leading-snug">{t("menu:cloudNoticeSubtitle")}</p>
+                <p className="text-xs text-violet-300/60 leading-snug mt-1">{t("menu:cloudNoticeExtra")}</p>
+                <button
+                  onClick={handleAccountClick}
+                  className="mt-2 text-xs font-display font-bold text-amber-300 hover:text-amber-200 transition"
+                >
+                  {t("menu:cloudNoticeAction")} ›
+                </button>
+              </div>
             </div>
           </div>
         )}

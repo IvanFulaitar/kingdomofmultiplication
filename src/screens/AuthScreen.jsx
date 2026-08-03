@@ -6,6 +6,7 @@ import { AVATARS } from "../data/cosmetics.js";
 import { register, login } from "../game/auth.js";
 import { ApiError } from "../game/apiClient.js";
 import { playUiClick, playPurchaseSuccess } from "../game/sfx.js";
+import { AUTH_ENABLED } from "../config.js";
 import {
   validateEmail,
   validatePasswordForLogin,
@@ -203,6 +204,91 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                 {t("auth:logout")}
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---- Акаунти ще вимкнено (AUTH_ENABLED=false): чесний стан "У
+  // розробці" замість форми, яка нічого не вміє надіслати (auth-freeze-
+  // brief.md). Жодних input-полів, жодних auth-запитів — лише пояснення,
+  // що прогрес і так уже автоматично зберігається локально. ----
+  if (!AUTH_ENABLED) {
+    return (
+      <div className="relative overflow-hidden min-h-dvh screen-in">
+        <div className="center-vignette" />
+        <div className="relative z-10 max-w-md sm:max-w-2xl mx-auto px-6 py-8 pb-16">
+          <div className="mb-2">
+            <TopBar onBack={onBack} title={t("auth:screenTitle")} />
+          </div>
+
+          <div className="rpg-panel rounded-[26px] max-w-[560px] mx-auto px-6 sm:px-8 py-8 mt-6 text-center">
+            <ArtImage
+              src="/assets/icons/ui/cloud.png"
+              fallback="☁️"
+              alt=""
+              className="w-16 h-16 object-contain mx-auto mb-4 flex items-center justify-center text-5xl"
+            />
+            <span className="menu-nav-badge inline-block rounded-full px-3 py-1 text-xs font-display font-extrabold mb-3">
+              {t("auth:comingSoonTitle")}
+            </span>
+            <p className="font-body text-violet-100 text-sm font-semibold mb-5">
+              {t("auth:comingSoonSubtitle")}
+            </p>
+
+            <div className="text-left bg-white/5 border border-white/10 rounded-2xl px-4 py-4 mb-5">
+              <p className="text-sm text-violet-100 leading-relaxed mb-2">{t("auth:comingSoonExplain1")}</p>
+              <p className="text-sm text-violet-100 leading-relaxed">{t("auth:comingSoonExplain2")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-left">
+              <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5">
+                <p className="font-display font-bold text-xs text-emerald-300 mb-2 uppercase tracking-wide">
+                  {t("auth:availableNowTitle")}
+                </p>
+                <ul className="flex flex-col gap-1.5 text-sm text-violet-100">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 shrink-0" aria-hidden="true">✓</span>
+                    {t("auth:availableNowItem1")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 shrink-0" aria-hidden="true">✓</span>
+                    {t("auth:availableNowItem2")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-400 shrink-0" aria-hidden="true">✓</span>
+                    {t("auth:availableNowItem3")}
+                  </li>
+                </ul>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5">
+                <p className="font-display font-bold text-xs text-amber-300 mb-2 uppercase tracking-wide">
+                  {t("auth:comingLaterTitle")}
+                </p>
+                <ul className="flex flex-col gap-1.5 text-sm text-violet-200/80">
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0" aria-hidden="true">☁</span>
+                    {t("auth:comingLaterItem1")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0" aria-hidden="true">☁</span>
+                    {t("auth:comingLaterItem2")}
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0" aria-hidden="true">☁</span>
+                    {t("auth:comingLaterItem3")}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <button
+              onClick={onBack}
+              className="knowledge-cta-button w-full py-3.5 rounded-2xl font-display font-extrabold text-lg text-indigo-950 min-h-[56px]"
+            >
+              {t("auth:backToGame")}
+            </button>
           </div>
         </div>
       </div>
