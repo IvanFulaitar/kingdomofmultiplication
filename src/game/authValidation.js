@@ -9,6 +9,12 @@
 // email"). Тому тут перевіряється саме email-формат, а не довільний
 // "username" (латиниця/цифри/підкреслення) — інакше форма приймала б
 // логіни, які сервер одразу відхилить.
+//
+// Локалізація (i18n/): функції тут повертають { code, params? } замість
+// готового тексту — AuthScreen.jsx сам перекладає код через
+// t(`validation:${code}`, params), щоб повідомлення одразу змінювалось
+// разом із мовою інтерфейсу (розділ 13 брифу локалізації), а не лишалось
+// закам'янілим українським рядком у React-стані.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -17,11 +23,11 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 72;
 
-// Повертає рядок помилки або null, якщо все гаразд.
+// Повертає { code, params? } або null, якщо все гаразд.
 export function validateEmail(raw) {
   const value = (raw ?? "").trim();
-  if (!value) return "Введи логін";
-  if (!EMAIL_RE.test(value)) return "Некоректний email";
+  if (!value) return { code: "EMAIL_REQUIRED" };
+  if (!EMAIL_RE.test(value)) return { code: "EMAIL_INVALID" };
   return null;
 }
 
@@ -29,19 +35,19 @@ export function validateEmail(raw) {
 // server/src/schemas/auth.js: loginSchema) — старий пароль міг бути
 // коротшим за поточні правила ще до їх запровадження.
 export function validatePasswordForLogin(raw) {
-  if (!raw) return "Пароль обов'язковий";
+  if (!raw) return { code: "PASSWORD_REQUIRED" };
   return null;
 }
 
 export function validatePasswordForRegister(raw) {
-  if (!raw) return "Введи пароль";
-  if (raw.length < PASSWORD_MIN) return `Пароль має містити щонайменше ${PASSWORD_MIN} символів`;
-  if (raw.length > PASSWORD_MAX) return `Пароль занадто довгий (максимум ${PASSWORD_MAX} символів)`;
+  if (!raw) return { code: "PASSWORD_REQUIRED_REGISTER" };
+  if (raw.length < PASSWORD_MIN) return { code: "PASSWORD_TOO_SHORT", params: { min: PASSWORD_MIN } };
+  if (raw.length > PASSWORD_MAX) return { code: "PASSWORD_TOO_LONG", params: { max: PASSWORD_MAX } };
   return null;
 }
 
 export function validateConfirmPassword(password, confirm) {
-  if (!confirm) return "Повтори пароль";
-  if (confirm !== password) return "Паролі не збігаються";
+  if (!confirm) return { code: "CONFIRM_REQUIRED" };
+  if (confirm !== password) return { code: "CONFIRM_MISMATCH" };
   return null;
 }

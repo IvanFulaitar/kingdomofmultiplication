@@ -6,6 +6,7 @@ import {
 } from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
 import StarIcon from "../components/StarIcon.jsx";
+import LanguagePickerModal from "../components/LanguagePickerModal.jsx";
 import { REGIONS } from "../data/regions.js";
 
 // launch-plan.md, розділ 4 "Повністю переробити перші 5 хвилин гри".
@@ -51,6 +52,12 @@ function Heart({ filled }) {
 
 export default function OnboardingScreen({ onComplete }) {
   const [step, setStep] = useState("welcome"); // welcome | confidence | diagnostic | tutorial
+  // Компактний перемикач мови — лише на першому екрані (розділ 5 брифу
+  // локалізації), щоб дитина могла виправити автовизначену мову ще ДО
+  // проходження навчання. Решта тексту onboarding поки НЕ перекладена
+  // (окремий наступний прохід) — перемикач тут працює на майбутнє й на
+  // випадки, коли дитина вже знає, що хоче іншу мову інтерфейсу меню.
+  const [langPickerOpen, setLangPickerOpen] = useState(false);
   const [confidence, setConfidence] = useState(null);
 
   // ---- Діагностика: 10 прикладів без покарань і часу ----
@@ -164,6 +171,23 @@ export default function OnboardingScreen({ onComplete }) {
   return (
     <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
+      {step === "welcome" && (
+        <button
+          type="button"
+          onClick={() => { playUiClick(); setLangPickerOpen(true); }}
+          aria-label="Language / Мова / Język"
+          className="system-icon-button rpg-panel absolute z-30 w-11 h-11 rounded-xl flex items-center justify-center"
+          style={{ top: "max(1rem, env(safe-area-inset-top))", right: "max(1.25rem, env(safe-area-inset-right))" }}
+        >
+          <ArtImage
+            src="/assets/icons/ui/globe.png"
+            fallback="🌐"
+            alt=""
+            className="system-icon-glow w-5 h-5 object-contain flex items-center justify-center text-base"
+          />
+        </button>
+      )}
+      {langPickerOpen && <LanguagePickerModal onClose={() => setLangPickerOpen(false)} />}
       <div className="relative z-10 max-w-md mx-auto px-6 py-10 min-h-dvh flex flex-col">
         {step === "welcome" && (
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-6">

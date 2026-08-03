@@ -9,5 +9,5 @@ export const authRateLimit = rateLimit({
   limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Забагато спроб. Спробуй ще раз через кілька хвилин." },
+  message: { error: "Забагато спроб. Спробуй ще раз через кілька хвилин.", code: "TOO_MANY_REQUESTS" },
 });

@@ -52,7 +52,7 @@ app.use("/api/auth", authRouter);
 // обривала з'єднання чи "гола" express-сторінка стектрейсу.
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ error: "Внутрішня помилка сервера" });
+  res.status(500).json({ error: "Внутрішня помилка сервера", code: "INTERNAL_ERROR" });
 });
 
 app.listen(PORT, () => {

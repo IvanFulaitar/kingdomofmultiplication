@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AVATARS } from "../data/cosmetics.js";
 import { QUEST_POOL } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
@@ -6,8 +7,11 @@ import { isSoundEnabled, setSoundEnabled } from "../game/sound.js";
 import { isMusicEnabled, setMusicEnabled } from "../game/music.js";
 import { playUiClick, playUiPrimary } from "../game/sfx.js";
 import { APP_VERSION, LAST_UPDATE } from "../version.js";
+import { SUPPORTED_LANGUAGES } from "../i18n/index.js";
 import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
+import LanguagePickerModal from "../components/LanguagePickerModal.jsx";
+import SimpleToast from "../components/SimpleToast.jsx";
 
 function ToggleSwitch({ checked, onChange, label }) {
   return (
@@ -32,11 +36,14 @@ function ToggleSwitch({ checked, onChange, label }) {
 const ACCOUNT_NUDGE_KEY = "kingdom-multiplication-account-nudge-dismissed";
 
 export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount }) {
+  const { t, i18n } = useTranslation(["menu", "common"]);
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
   const [musicOn, setMusicOn] = useState(() => isMusicEnabled());
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [langPickerOpen, setLangPickerOpen] = useState(false);
+  const [languageToast, setLanguageToast] = useState(null);
   const [nudgeDismissed, setNudgeDismissed] = useState(() => {
     try { return localStorage.getItem(ACCOUNT_NUDGE_KEY) === "1"; } catch { return true; }
   });
@@ -47,6 +54,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   // працює через email (backend), але дитині показуємо лише зрозумілу
   // "логін"-подібну частину, без технічної адреси пошти на екрані.
   const displayName = user?.email ? user.email.split("@")[0] : "";
+  const currentLanguageName = SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language)?.nativeName ?? "";
 
   // Ненав'язливе нагадування (розділ 6 брифу) — лише коли є вже корисний
   // прогрес (не одразу після встановлення), і лише поки не залогінений і
@@ -78,6 +86,23 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   function closeSettings(returnFocus) {
     setSettingsOpen(false);
     if (returnFocus) settingsToggleRef.current?.focus();
+  }
+
+  // Мова — окремий рядок у "Налаштуваннях" (розділ 1/2 брифу локалізації):
+  // акаунт лишається виключно в кнопці профілю, сюди не додається. Спершу
+  // закриваємо попап налаштувань, щоб модалка вибору мови не малювалась
+  // поверх нього другим шаром.
+  function openLanguagePicker() {
+    playUiClick();
+    closeSettings(false);
+    setLangPickerOpen(true);
+  }
+
+  function handleLanguageChanged() {
+    // Викликається ПІСЛЯ того, як i18n.changeLanguage() уже застосувався
+    // (LanguagePickerModal чекає його проміс) — тому t() тут одразу
+    // повертає текст новою мовою, а не попередньою.
+    setLanguageToast(t("common:languageChanged"));
   }
 
   function toggleSfx(next) {
@@ -123,8 +148,8 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
       >
         <button
           onClick={handleAccountClick}
-          aria-label={user ? `Профіль: ${displayName}` : "Акаунт і синхронізація прогресу"}
-          title={user ? `Профіль: ${displayName}` : "Акаунт"}
+          aria-label={user ? t("menu:profileAriaAuthed", { name: displayName }) : t("menu:profileAriaGuest")}
+          title={user ? t("menu:profileTitleAuthed", { name: displayName }) : t("menu:profileTitleGuest")}
           className="system-icon-button rpg-panel w-12 h-12 rounded-xl flex items-center justify-center"
         >
           {user ? (
@@ -154,29 +179,69 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           <button
             ref={settingsToggleRef}
             onClick={() => setSettingsOpen((o) => !o)}
-            aria-label="Налаштування звуку"
+            aria-label={t("menu:settingsAriaLabel")}
             aria-expanded={settingsOpen}
             className="system-icon-button rpg-panel w-12 h-12 rounded-xl flex items-center justify-center text-lg"
           >
-            <span className="system-icon-glow">{sfxOn || musicOn ? "🔊" : "🔇"}</span>
+            {/* Іконки шестерні поки нема в assets (розділ 1 брифу локалізації
+                дозволяє тимчасово лишити поточну кнопку) — ArtImage сама
+                підхопить /assets/icons/ui/gear.png, щойно файл з'явиться,
+                без правок коду; до того часу тихо падає на emoji-фолбек. */}
+            <ArtImage
+              src="/assets/icons/ui/gear.png"
+              fallback={sfxOn || musicOn ? "🔊" : "🔇"}
+              alt=""
+              className="system-icon-glow w-6 h-6 object-contain flex items-center justify-center text-lg"
+            />
           </button>
           {settingsOpen && (
             <div
               role="menu"
-              className="absolute right-0 mt-3 menu-panel rounded-2xl p-3.5 w-[220px] max-w-[calc(100vw-2rem)] flex flex-col gap-2.5 shadow-xl"
+              className="absolute right-0 mt-3 menu-panel rounded-2xl p-3.5 w-[240px] max-w-[calc(100vw-2rem)] flex flex-col gap-1 shadow-xl"
             >
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-white">Музика</span>
-                <ToggleSwitch checked={musicOn} onChange={toggleMusic} label="Увімкнути/вимкнути музику" />
+              <span className="font-display font-bold text-amber-300 text-xs px-0.5 pb-1.5">
+                {t("menu:settingsTitle")}
+              </span>
+              <button
+                type="button"
+                onClick={openLanguagePicker}
+                className="flex items-center gap-2.5 px-1.5 py-2 rounded-lg hover:bg-white/5 transition text-left"
+              >
+                <ArtImage
+                  src="/assets/icons/ui/globe.png"
+                  fallback="🌐"
+                  alt=""
+                  className="w-5 h-5 object-contain flex items-center justify-center text-base shrink-0"
+                />
+                <span className="text-sm font-semibold text-white flex-1">{t("menu:language")}</span>
+                <span className="text-xs text-violet-300/80">{currentLanguageName}</span>
+                <span className="text-violet-300/60 text-xs" aria-hidden="true">›</span>
+              </button>
+
+              <div className="h-px bg-white/10 my-1.5" />
+
+              <div className="flex items-center justify-between gap-3 px-1.5 py-1">
+                <span className="text-sm font-semibold text-white">{t("menu:music")}</span>
+                <ToggleSwitch checked={musicOn} onChange={toggleMusic} label={t("menu:musicAriaLabel")} />
               </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-white">Звуки</span>
-                <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label="Увімкнути/вимкнути звукові ефекти" />
+              <div className="flex items-center justify-between gap-3 px-1.5 py-1">
+                <span className="text-sm font-semibold text-white">{t("menu:sound")}</span>
+                <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label={t("menu:soundAriaLabel")} />
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {langPickerOpen && (
+        <LanguagePickerModal
+          onClose={() => setLangPickerOpen(false)}
+          onLanguageChanged={handleLanguageChanged}
+        />
+      )}
+      {languageToast && (
+        <SimpleToast message={languageToast} onClose={() => setLanguageToast(null)} />
+      )}
 
       <span className="app-version-tag absolute top-4 left-4 z-20 select-none leading-tight" aria-hidden="true">
         v{APP_VERSION}<br />{LAST_UPDATE}
@@ -193,8 +258,8 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             fetchPriority="high"
             className="relative w-56 sm:w-64 h-56 sm:h-64 mx-auto mb-1 object-contain flex items-center justify-center text-8xl drop-shadow-[0_8px_20px_rgba(0,0,0,0.5)]"
           />
-          <h1 className="font-display gold-text text-4xl font-extrabold mt-2 tracking-wide">Королівство Математики</h1>
-          <p className="text-violet-200 mt-1.5 text-base">Мандруй, розв'язуй, опановуй магію чисел</p>
+          <h1 className="font-display gold-text text-4xl font-extrabold mt-2 tracking-wide">{t("common:appTitle")}</h1>
+          <p className="text-violet-200 mt-1.5 text-base">{t("common:appSubtitle")}</p>
         </div>
 
         <div className="w-full grid grid-cols-3 gap-3">
@@ -216,7 +281,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             <div className="menu-level-badge w-10 h-10 rounded-xl flex items-center justify-center font-display font-extrabold text-indigo-950 text-lg shrink-0">
               {level}
             </div>
-            <span className="font-display font-bold text-lg flex-1">Рівень героя {level}</span>
+            <span className="font-display font-bold text-lg flex-1">{t("menu:heroLevel", { level })}</span>
             <span className="text-sm text-violet-100 font-semibold">{into}/{need} XP</span>
           </div>
           <div className="h-5 menu-xp-track rounded-full relative">
@@ -231,7 +296,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-violet-200 hover:text-white transition ml-auto"
           >
             <ArtImage src="/assets/icons/ui/book.png" fallback="📖" alt="" className="w-3.5 h-3.5 object-contain inline-flex items-center justify-center" />
-            Прогрес →
+            {t("menu:progressLink")}
           </button>
         </div>
 
@@ -247,19 +312,19 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
               alt=""
               className="w-7 h-7 object-contain flex items-center justify-center text-xl shrink-0"
             />
-            <p className="flex-1 text-sm text-violet-100">Хочеш зберегти прогрес між пристроями?</p>
+            <p className="flex-1 text-sm text-violet-100">{t("menu:accountNudgeText")}</p>
             <div className="flex flex-col items-end gap-1.5 shrink-0">
               <button
                 onClick={handleNudgeLoginClick}
                 className="knowledge-secondary-button rounded-lg px-3 py-1.5 text-xs font-display font-bold"
               >
-                Увійти
+                {t("menu:accountNudgeLogin")}
               </button>
               <button
                 onClick={dismissAccountNudge}
                 className="text-[11px] text-violet-300/70 hover:text-white transition"
               >
-                Не зараз
+                {t("menu:notNow")}
               </button>
             </div>
           </div>
@@ -267,7 +332,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
 
         <div className="w-full menu-panel rounded-3xl pt-8 pb-4 px-4 relative">
           <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 menu-quest-banner px-8 py-1 whitespace-nowrap">
-            <span className="font-display font-bold text-amber-300 text-xs">✦ Щоденні завдання ✦</span>
+            <span className="font-display font-bold text-amber-300 text-xs">{t("menu:dailyQuestsBanner")}</span>
           </div>
           <div className="flex flex-col mt-2 divide-y divide-white/10">
             {(progress.daily.activeQuestIds ?? [])
@@ -296,7 +361,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             <span className="hero-play-shine" aria-hidden="true" />
             <span className="relative z-10 grid grid-cols-[1.5rem_1fr_1.5rem] items-center gap-2 px-8 h-full">
               <span className="hero-play-diamond justify-self-start" aria-hidden="true" />
-              <span className="hero-play-text font-display font-extrabold text-4xl tracking-wide justify-self-center">ГРАТИ</span>
+              <span className="hero-play-text font-display font-extrabold text-4xl tracking-wide justify-self-center">{t("menu:play")}</span>
               <span className="hero-play-diamond justify-self-end" aria-hidden="true" />
             </span>
           </button>
@@ -312,31 +377,31 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
         <div className="w-full grid grid-cols-2 gap-3">
           <button onClick={() => { playUiClick(); onBadges(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/trophy.png" fallback="🏆" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
-            <span className="font-bold text-sm text-white">Досягнення</span>
+            <span className="font-bold text-sm text-white">{t("menu:navAchievements")}</span>
             {/* Невидимий підпис-заповнювач — лише щоб рядок сітки мав ту
                 саму висоту, що й картка "Мої знання" (у якої підпис видимий
                 від sm і вище). Сам текст ніколи не бачать (invisible). */}
-            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">Прогрес навчання</span>
+            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">{t("menu:navKnowledgeSubtitle")}</span>
           </button>
           <button onClick={() => { playUiClick(); onKnowledge(); }} className="menu-nav-button rounded-[20px] py-4 relative flex flex-col items-center gap-1.5">
             {hasNewKnowledge && (
               <span className="menu-nav-badge absolute -top-1.5 -right-1.5 rounded-full px-2 py-0.5 text-[10px] font-display font-extrabold">
-                Нове
+                {t("menu:navNewBadge")}
               </span>
             )}
             <ArtImage src="/assets/icons/ui/book.png" fallback="📖" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
-            <span className="font-bold text-sm text-white">Мої знання</span>
-            <span className="hidden sm:block text-[11px] text-violet-200/70 -mt-1">Прогрес навчання</span>
+            <span className="font-bold text-sm text-white">{t("menu:navKnowledge")}</span>
+            <span className="hidden sm:block text-[11px] text-violet-200/70 -mt-1">{t("menu:navKnowledgeSubtitle")}</span>
           </button>
           <button onClick={() => { playUiClick(); onShop(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/shop.png" fallback="🛍️" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
-            <span className="font-bold text-sm text-white">Магазин</span>
-            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">Прогрес навчання</span>
+            <span className="font-bold text-sm text-white">{t("menu:navShop")}</span>
+            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">{t("menu:navKnowledgeSubtitle")}</span>
           </button>
           <button onClick={() => { playUiClick(); onTraining(); }} className="menu-nav-button rounded-[20px] py-4 flex flex-col items-center gap-1.5">
             <ArtImage src="/assets/icons/ui/target.png" fallback="🎯" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
-            <span className="font-bold text-sm text-white">Тренування</span>
-            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">Прогрес навчання</span>
+            <span className="font-bold text-sm text-white">{t("menu:navTraining")}</span>
+            <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">{t("menu:navKnowledgeSubtitle")}</span>
           </button>
         </div>
 
@@ -348,7 +413,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           aria-label="Instagram автора гри Ivan Stepanowich"
         >
           <span className="creator-link__icon" aria-hidden="true">◎</span>
-          <span><span className="creator-link__label">Автор гри </span><strong>@ivan_stepanowich</strong></span>
+          <span><span className="creator-link__label">{t("menu:creatorLabel")}</span><strong>@ivan_stepanowich</strong></span>
         </a>
       </div>
     </div>

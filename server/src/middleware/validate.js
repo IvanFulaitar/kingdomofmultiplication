@@ -7,7 +7,7 @@ export function validate(schema) {
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) {
       const message = parsed.error.issues[0]?.message ?? "Некоректні дані";
-      return res.status(400).json({ error: message });
+      return res.status(400).json({ error: message, code: "VALIDATION_ERROR" });
     }
     req.body = parsed.data;
     next();

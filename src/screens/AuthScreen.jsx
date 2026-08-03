@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import TopBar from "../components/TopBar.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 import { AVATARS } from "../data/cosmetics.js";
@@ -28,10 +29,19 @@ import {
 // на реєстрації, без мінімуму на вході) — без вигаданого username-формату
 // чи перевірки "логін вільний" (такого ендпойнта в бекенді немає).
 //
+// Локалізація: усі видимі тексти йдуть через t() (namespaces auth/
+// validation/errors/common) — і форма, і помилки валідації, і помилки
+// сервера одразу перемикаються разом зі зміною мови в налаштуваннях.
+// Помилки сервера тепер приходять з err.code (server/src/routes/auth.js,
+// напр. "INVALID_CREDENTIALS") — перекладаємо код через t(`errors:...`);
+// якщо старий деплой бекенду ще не надсилає code (before цього коміту),
+// тихо падаємо на err.message (завжди українською, як і раніше).
+//
 // user/avatarId/onLogout — якщо передано user, екран одразу показує
 // профіль замість форми. onBack — повернутись у меню. onAuthenticated(user)
 // — після успішного login/register.
 export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, onLogout }) {
+  const { t } = useTranslation(["auth", "validation", "errors", "common"]);
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +50,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [touched, setTouched] = useState({ email: false, password: false, confirm: false });
   const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [serverError, setServerError] = useState(null);
+  const [serverError, setServerError] = useState(null); // { code, message } | null
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -50,25 +60,31 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
   const loginTabRef = useRef(null);
   const registerTabRef = useRef(null);
 
+  // translateFieldError({code, params}|null) -> перекладений текст або null.
+  function translateFieldError(err) {
+    if (!err) return null;
+    return t(`validation:${err.code}`, err.params);
+  }
+
   // Живі результати валідації — рахуються щокадру з поточних значень полів,
   // тому помилка зникає одразу, щойно поле стає коректним (без затримки).
-  const emailError = validateEmail(email);
-  const passwordError =
+  const emailErr = validateEmail(email);
+  const passwordErr =
     mode === "login" ? validatePasswordForLogin(password) : validatePasswordForRegister(password);
-  const confirmError = mode === "register" ? validateConfirmPassword(password, confirmPassword) : null;
-  const isValid = !emailError && !passwordError && !confirmError;
+  const confirmErr = mode === "register" ? validateConfirmPassword(password, confirmPassword) : null;
+  const isValid = !emailErr && !passwordErr && !confirmErr;
 
   // Показувати помилку під полем лише після того, як користувач його
   // покинув (blur), або після першої спроби відправити форму — не раніше.
-  const showEmailError = (touched.email || submitAttempted) && !!emailError;
-  const showPasswordError = (touched.password || submitAttempted) && !!passwordError;
-  const showConfirmError = mode === "register" && (touched.confirm || submitAttempted) && !!confirmError;
+  const showEmailError = (touched.email || submitAttempted) && !!emailErr;
+  const showPasswordError = (touched.password || submitAttempted) && !!passwordErr;
+  const showConfirmError = mode === "register" && (touched.confirm || submitAttempted) && !!confirmErr;
 
   // Галочка "поле валідне" — лише там, де це справді щось підтверджує
   // (не для пароля на вході: там немає вимог, крім "не порожній").
-  const emailShowsValid = touched.email && !emailError && email.trim().length > 0;
-  const passwordShowsValid = mode === "register" && touched.password && !passwordError;
-  const confirmShowsValid = mode === "register" && touched.confirm && !confirmError;
+  const emailShowsValid = touched.email && !emailErr && email.trim().length > 0;
+  const passwordShowsValid = mode === "register" && touched.password && !passwordErr;
+  const confirmShowsValid = mode === "register" && touched.confirm && !confirmErr;
 
   const formLocked = loading || success;
   const canSubmit = isValid && !formLocked;
@@ -95,19 +111,16 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
   }
 
   function markTouched(field) {
-    setTouched((t) => (t[field] ? t : { ...t, [field]: true }));
+    setTouched((t2) => (t2[field] ? t2 : { ...t2, [field]: true }));
   }
 
-  // Людські повідомлення для тих серверних помилок, що приходять як
-  // мережевий/HTTP-збій, а не готовий текст від apiClient.js/сервера
-  // (ті вже українською і показуються напряму — див. catch нижче).
   async function handleSubmit(e) {
     e.preventDefault();
     if (formLocked) return;
     setSubmitAttempted(true);
     if (!isValid) {
-      if (emailError) emailRef.current?.focus();
-      else if (passwordError) passwordRef.current?.focus();
+      if (emailErr) emailRef.current?.focus();
+      else if (passwordErr) passwordRef.current?.focus();
       else confirmRef.current?.focus();
       return;
     }
@@ -131,16 +144,24 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
       // При невдалому вході: не чистимо email, не чистимо пароль, не
       // видаємо, яке саме поле невірне (те саме робить і сам сервер —
       // однакове повідомлення на "нема юзера" й "невірний пароль").
-      setServerError(
-        err instanceof ApiError
-          ? err.message
-          : "Не вдалося з'єднатися з сервером. Перевір інтернет і спробуй ще раз."
-      );
+      const code = err instanceof ApiError ? err.code : null;
+      const message = err instanceof ApiError ? err.message : null;
+      setServerError({ code, message });
       if (mode === "login") {
         setPassword("");
-        setTouched((t) => ({ ...t, password: false }));
+        setTouched((t2) => ({ ...t2, password: false }));
       }
     }
+  }
+
+  // code є й переклад для нього існує -> перекладений текст. Інакше —
+  // сирий message з бекенду (старий деплой без code, завжди українською),
+  // а якщо й того нема — загальний fallback (розділ 19 брифу локалізації:
+  // ніколи не показувати дитині голий ключ чи "undefined").
+  function translateServerError(err) {
+    if (!err) return "";
+    if (err.code && t(`errors:${err.code}`, { defaultValue: "" })) return t(`errors:${err.code}`);
+    return err.message || t("errors:UNKNOWN");
   }
 
   const avatar = AVATARS.find((a) => a.id === avatarId) ?? AVATARS[0];
@@ -153,7 +174,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
         <div className="center-vignette" />
         <div className="relative z-10 max-w-md sm:max-w-2xl mx-auto px-6 py-8 pb-16">
           <div className="mb-2">
-            <TopBar onBack={onBack} title="Акаунт" />
+            <TopBar onBack={onBack} title={t("auth:screenTitle")} />
           </div>
 
           <div className="rpg-panel rounded-[26px] max-w-[560px] mx-auto px-6 sm:px-8 py-8 mt-6 text-center">
@@ -166,20 +187,20 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
               />
             </div>
             <p className="font-display font-extrabold text-xl text-white mb-1">{displayName}</p>
-            <p className="text-sm text-emerald-300/90 mb-7">Акаунт активний</p>
+            <p className="text-sm text-emerald-300/90 mb-7">{t("auth:profileActive")}</p>
 
             <div className="flex flex-col gap-3">
               <button
                 onClick={onBack}
                 className="knowledge-cta-button w-full py-3.5 rounded-2xl font-display font-extrabold text-lg text-indigo-950 min-h-[56px]"
               >
-                Повернутися до гри
+                {t("auth:backToGame")}
               </button>
               <button
                 onClick={() => { playUiClick(); onLogout?.(); onBack?.(); }}
                 className="knowledge-secondary-button-muted w-full py-2.5 rounded-xl text-sm font-display font-bold"
               >
-                Вийти з акаунта
+                {t("auth:logout")}
               </button>
             </div>
           </div>
@@ -194,15 +215,15 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
       <div className="center-vignette" />
       <div className="relative z-10 max-w-md sm:max-w-2xl mx-auto px-6 py-8 pb-16">
         <div className="mb-2">
-          <TopBar onBack={onBack} title="Акаунт" />
+          <TopBar onBack={onBack} title={t("auth:screenTitle")} />
         </div>
 
         <div className="text-center mb-5">
           <p className="font-body text-violet-100 text-sm font-semibold">
-            Гра працює і без акаунта
+            {t("auth:guestHeadline")}
           </p>
           <p className="font-body text-violet-300/70 text-xs mt-0.5">
-            Увійди, щоб зберігати прогрес між пристроями
+            {t("auth:guestSubline")}
           </p>
         </div>
 
@@ -210,7 +231,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
           <div
             className="knowledge-segmented mb-5"
             role="tablist"
-            aria-label="Вхід чи реєстрація"
+            aria-label={`${t("auth:tabLogin")} / ${t("auth:tabRegister")}`}
           >
             <button
               type="button"
@@ -224,7 +245,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
               onClick={() => switchMode("login")}
               className={`knowledge-segmented-btn ${mode === "login" ? "knowledge-segmented-btn-active" : ""}`}
             >
-              Увійти
+              {t("auth:tabLogin")}
             </button>
             <button
               type="button"
@@ -238,7 +259,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
               onClick={() => switchMode("register")}
               className={`knowledge-segmented-btn ${mode === "register" ? "knowledge-segmented-btn-active" : ""}`}
             >
-              Створити акаунт
+              {t("auth:tabRegister")}
             </button>
           </div>
 
@@ -251,7 +272,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
             className="flex flex-col gap-5"
           >
             <label htmlFor="auth-email" className="flex flex-col gap-2">
-              <span className="font-body text-sm text-violet-200/85">Логін</span>
+              <span className="font-body text-sm text-violet-200/85">{t("auth:loginLabel")}</span>
               <div className="relative">
                 <input
                   ref={emailRef}
@@ -263,7 +284,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => markTouched("email")}
                   disabled={formLocked}
-                  placeholder="ім'я@пошта.com"
+                  placeholder={t("auth:loginPlaceholder")}
                   aria-invalid={showEmailError}
                   aria-describedby={showEmailError ? "auth-email-error" : undefined}
                   className={`form-input font-body text-base rounded-2xl px-5 py-4 min-h-[60px] w-full ${
@@ -281,13 +302,13 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
               </div>
               {showEmailError && (
                 <p id="auth-email-error" role="alert" className="font-body text-xs text-rose-300">
-                  {emailError}
+                  {translateFieldError(emailErr)}
                 </p>
               )}
             </label>
 
             <label htmlFor="auth-password" className="flex flex-col gap-2">
-              <span className="font-body text-sm text-violet-200/85">Пароль</span>
+              <span className="font-body text-sm text-violet-200/85">{t("auth:passwordLabel")}</span>
               <div className="relative">
                 <input
                   ref={passwordRef}
@@ -298,7 +319,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                   onChange={(e) => setPassword(e.target.value)}
                   onBlur={() => markTouched("password")}
                   disabled={formLocked}
-                  placeholder={mode === "login" ? "Введи пароль" : "Придумай пароль"}
+                  placeholder={mode === "login" ? t("auth:passwordPlaceholderLogin") : t("auth:passwordPlaceholderRegister")}
                   aria-invalid={showPasswordError}
                   aria-describedby={showPasswordError ? "auth-password-error" : undefined}
                   className={`form-input font-body text-base rounded-2xl pl-5 pr-24 py-4 min-h-[60px] w-full ${
@@ -317,7 +338,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   disabled={formLocked}
-                  aria-label={showPassword ? "Приховати пароль" : "Показати пароль"}
+                  aria-label={showPassword ? t("auth:hidePassword") : t("auth:showPassword")}
                   aria-pressed={showPassword}
                   className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-violet-300/80 hover:text-white transition"
                 >
@@ -330,18 +351,18 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                 </button>
               </div>
               {mode === "register" && !showPasswordError && (
-                <span className="font-body text-xs text-violet-300/70">Не менше 8 символів</span>
+                <span className="font-body text-xs text-violet-300/70">{t("auth:passwordHintMinLength")}</span>
               )}
               {showPasswordError && (
                 <p id="auth-password-error" role="alert" className="font-body text-xs text-rose-300">
-                  {passwordError}
+                  {translateFieldError(passwordErr)}
                 </p>
               )}
             </label>
 
             {mode === "register" && (
               <label htmlFor="auth-confirm-password" className="flex flex-col gap-2">
-                <span className="font-body text-sm text-violet-200/85">Повторити пароль</span>
+                <span className="font-body text-sm text-violet-200/85">{t("auth:confirmPasswordLabel")}</span>
                 <div className="relative">
                   <input
                     ref={confirmRef}
@@ -352,7 +373,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     onBlur={() => markTouched("confirm")}
                     disabled={formLocked}
-                    placeholder="Введи пароль ще раз"
+                    placeholder={t("auth:confirmPasswordPlaceholder")}
                     aria-invalid={showConfirmError}
                     aria-describedby={showConfirmError ? "auth-confirm-error" : undefined}
                     className={`form-input font-body text-base rounded-2xl pl-5 pr-24 py-4 min-h-[60px] w-full ${
@@ -371,7 +392,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                     type="button"
                     onClick={() => setShowConfirmPassword((v) => !v)}
                     disabled={formLocked}
-                    aria-label={showConfirmPassword ? "Приховати пароль" : "Показати пароль"}
+                    aria-label={showConfirmPassword ? t("auth:hidePassword") : t("auth:showPassword")}
                     aria-pressed={showConfirmPassword}
                     className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-violet-300/80 hover:text-white transition"
                   >
@@ -385,7 +406,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
                 </div>
                 {showConfirmError && (
                   <p id="auth-confirm-error" role="alert" className="font-body text-xs text-rose-300">
-                    {confirmError}
+                    {translateFieldError(confirmErr)}
                   </p>
                 )}
               </label>
@@ -394,11 +415,11 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
             {serverError && (
               <div role="alert" aria-live="assertive" className="form-error-panel rounded-xl px-3.5 py-3 flex items-start gap-2.5">
                 <span aria-hidden="true" className="text-lg leading-none mt-0.5">⚠</span>
-                <p className="font-body text-sm text-rose-100 flex-1">{serverError}</p>
+                <p className="font-body text-sm text-rose-100 flex-1">{translateServerError(serverError)}</p>
                 <button
                   type="button"
                   onClick={() => setServerError(null)}
-                  aria-label="Закрити повідомлення про помилку"
+                  aria-label={t("auth:closeErrorAriaLabel")}
                   className="text-rose-200/70 hover:text-white text-lg leading-none px-1"
                 >
                   ×
@@ -419,23 +440,23 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
               {success ? (
                 <span className="inline-flex items-center justify-center gap-2">
                   <span aria-hidden="true">✓</span>
-                  {mode === "login" ? "Готово!" : "Акаунт створено!"}
+                  {mode === "login" ? t("auth:submitLoginSuccess") : t("auth:submitRegisterSuccess")}
                 </span>
               ) : loading ? (
                 <span className="inline-flex items-center justify-center gap-2">
                   <span className="auth-spinner" aria-hidden="true" />
-                  {mode === "login" ? "Входимо…" : "Створюємо акаунт…"}
+                  {mode === "login" ? t("auth:submitLoginLoading") : t("auth:submitRegisterLoading")}
                 </span>
               ) : mode === "login" ? (
-                "Увійти"
+                t("auth:submitLogin")
               ) : (
-                "Створити акаунт"
+                t("auth:submitRegister")
               )}
             </button>
 
             {mode === "register" && !success && (
               <p className="font-body text-xs text-violet-300/60 text-center -mt-1">
-                Запам'ятай логін і пароль — відновити їх зараз нема як.
+                {t("auth:registerRecoveryHint")}
               </p>
             )}
           </form>

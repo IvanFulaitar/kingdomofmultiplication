@@ -13,11 +13,17 @@ const BASE_URL = (
 // щоб виклики могли показати дитині зрозуміле повідомлення замість
 // технічного тексту з сервера.
 export class ApiError extends Error {
-  constructor(message, { status = null, cause = null } = {}) {
+  constructor(message, { status = null, cause = null, code = null } = {}) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.cause = cause;
+    // Стабільний код помилки від бекенду (напр. "INVALID_CREDENTIALS") —
+    // якщо є, UI перекладає його через t("errors:<code>") замість того,
+    // щоб напряму показувати готовий (завжди український) message нижче.
+    // "message" лишається як fallback для розгортань бекенду, що ще не
+    // повертають code (не ламає старі деплої).
+    this.code = code;
   }
 }
 
@@ -38,6 +44,7 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
     // fetch сам кинув виняток — сервер недоступний, немає інтернету тощо.
     throw new ApiError("Не вдалося з'єднатися з сервером. Перевір інтернет і спробуй ще раз.", {
       cause,
+      code: "NETWORK_ERROR",
     });
   }
 
@@ -53,7 +60,8 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
     const message =
       (data && typeof data.error === "string" && data.error) ||
       "Сталася помилка на сервері. Спробуй ще раз.";
-    throw new ApiError(message, { status: response.status });
+    const code = (data && typeof data.code === "string" && data.code) || null;
+    throw new ApiError(message, { status: response.status, code });
   }
 
   return data;

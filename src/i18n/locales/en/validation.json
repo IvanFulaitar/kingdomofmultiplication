@@ -1,0 +1,10 @@
+{
+  "EMAIL_REQUIRED": "Enter your login",
+  "EMAIL_INVALID": "Invalid email",
+  "PASSWORD_REQUIRED": "Password is required",
+  "PASSWORD_REQUIRED_REGISTER": "Enter a password",
+  "PASSWORD_TOO_SHORT": "Password must be at least {{min}} characters",
+  "PASSWORD_TOO_LONG": "Password is too long (max {{max}} characters)",
+  "CONFIRM_REQUIRED": "Repeat the password",
+  "CONFIRM_MISMATCH": "Passwords don't match"
+}

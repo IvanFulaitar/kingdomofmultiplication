@@ -1,0 +1,10 @@
+{
+  "EMAIL_REQUIRED": "Введи логін",
+  "EMAIL_INVALID": "Некоректний email",
+  "PASSWORD_REQUIRED": "Пароль обов'язковий",
+  "PASSWORD_REQUIRED_REGISTER": "Введи пароль",
+  "PASSWORD_TOO_SHORT": "Пароль має містити щонайменше {{min}} символів",
+  "PASSWORD_TOO_LONG": "Пароль занадто довгий (максимум {{max}} символів)",
+  "CONFIRM_REQUIRED": "Повтори пароль",
+  "CONFIRM_MISMATCH": "Паролі не збігаються"
+}

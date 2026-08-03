@@ -189,6 +189,9 @@ scroll/обрізаного тексту/накладання кнопок, чи
 | Панель "щось відкрито/розблоковано" | `.rpg-panel-emerald` (на `.rpg-panel`) — той самий патерн, що й `.rpg-panel-gold`, лише зелено-смарагдовий тон; уведено для панелі відкриття регіону в `OnboardingScreen.jsx`, перевикористовувати для будь-якого майбутнього "unlock"-повідомлення. |
 | Одноразовий pulse головної кнопки | `.onboarding-cta-pulse` (на `.next-challenge-button`) — М'ЯКИЙ ОДНОРАЗОВИЙ (не зациклений) золотий pulse для рідкісних "особливих" моментів (зараз лише перший вхід на карту після onboarding); не застосовувати на звичайні кнопки — там кнопка й так одна головна дія без додаткового акценту. |
 | Іконки статусу/UI | `ArtImage.jsx` + PNG у `public/assets/icons/**` (перелік — `public/assets/README.md`), emoji лише як `fallback` prop. |
+| Переклад видимого тексту | `useTranslation()` з `react-i18next` (namespace за екраном: `common`/`menu`/`auth`/`validation`/`errors`, `src/i18n/locales/{uk,en,pl}/`) — НЕ вписувати новий видимий текст напряму в JSX; додати ключ у всі три locale-файли одразу. uk — основна/fallback мова. |
+| Компактний toast-підтвердження (не критичне, авто-зникає) | `SimpleToast.jsx` (`src/components`) — для коротких підтверджень типу "Мову змінено"; для важливого/ручного закриття є `SaveNoticeToast.jsx`, для досягнень — `BadgeToast.jsx`. |
+| Вибір мови | `LanguagePickerModal.jsx` (`src/components`) — готова модалка UK/EN/PL з чекмарком на активній; викликати з будь-якого екрана (MenuScreen.jsx, OnboardingScreen.jsx), не верстати свою. |
 
 ## 10. Коли все ж додаю щось нове
 

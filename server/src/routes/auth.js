@@ -23,7 +23,10 @@ router.post("/register", authRateLimit, validate(registerSchema), async (req, re
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      return res.status(409).json({ error: "Користувач із таким email вже існує" });
+      return res.status(409).json({
+        error: "Користувач із таким email вже існує",
+        code: "EMAIL_ALREADY_EXISTS",
+      });
     }
 
     const passwordHash = await hashPassword(password);
@@ -49,12 +52,18 @@ router.post("/login", authRateLimit, validate(loginSchema), async (req, res, nex
     // неправильний — щоб відповідь API не підказувала зловмиснику, які
     // email вже зареєстровані в системі.
     if (!user) {
-      return res.status(401).json({ error: "Неправильний email або пароль" });
+      return res.status(401).json({
+        error: "Неправильний email або пароль",
+        code: "INVALID_CREDENTIALS",
+      });
     }
 
     const passwordOk = await verifyPassword(password, user.passwordHash);
     if (!passwordOk) {
-      return res.status(401).json({ error: "Неправильний email або пароль" });
+      return res.status(401).json({
+        error: "Неправильний email або пароль",
+        code: "INVALID_CREDENTIALS",
+      });
     }
 
     const token = signToken({ sub: user.id, email: user.email });
@@ -69,7 +78,7 @@ router.get("/me", requireAuth, async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) {
-      return res.status(404).json({ error: "Користувача не знайдено" });
+      return res.status(404).json({ error: "Користувача не знайдено", code: "USER_NOT_FOUND" });
     }
     res.json({ user: toPublicUser(user) });
   } catch (err) {

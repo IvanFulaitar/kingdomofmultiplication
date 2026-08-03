@@ -1,0 +1,10 @@
+{
+  "EMAIL_REQUIRED": "Wprowadź login",
+  "EMAIL_INVALID": "Nieprawidłowy email",
+  "PASSWORD_REQUIRED": "Hasło jest wymagane",
+  "PASSWORD_REQUIRED_REGISTER": "Wpisz hasło",
+  "PASSWORD_TOO_SHORT": "Hasło musi mieć co najmniej {{min}} znaków",
+  "PASSWORD_TOO_LONG": "Hasło jest za długie (maksymalnie {{max}} znaków)",
+  "CONFIRM_REQUIRED": "Powtórz hasło",
+  "CONFIRM_MISMATCH": "Hasła się nie zgadzają"
+}
