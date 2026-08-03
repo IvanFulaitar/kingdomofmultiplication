@@ -94,7 +94,9 @@ src/
 │   ├── format.js              спільне форматування відсотків/часу/спроб для "Мої знання"
 │   ├── explainFact.js         короткі навчальні підказки для прикладів множення
 │   ├── progress.js           збереження/завантаження, XP, стрік, квести, історія перегонів
-│   └── random.js             rand() і shuffle()
+│   ├── random.js             rand() і shuffle()
+│   ├── apiClient.js          тонка fetch-обгортка до бекенду (server/), базовий URL з VITE_API_URL
+│   └── auth.js               акаунт (email/пароль): register/login/fetchMe/logout, токен окремо від прогресу
 ├── components/                перевикористовувані елементи (TopBar, модалки, ArtImage тощо)
 └── screens/                   екрани на весь розмір
     ├── MenuScreen, MapScreen, GameScreen, ResultsScreen
@@ -110,6 +112,11 @@ src/
 npm install
 npm run dev
 ```
+
+Акаунт (вхід/реєстрація) — окрема, необов'язкова фіча: якщо потрібно
+достукатись до задеплоєного бекенду локально, скопіювати `.env.example`
+у `.env` і за потреби змінити `VITE_API_URL` (без нього фронтенд шукає
+бекенд на `http://localhost:3000`).
 
 Відкриється адреса на кшталт `http://localhost:5173` — гра запуститься
 в браузері з "живим" перезавантаженням при зміні коду.
