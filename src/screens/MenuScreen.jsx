@@ -183,10 +183,6 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             aria-expanded={settingsOpen}
             className="system-icon-button rpg-panel w-12 h-12 rounded-xl flex items-center justify-center text-lg"
           >
-            {/* Іконки шестерні поки нема в assets (розділ 1 брифу локалізації
-                дозволяє тимчасово лишити поточну кнопку) — ArtImage сама
-                підхопить /assets/icons/ui/gear.png, щойно файл з'явиться,
-                без правок коду; до того часу тихо падає на emoji-фолбек. */}
             <ArtImage
               src="/assets/icons/ui/gear.png"
               fallback={sfxOn || musicOn ? "🔊" : "🔇"}

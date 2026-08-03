@@ -26,7 +26,9 @@ necromancer, monk, pirate, beastmaster, alchemist, samurai, fairy, golem` — 16
 `star, coin, flame, lock, trophy, shop, target, chest, heart_full,
 heart_empty, map_scroll, hint_lightbulb, book, user, eye_open, eye_closed,
 cloud` — останні 4 для акаунта/профілю (`MenuScreen.jsx`/`AuthScreen.jsx`),
-див. `account-icons-art-prompt.md`.
+див. `account-icons-art-prompt.md`. `gear, globe` — кнопка налаштувань і
+рядок вибору мови (`MenuScreen.jsx`/`OnboardingScreen.jsx`), див.
+`language-settings-icons-art-prompt.md`.
 
 ## icons/achievements/ — іконки бейджів досягнень
 `medal, diamond, tree, mountains, castle, brain, crown, streak_fire`.
