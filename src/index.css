@@ -233,6 +233,30 @@ html, body {
   filter: drop-shadow(0 2px 1px rgba(255,255,255,0.25)) drop-shadow(0 3px 6px rgba(0,0,0,0.55));
 }
 
+/* Текстове поле вводу (email/пароль тощо, AuthScreen.jsx й будь-де надалі
+   знадобиться форма) — генеричне, не прив'язане до конкретного екрана, як
+   .rpg-panel. Нейтральний фіолетовий тон (не золотий — золото зарезервоване
+   під головну дію/нагороду), м'який фіолетовий фокус-ring для клавіатурної
+   навігації, і окремий м'який кораловий (НЕ суцільний тривожний червоний)
+   стан помилки — узгоджено з .answer-btn-wrong-retry. */
+.form-input {
+  background: rgba(20, 15, 46, 0.6);
+  border: 1px solid rgba(196, 181, 253, 0.35);
+  color: #f5f3ff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.form-input::placeholder { color: rgba(216, 204, 255, 0.4); }
+.form-input:focus {
+  outline: none;
+  border-color: rgba(196, 181, 253, 0.75);
+  box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.35);
+}
+.form-input:disabled { opacity: 0.6; }
+.form-input-error {
+  border-color: rgba(251, 113, 133, 0.75);
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.2);
+}
+
 /* Подвійна золота рамка-медальйон навколо портрета героя */
 .avatar-medallion { position: relative; }
 .avatar-medallion::before {
