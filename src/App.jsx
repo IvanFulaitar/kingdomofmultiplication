@@ -11,7 +11,7 @@ import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
   starsForMistakes, heroLevelFromXp,
   recordRaceResult, todaysTrainingWins,
-  takeLoadWarning, exportSaveFile, parseImportedSave,
+  takeLoadWarning,
 } from "./game/progress.js";
 
 // MenuScreen — перше, що бачить гравець, тому вантажиться одразу.
@@ -309,20 +309,6 @@ export default function App() {
     };
   }
 
-  // Експорт — просто скачує поточний progress як є, монет/помилок не
-  // чіпає. Імпорт замінює ВЕСЬ прогрес, тож підтвердження запитує сам
-  // виклик (MenuScreen), ще до звернення сюди; тут лише розбір + запис.
-  function exportSave() {
-    return exportSaveFile(progress);
-  }
-
-  function importSave(text) {
-    const result = parseImportedSave(text);
-    if (!result.ok) return false;
-    persist(result.progress);
-    return true;
-  }
-
   // Відмічає, що гравець щойно бачив свій прогрес (лише для бейджа "Нове"
   // на головному екрані, див. hasNewMasteryActivity у mastery.js) — не
   // критична дія, тож немає сенсу писати таймстемп, якщо він уже свіжіший
@@ -376,8 +362,6 @@ export default function App() {
           onTraining={() => setScreen("training")}
           onKnowledge={() => openKnowledge("menu")}
           hasNewKnowledge={hasNewMasteryActivity(progress.facts, progress.knowledgeLastSeenAt ?? 0)}
-          onExportSave={exportSave}
-          onImportSave={importSave}
           user={user}
           onAccount={() => setScreen("auth")}
           onLogout={handleLogout}
@@ -448,7 +432,13 @@ export default function App() {
           />
         )}
         {screen === "auth" && (
-          <AuthScreen onBack={() => setScreen("menu")} onAuthenticated={handleAuthenticated} />
+          <AuthScreen
+            user={user}
+            avatarId={progress.avatar}
+            onBack={() => setScreen("menu")}
+            onAuthenticated={handleAuthenticated}
+            onLogout={handleLogout}
+          />
         )}
         {screen === "map" && (
           <MapScreen

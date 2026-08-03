@@ -26,26 +26,19 @@ function ToggleSwitch({ checked, onChange, label }) {
   );
 }
 
-export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, onExportSave, onImportSave, user, onAccount, onLogout }) {
+export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount, onLogout }) {
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
   const [sfxOn, setSfxOn] = useState(() => isSoundEnabled());
   const [musicOn, setMusicOn] = useState(() => isMusicEnabled());
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [importStatus, setImportStatus] = useState(null); // null | "ok" | "error"
   const settingsRef = useRef(null);
-  const importInputRef = useRef(null);
+  const settingsToggleRef = useRef(null);
   const xpPct = (into / need) * 100;
-
-  function handleExportClick() {
-    playUiClick();
-    onExportSave?.();
-  }
-
-  function handleImportClick() {
-    playUiClick();
-    importInputRef.current?.click();
-  }
+  // "math_hero27@gmail.com" -> "math_hero27" — під капотом акаунт і далі
+  // працює через email (backend), але дитині показуємо лише зрозумілу
+  // "логін"-подібну частину, без технічної адреси пошти на екрані.
+  const displayName = user?.email ? user.email.split("@")[0] : "";
 
   // Акаунт (email/пароль) — необов'язкова фіча (frontend-backend-
   // integration-plan.md): лише щоб не втратити прогрес при зміні
@@ -60,21 +53,9 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     onLogout?.();
   }
 
-  function handleImportFile(e) {
-    const file = e.target.files?.[0];
-    e.target.value = ""; // дозволяє обрати той самий файл вдруге
-    if (!file) return;
-    const confirmed = window.confirm(
-      "Завантажити це збереження? Поточний прогрес у грі буде замінено."
-    );
-    if (!confirmed) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const ok = onImportSave?.(String(reader.result ?? ""));
-      setImportStatus(ok ? "ok" : "error");
-      setTimeout(() => setImportStatus(null), 3200);
-    };
-    reader.readAsText(file);
+  function closeSettings(returnFocus) {
+    setSettingsOpen(false);
+    if (returnFocus) settingsToggleRef.current?.focus();
   }
 
   function toggleSfx(next) {
@@ -92,10 +73,10 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   useEffect(() => {
     if (!settingsOpen) return;
     function onOutside(e) {
-      if (settingsRef.current && !settingsRef.current.contains(e.target)) setSettingsOpen(false);
+      if (settingsRef.current && !settingsRef.current.contains(e.target)) closeSettings(false);
     }
     function onKey(e) {
-      if (e.key === "Escape") setSettingsOpen(false);
+      if (e.key === "Escape") closeSettings(true);
     }
     document.addEventListener("pointerdown", onOutside, true);
     document.addEventListener("keydown", onKey);
@@ -109,17 +90,25 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     <div className="relative overflow-hidden min-h-dvh screen-in">
       <div className="center-vignette" />
 
-      <div ref={settingsRef} className="absolute top-4 right-4 z-20">
+      <div
+        ref={settingsRef}
+        className="absolute z-30"
+        style={{ top: "max(1rem, env(safe-area-inset-top))", right: "max(1.25rem, env(safe-area-inset-right))" }}
+      >
         <button
+          ref={settingsToggleRef}
           onClick={() => setSettingsOpen((o) => !o)}
-          aria-label="Налаштування звуку"
+          aria-label="Налаштування"
           aria-expanded={settingsOpen}
           className="rpg-panel rpg-panel-gold w-10 h-10 rounded-xl flex items-center justify-center text-lg active:scale-95 transition"
         >
           {sfxOn || musicOn ? "🔊" : "🔇"}
         </button>
         {settingsOpen && (
-          <div className="absolute right-0 mt-2 menu-panel rounded-2xl p-3 w-48 flex flex-col gap-2.5 shadow-xl">
+          <div
+            role="menu"
+            className="absolute right-0 mt-3 menu-panel rounded-2xl p-4 w-[300px] max-w-[calc(100vw-2rem)] flex flex-col gap-3 shadow-xl"
+          >
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-semibold text-white">Музика</span>
               <ToggleSwitch checked={musicOn} onChange={toggleMusic} label="Увімкнути/вимкнути музику" />
@@ -128,55 +117,54 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
               <span className="text-sm font-semibold text-white">Звуки</span>
               <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label="Увімкнути/вимкнути звукові ефекти" />
             </div>
-            <div className="h-px bg-white/10 my-0.5" />
-            <button
-              onClick={handleExportClick}
-              className="text-left text-xs font-semibold text-violet-200 hover:text-white transition"
-            >
-              ⬇ Експортувати прогрес
-            </button>
-            <button
-              onClick={handleImportClick}
-              className="text-left text-xs font-semibold text-violet-200 hover:text-white transition"
-            >
-              ⬆ Завантажити збереження
-            </button>
-            {importStatus === "ok" && (
-              <span className="text-[11px] text-emerald-300">Прогрес завантажено!</span>
-            )}
-            {importStatus === "error" && (
-              <span className="text-[11px] text-red-300">Файл пошкоджений або не той формат.</span>
-            )}
-            <div className="h-px bg-white/10 my-0.5" />
+
+            <div className="h-px bg-white/10" />
+
             {user ? (
-              <>
-                <span className="text-[11px] text-violet-300/70 truncate" title={user.email}>
-                  {user.email}
-                </span>
-                <button
-                  onClick={handleLogoutClick}
-                  className="text-left text-xs font-semibold text-violet-200 hover:text-white transition"
-                >
-                  Вийти з акаунта
-                </button>
-              </>
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="avatar-medallion shrink-0">
+                    <ArtImage
+                      src={`/assets/avatars/${avatar.id}.png`}
+                      fallback={avatar.icon}
+                      alt=""
+                      className="w-9 h-9 rounded-full object-contain flex items-center justify-center text-xl"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-display font-bold text-sm text-white truncate">{displayName}</p>
+                    <p className="text-[11px] text-emerald-300/90">Акаунт активний</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAccountClick}
+                    className="knowledge-secondary-button flex-1 rounded-xl py-2 text-xs font-display font-bold"
+                  >
+                    Відкрити профіль
+                  </button>
+                  <button
+                    onClick={handleLogoutClick}
+                    className="knowledge-secondary-button-muted rounded-xl px-3 py-2 text-xs font-display font-bold"
+                  >
+                    Вийти
+                  </button>
+                </div>
+              </div>
             ) : (
-              <button
-                onClick={handleAccountClick}
-                className="text-left text-xs font-semibold text-violet-200 hover:text-white transition"
-              >
-                👤 Увійти в акаунт
-              </button>
+              <div className="flex flex-col gap-1.5">
+                <p className="font-display font-bold text-sm text-white">Акаунт</p>
+                <p className="text-[11px] text-violet-200/70 mb-1">Зберігай прогрес між пристроями</p>
+                <button
+                  onClick={handleAccountClick}
+                  className="knowledge-cta-button w-full py-3 rounded-xl font-display font-extrabold text-sm text-indigo-950 min-h-[48px] flex items-center justify-center gap-1.5"
+                >
+                  <span aria-hidden="true">👤</span>
+                  <span className="sm:hidden">Увійти в акаунт</span>
+                  <span className="hidden sm:inline">Увійти або створити акаунт</span>
+                </button>
+              </div>
             )}
-            <input
-              ref={importInputRef}
-              type="file"
-              accept="application/json,.json"
-              onChange={handleImportFile}
-              className="hidden"
-              aria-hidden="true"
-              tabIndex={-1}
-            />
           </div>
         )}
       </div>

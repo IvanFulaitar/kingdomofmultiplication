@@ -263,42 +263,6 @@ export function saveProgress(p) {
   }
 }
 
-// Викликається лише з явної дії гравця (кнопка "Експортувати прогрес") —
-// зберігає весь поточний прогрес у JSON-файл, який можна покласти в
-// хмару чи перенести на інший пристрій до появи серверних акаунтів.
-export function exportSaveFile(p) {
-  try {
-    const payload = JSON.stringify(p, null, 2);
-    const blob = new Blob([payload], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const date = new Date().toISOString().slice(0, 10);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `kingdom-math-save-${date}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// Розбирає текст імпортованого файлу й повертає {ok:true, progress} або
-// {ok:false, error}. Навмисно НЕ зберігає сам — виклик має явно передати
-// готовий progress у saveProgress()/persist(), щоб екран міг спершу
-// запитати підтвердження (імпорт перезаписує весь поточний прогрес).
-export function parseImportedSave(text) {
-  try {
-    const parsed = JSON.parse(text);
-    if (!parsed || typeof parsed !== "object") return { ok: false, error: "empty" };
-    return { ok: true, progress: finishLoad(parsed) };
-  } catch {
-    return { ok: false, error: "invalid-json" };
-  }
-}
-
 // ===================== Перегони: складність, історія, рекорди =====================
 
 const CHAMPION_HERO_LEVEL = 5;

@@ -235,26 +235,43 @@ html, body {
 
 /* Текстове поле вводу (email/пароль тощо, AuthScreen.jsx й будь-де надалі
    знадобиться форма) — генеричне, не прив'язане до конкретного екрана, як
-   .rpg-panel. Нейтральний фіолетовий тон (не золотий — золото зарезервоване
-   під головну дію/нагороду), м'який фіолетовий фокус-ring для клавіатурної
-   навігації, і окремий м'який кораловий (НЕ суцільний тривожний червоний)
-   стан помилки — узгоджено з .answer-btn-wrong-retry. */
+   .rpg-panel. Трохи світліший фіолетовий тон (не золотий у стані спокою —
+   золото зарезервоване під головну дію/нагороду, тут лише як фокус-акцент),
+   і окремий м'який кораловий (НЕ суцільний тривожний червоний) стан
+   помилки — узгоджено з .answer-btn-wrong-retry. */
 .form-input {
-  background: rgba(20, 15, 46, 0.6);
+  background: rgba(58, 46, 102, 0.55);
   border: 1px solid rgba(196, 181, 253, 0.35);
   color: #f5f3ff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
-.form-input::placeholder { color: rgba(216, 204, 255, 0.4); }
+.form-input::placeholder { color: rgba(216, 204, 255, 0.45); }
 .form-input:focus {
   outline: none;
-  border-color: rgba(196, 181, 253, 0.75);
-  box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.35);
+  border-color: rgba(245, 185, 66, 0.75);
+  box-shadow: 0 0 0 3px rgba(245, 185, 66, 0.28);
+  background: rgba(58, 46, 102, 0.72);
 }
-.form-input:disabled { opacity: 0.6; }
+.form-input:disabled { opacity: 0.55; }
 .form-input-error {
   border-color: rgba(251, 113, 133, 0.75);
-  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.2);
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.22);
+}
+
+/* Малий обертовий індикатор завантаження для кнопки входу/реєстрації —
+   єдиний spinner у проєкті (раніше "завантаження" завжди позначалось лише
+   зміною тексту/opacity кнопки, тут додано через довшу мережеву дію). */
+.auth-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  border: 2px solid rgba(30, 27, 75, 0.3);
+  border-top-color: rgba(30, 27, 75, 0.9);
+  animation: auth-spin 0.7s linear infinite;
+}
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .auth-spinner { animation: none; }
 }
 
 /* Подвійна золота рамка-медальйон навколо портрета героя */
