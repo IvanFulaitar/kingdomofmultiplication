@@ -24,5 +24,12 @@
   "updateAvailableTitle": "Actualización disponible",
   "updateAvailableBody": "Hay una nueva versión del juego. Actualiza para obtener las últimas mejoras.",
   "updateApplying": "Actualizando…",
-  "updateNow": "Actualizar"
+  "updateNow": "Actualizar",
+  "saveRecoveredTitle": "Progreso restaurado",
+  "saveRecoveredBody": "La partida guardada principal estaba dañada, así que restauramos la última copia de seguridad. Es posible que los últimos minutos de juego no se hayan guardado.",
+  "saveResetTitle": "Hubo que reiniciar la partida guardada",
+  "saveResetBody": "Tanto la partida principal como la copia de seguridad estaban dañadas, así que el progreso empezó de nuevo.",
+  "saveFailedTitle": "No se pudo guardar el progreso",
+  "saveFailedBody": "Parece que el dispositivo se quedó sin espacio de almacenamiento. Intenta liberar espacio y el progreso volverá a guardarse.",
+  "gotIt": "Entendido"
 }

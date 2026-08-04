@@ -24,5 +24,12 @@
   "updateAvailableTitle": "Update available",
   "updateAvailableBody": "A new version of the game is ready. Update to get the latest improvements.",
   "updateApplying": "Updating…",
-  "updateNow": "Update"
+  "updateNow": "Update",
+  "saveRecoveredTitle": "Progress restored",
+  "saveRecoveredBody": "Your main save was corrupted, so we restored the latest backup. The last few minutes of play might not have been saved.",
+  "saveResetTitle": "Save had to be reset",
+  "saveResetBody": "Both the main save and the backup were corrupted, so progress started over.",
+  "saveFailedTitle": "Could not save progress",
+  "saveFailedBody": "It looks like your device is out of storage space. Try freeing up some space — progress will save again.",
+  "gotIt": "Got it"
 }

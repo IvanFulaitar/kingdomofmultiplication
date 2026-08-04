@@ -24,5 +24,12 @@
   "updateAvailableTitle": "Dostępna aktualizacja",
   "updateAvailableBody": "Jest nowa wersja gry. Zaktualizuj, aby otrzymać najnowsze ulepszenia.",
   "updateApplying": "Aktualizowanie…",
-  "updateNow": "Zaktualizuj"
+  "updateNow": "Zaktualizuj",
+  "saveRecoveredTitle": "Postęp przywrócony",
+  "saveRecoveredBody": "Główny zapis był uszkodzony, więc przywróciliśmy ostatnią kopię zapasową. Kilka ostatnich minut gry mogło się nie zapisać.",
+  "saveResetTitle": "Trzeba było zresetować zapis",
+  "saveResetBody": "Zarówno główny zapis, jak i kopia zapasowa okazały się uszkodzone, więc postęp zaczął się od nowa.",
+  "saveFailedTitle": "Nie udało się zapisać postępu",
+  "saveFailedBody": "Wygląda na to, że na urządzeniu zabrakło miejsca. Spróbuj zwolnić trochę pamięci — postęp znów zacznie się zapisywać.",
+  "gotIt": "Rozumiem"
 }

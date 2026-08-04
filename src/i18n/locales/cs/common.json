@@ -24,5 +24,12 @@
   "updateAvailableTitle": "Dostupná aktualizace",
   "updateAvailableBody": "Je k dispozici nová verze hry. Aktualizuj a získej nejnovější vylepšení.",
   "updateApplying": "Aktualizuje se…",
-  "updateNow": "Aktualizovat"
+  "updateNow": "Aktualizovat",
+  "saveRecoveredTitle": "Postup obnoven",
+  "saveRecoveredBody": "Hlavní uložená pozice byla poškozená, takže jsme obnovili poslední zálohu. Posledních pár minut hry se možná neuložilo.",
+  "saveResetTitle": "Uloženou pozici bylo nutné resetovat",
+  "saveResetBody": "Hlavní uložená pozice i záloha byly poškozené, takže postup začal znovu.",
+  "saveFailedTitle": "Postup se nepodařilo uložit",
+  "saveFailedBody": "Vypadá to, že na zařízení došlo úložné místo. Zkus uvolnit trochu místa — postup se pak znovu uloží.",
+  "gotIt": "Rozumím"
 }

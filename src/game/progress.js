@@ -248,6 +248,11 @@ export function loadProgress() {
   }
 }
 
+// Повертає true/false (замість того, щоб мовчки ковтати помилку) — так
+// виклик (App.jsx: persist()) може, наприклад, попередити гравця через
+// SaveNoticeToast, якщо диск/localStorage переповнений (QuotaExceededError)
+// і прогрес щойно НЕ зберігся. Сам прогрес у пам'яті (React state) при
+// цьому не втрачається — це лише про диск.
 export function saveProgress(p) {
   try {
     // Перед перезаписом основного ключа копіюємо його ПОПЕРЕДНІЙ (ще не
@@ -258,8 +263,12 @@ export function saveProgress(p) {
       localStorage.setItem(BACKUP_KEY, prevRaw);
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+    return true;
   } catch {
-    /* збереження не вдалося цього разу — гра просто продовжує роботу */
+    // Найчастіша причина — QuotaExceededError (диск/сховище переповнене).
+    // Гра й далі грається (стан у пам'яті лишається актуальним), просто
+    // цей конкретний запис на диск не вдався.
+    return false;
   }
 }
 

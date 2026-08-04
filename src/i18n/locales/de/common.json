@@ -24,5 +24,12 @@
   "updateAvailableTitle": "Update verfügbar",
   "updateAvailableBody": "Es gibt eine neue Version des Spiels. Aktualisiere jetzt, um die neuesten Verbesserungen zu erhalten.",
   "updateApplying": "Wird aktualisiert…",
-  "updateNow": "Aktualisieren"
+  "updateNow": "Aktualisieren",
+  "saveRecoveredTitle": "Fortschritt wiederhergestellt",
+  "saveRecoveredBody": "Der Hauptspeicherstand war beschädigt, daher haben wir die letzte Sicherung wiederhergestellt. Die letzten paar Minuten könnten nicht gespeichert worden sein.",
+  "saveResetTitle": "Speicherstand musste zurückgesetzt werden",
+  "saveResetBody": "Sowohl der Hauptspeicherstand als auch die Sicherung waren beschädigt, daher hat der Fortschritt von vorn begonnen.",
+  "saveFailedTitle": "Fortschritt konnte nicht gespeichert werden",
+  "saveFailedBody": "Es sieht so aus, als wäre der Speicherplatz auf dem Gerät voll. Versuch, etwas Speicherplatz freizugeben – dann wird wieder gespeichert.",
+  "gotIt": "Verstanden"
 }

@@ -24,5 +24,12 @@
   "updateAvailableTitle": "Elérhető frissítés",
   "updateAvailableBody": "Elérhető a játék új verziója. Frissíts, hogy megkapd a legújabb fejlesztéseket.",
   "updateApplying": "Frissítés…",
-  "updateNow": "Frissítés"
+  "updateNow": "Frissítés",
+  "saveRecoveredTitle": "Haladás visszaállítva",
+  "saveRecoveredBody": "A fő mentés megsérült, ezért visszaállítottuk a legutóbbi biztonsági mentést. Az utolsó pár perc játék esetleg nem mentődött el.",
+  "saveResetTitle": "A mentést újra kellett kezdeni",
+  "saveResetBody": "Mind a fő mentés, mind a biztonsági mentés sérült volt, ezért a haladás elölről kezdődött.",
+  "saveFailedTitle": "Nem sikerült menteni a haladást",
+  "saveFailedBody": "Úgy tűnik, elfogyott a tárhely az eszközön. Próbálj meg helyet felszabadítani — a haladás ismét menthető lesz.",
+  "gotIt": "Értem"
 }

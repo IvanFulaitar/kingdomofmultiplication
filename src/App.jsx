@@ -1,4 +1,4 @@
-import { useEffect, useState, Suspense, lazy } from "react";
+import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
 import { BADGES } from "./data/rewards.js";
 import { AVATARS } from "./data/cosmetics.js";
@@ -60,6 +60,7 @@ export default function App() {
   const [showBadges, setShowBadges] = useState(false);
   const [newBadge, setNewBadge] = useState(null);
   const [saveWarning, setSaveWarning] = useState(null);
+  const saveFailureShownRef = useRef(false);
   // "Мої знання" тепер відкривається з трьох різних місць (головна кнопка
   // навігації, кнопка "Прогрес" у панелі героя, другорядне посилання в
   // "Тренуванні") — знаємо, куди повертатись по "Назад", не прив'язуючи цей
@@ -100,7 +101,16 @@ export default function App() {
 
   function persist(next) {
     setProgress(next);
-    saveProgress(next);
+    const ok = saveProgress(next);
+    // Показуємо попередження про невдалий запис (напр. QuotaExceededError,
+    // сховище переповнене) не більше одного разу за сеанс — інакше кожна
+    // наступна дія (клік, покупка) знову й знову спливала б тим самим
+    // тостом, поки місце на диску не звільниться. Сам прогрес у пам'яті не
+    // втрачається, тож гра продовжується нормально навіть без диска.
+    if (!ok && !saveFailureShownRef.current) {
+      saveFailureShownRef.current = true;
+      setSaveWarning("save-failed");
+    }
   }
 
   // Купівля й вибір аватара — окремі дії (щоб магазин міг спершу показати
