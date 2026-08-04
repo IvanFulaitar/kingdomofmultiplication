@@ -469,6 +469,20 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
           <span className="creator-link__icon" aria-hidden="true">◎</span>
           <span><span className="creator-link__label">{t("menu:creatorLabel")}</span><strong>@ivan_stepanowich</strong></span>
         </a>
+
+        {/* Обов'язкові сторінки перед публікацією (launch-plan.md, розділ
+            11) — окремі статичні HTML-сторінки в public/ (стабільні
+            публічні URL, не залежать від React-роутингу), відкриваються в
+            новій вкладці. */}
+        <nav aria-label={t("menu:legalNavAriaLabel")} className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 -mt-2">
+          <a href="/about.html" target="_blank" rel="noopener noreferrer" className="legal-footer-link">{t("menu:legalAbout")}</a>
+          <span className="legal-footer-dot" aria-hidden="true">·</span>
+          <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="legal-footer-link">{t("menu:legalPrivacy")}</a>
+          <span className="legal-footer-dot" aria-hidden="true">·</span>
+          <a href="/terms.html" target="_blank" rel="noopener noreferrer" className="legal-footer-link">{t("menu:legalTerms")}</a>
+          <span className="legal-footer-dot" aria-hidden="true">·</span>
+          <a href="/contact.html" target="_blank" rel="noopener noreferrer" className="legal-footer-link">{t("menu:legalContact")}</a>
+        </nav>
       </div>
     </div>
   );

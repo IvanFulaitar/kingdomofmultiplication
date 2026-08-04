@@ -402,6 +402,16 @@ migrateSave(save) {
 
 ## 11. Обов'язкові сторінки перед публікацією
 
+**Реалізовано.** Чотири статичні сторінки — `public/about.html`,
+`public/privacy.html`, `public/terms.html`, `public/contact.html` —
+навмисно окремі `.html`-файли поза React-роутингом, щоб мати стабільні
+публічні URL (`/privacy.html` тощо), незалежні від збірки SPA; саме
+такий стабільний HTTPS-URL і потрібен для Data Safety/Privacy Policy в
+Google Play Console (`android-play-store-plan.md`, розділ 11). Лінк на
+всі чотири — внизу головного екрана (`MenuScreen.jsx`, під підписом
+автора), відкриваються в новій вкладці. Контакти: email
+fulaytar2405@gmail.com + Instagram @ivan_stepanowich.
+
 Навіть без акаунтів додати:
 
 **Про гру**

@@ -31,5 +31,10 @@
   "navNewBadge": "New",
   "navShop": "Shop",
   "navTraining": "Training",
-  "creatorLabel": "Game author "
+  "creatorLabel": "Game author ",
+  "legalNavAriaLabel": "Info pages",
+  "legalAbout": "About",
+  "legalPrivacy": "Privacy",
+  "legalTerms": "Terms",
+  "legalContact": "Contact"
 }

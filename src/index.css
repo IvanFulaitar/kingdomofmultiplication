@@ -82,6 +82,25 @@ html, body {
   transform: scale(0.97);
 }
 
+/* Обов'язкові сторінки (launch-plan.md, розділ 11) — непомітний рядок
+   посилань під підписом автора, навмисно приглушений, щоб не тягнути
+   увагу дитини від "ГРАТИ". */
+.legal-footer-link {
+  color: rgba(217, 209, 255, 0.55);
+  font-size: 11px;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+.legal-footer-link:hover,
+.legal-footer-link:focus-visible {
+  color: #f5b942;
+  outline: none;
+}
+.legal-footer-dot {
+  color: rgba(217, 209, 255, 0.3);
+  font-size: 11px;
+}
+
 /* Верхня панель бою: грід замість flex, щоб середній блок (назва) реально
    стискався (min-width:0), а блок сердець ніколи не вилазив за viewport. */
 .battle-header {

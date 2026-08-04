@@ -31,5 +31,10 @@
   "navNewBadge": "Нове",
   "navShop": "Магазин",
   "navTraining": "Тренування",
-  "creatorLabel": "Автор гри "
+  "creatorLabel": "Автор гри ",
+  "legalNavAriaLabel": "Довідкові сторінки",
+  "legalAbout": "Про гру",
+  "legalPrivacy": "Приватність",
+  "legalTerms": "Умови",
+  "legalContact": "Контакти"
 }
