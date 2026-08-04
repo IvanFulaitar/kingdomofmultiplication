@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
-import { BADGES } from "./data/rewards.js";
-import { AVATARS } from "./data/cosmetics.js";
 import { LEVEL_META } from "./data/regions.js";
 import { getWeakFacts } from "./game/generateQuestion.js";
 import { hasNewMasteryActivity } from "./game/mastery.js";
@@ -10,11 +8,13 @@ import { preloadCoreSfx, playAchievementSfx } from "./game/sfx.js";
 import { initAnalytics, trackEvent } from "./game/analytics.js";
 import { logout as authLogout } from "./game/auth.js";
 import {
-  loadProgress, saveProgress, ensureDaily, checkQuests,
-  starsForMistakes, heroLevelFromXp,
-  recordRaceResult, todaysTrainingWins,
+  loadProgress, saveProgress, todaysTrainingWins,
   takeLoadWarning, recordActivity,
 } from "./game/progress.js";
+// Доменні редьюсери (обчислення "наступного progress") — чисті функції,
+// винесені з App.jsx (roles-and-architecture-plan.md, розділ 22.3/40,
+// крок 1). App.jsx лишає собі виклик + persist()/тости/звук/аналітику.
+import * as reducers from "./game/reducers.js";
 
 // MenuScreen — перше, що бачить гравець, тому вантажиться одразу.
 // Решта екранів — лениво (code-splitting), щоб на старті не тягнути
@@ -120,18 +120,16 @@ export default function App() {
     }
   }
 
-  // Перевірка досягнень (launch-plan.md, розділ 21) — спільна для КОЖНОЇ
-  // дії, що може розблокувати бейдж (рівень, лабіринт, перегони, "Мої
-  // знання"/тренування слабких прикладів, покупка аватара), а не лише
-  // completeLevel() як було раніше. Інакше, наприклад, "10 відкритих
-  // скринь" у лабіринті технічно ставало б true одразу, але спливало б
-  // лише при НАСТУПНІЙ перемозі в бою — довільна затримка без причини.
-  function checkBadges(p) {
-    const earned = BADGES.filter((b) => !p.badges.includes(b.id) && b.check(p));
-    if (!earned.length) return p;
-    setNewBadge(earned[0]);
+  // Показує тост+звук за нововідкриті бейджі (launch-plan.md, розділ 21) —
+  // спільний хвостик для КОЖНОГО редьюсера, що може розблокувати бейдж
+  // (рівень, лабіринт, перегони, "Мої знання"/тренування слабких
+  // прикладів, покупка аватара). Сам розрахунок "що розблокувалось" —
+  // чиста функція reducers.checkBadges(), викликана з тіла кожного
+  // редьюсера нижче; тут лишається рівно побічний ефект (UI+звук).
+  function showEarnedBadges(earnedBadges) {
+    if (!earnedBadges.length) return;
+    setNewBadge(earnedBadges[0]);
     playAchievementSfx();
-    return { ...p, badges: [...p.badges, ...earned.map((b) => b.id)] };
   }
 
   // Купівля й вибір аватара — окремі дії (щоб магазин міг спершу показати
@@ -140,104 +138,30 @@ export default function App() {
   // Списання монет і додавання до ownedAvatars — один виклик persist(),
   // тож це завжди єдина атомарна операція, без проміжного "напівкупленого" стану.
   function purchaseAvatar(avatarId) {
-    if (progress.ownedAvatars.includes(avatarId)) return true; // вже куплений — вважаємо успіхом, монети не чіпаємо
-    const av = AVATARS.find((a) => a.id === avatarId);
-    if (!av || progress.coins < av.cost) return false;
-    let p = {
-      ...progress,
-      coins: progress.coins - av.cost,
-      ownedAvatars: [...progress.ownedAvatars, avatarId],
-    };
-    p = checkBadges(p);
-    persist(p);
-    trackEvent("avatar_purchased", { avatarId, cost: av.cost });
-    return true;
+    const result = reducers.purchaseAvatar(progress, avatarId);
+    showEarnedBadges(result.earnedBadges);
+    if (result.changed) {
+      persist(result.progress);
+      trackEvent("avatar_purchased", { avatarId, cost: result.cost });
+    }
+    return result.success;
   }
 
   function selectAvatar(avatarId) {
-    if (!progress.ownedAvatars.includes(avatarId)) return; // не можна обрати непридбаний
-    persist({ ...progress, avatar: avatarId });
+    const next = reducers.selectAvatar(progress, avatarId);
+    if (next !== progress) persist(next); // непридбаний аватар — reducers.selectAvatar повертає той самий progress, нічого не пишемо
   }
 
-  // "combined" (рівні 10-12, ланцюжки дій) і "compare" (порівняння двох
-  // виразів, launch-plan.md розділ 7) не відповідають одному факту
-  // множення "AxB" — pair у них має інший формат, тож ці kind виключені
-  // з facts/table7/weakFixed. "missing" і "wordProblem" — той самий факт
-  // у іншому вигляді, тому рахуються як завжди.
-  const NON_FACT_KINDS = ["combined", "compare"];
-
   function recordFact(pair, correct, kind, responseTimeMs) {
-    let p = ensureDaily(progress);
-    let weakFixed = false;
-    if (!NON_FACT_KINDS.includes(kind)) {
-      const existing = p.facts?.[pair] ?? {
-        correct: 0, wrong: 0, correctStreak: 0, lastAnsweredAt: null, totalResponseTimeMs: 0, answeredCount: 0,
-      };
-      // "Слабкий, і щойно виправлений" — фіксуємо ДО оновлення факту нижче,
-      // інакше existing уже враховуватиме цю саму правильну відповідь.
-      weakFixed = correct && existing.wrong > 0 && existing.wrong >= existing.correct;
-      const key = correct ? "correct" : "wrong";
-      const priorAttempts = existing.correct + existing.wrong;
-      // Згладжена точність (EMA) — для mastery.js:computeMastery, щоб ОДНА
-      // випадкова помилка серед багатьох попередніх успіхів не обвалювала
-      // статус одразу (launch-plan.md, розділ 5/9: "не знижувати статус
-      // після однієї випадкової помилки"). Кожна відповідь лише ЗСУВАЄ
-      // попереднє значення на ALPHA у бік 1 (правильно) чи 0 (помилка), а
-      // не замінює його повністю. Перша відповідь на факт (priorAttempts
-      // === 0, значить smoothedAccuracy ще нема) стартує із самої себе —
-      // без штучного "розгону" з нуля.
-      const SMOOTHING_ALPHA = 0.2;
-      const priorAccuracy = existing.smoothedAccuracy ?? (priorAttempts > 0 ? existing.correct / priorAttempts : correct ? 1 : 0);
-      const smoothedAccuracy = priorAccuracy * (1 - SMOOTHING_ALPHA) + (correct ? 1 : 0) * SMOOTHING_ALPHA;
-      // Дані для мастерності (launch-plan.md, розділ 5): серія поспіль
-      // (скидається на помилку), коли востаннє відповідали, і сума часу
-      // відповіді — середнє рахується на льоту (totalResponseTimeMs /
-      // answeredCount) у src/game/mastery.js, а не зберігається як масив.
-      const updated = {
-        ...existing,
-        [key]: existing[key] + 1,
-        correctStreak: correct ? (existing.correctStreak ?? 0) + 1 : 0,
-        lastAnsweredAt: Date.now(),
-        totalResponseTimeMs: (existing.totalResponseTimeMs ?? 0) + (Number.isFinite(responseTimeMs) ? responseTimeMs : 0),
-        answeredCount: (existing.answeredCount ?? 0) + (Number.isFinite(responseTimeMs) ? 1 : 0),
-        smoothedAccuracy,
-      };
-      p = { ...p, facts: { ...p.facts, [pair]: updated } };
-    }
-    if (correct) {
-      p = { ...p, daily: { ...p.daily, correctToday: p.daily.correctToday + 1 } };
-      // "pair" для класичних/missing/wordProblem прикладів завжди має
-      // вигляд "AxB" — якщо один із множників 7, це відповідь із таблиці
-      // на 7 (щоденне завдання table7x5).
-      if (!NON_FACT_KINDS.includes(kind) && pair.split("x").includes("7")) {
-        p = { ...p, daily: { ...p.daily, table7Today: (p.daily.table7Today ?? 0) + 1 } };
-      }
-      if (weakFixed) {
-        p = { ...p, daily: { ...p.daily, weakFixedToday: (p.daily.weakFixedToday ?? 0) + 1 } };
-      }
-    }
-    // Розділ 21: глобальна серія правильних відповідей поспіль (бій +
-    // "Мої знання"/тренування слабких прикладів разом — обидва йдуть
-    // через recordFact) — для бейджа "20 поспіль", окремо від per-fact
-    // correctStreak вище (той рахує серію для ОДНОГО конкретного факту).
-    const newAnswerStreak = correct ? (p.answerStreak ?? 0) + 1 : 0;
-    p = { ...p, answerStreak: newAnswerStreak, bestAnswerStreak: Math.max(p.bestAnswerStreak ?? 0, newAnswerStreak) };
-    p = checkBadges(p);
-    p = checkQuests(p);
-    persist(p);
+    const { progress: next, earnedBadges } = reducers.recordFact(progress, pair, correct, kind, responseTimeMs);
+    showEarnedBadges(earnedBadges);
+    persist(next);
   }
 
   function rewardPractice(coinGain, xpGain, pairsFound = 0) {
-    let p = ensureDaily(progress);
-    p = {
-      ...p,
-      coins: p.coins + coinGain,
-      xp: (p.xp ?? 0) + xpGain,
-      daily: { ...p.daily, memoryPairsToday: (p.daily.memoryPairsToday ?? 0) + pairsFound },
-    };
-    p = checkBadges(p);
-    p = checkQuests(p);
-    persist(p);
+    const { progress: next, earnedBadges } = reducers.rewardPractice(progress, coinGain, xpGain, pairsFound);
+    showEarnedBadges(earnedBadges);
+    persist(next);
   }
 
   // Окремо від rewardPractice — рахує ще й кількість пройдених лабіринтів,
@@ -245,89 +169,28 @@ export default function App() {
   // з'являються поступово, а не всі одразу). extra — скрині/таємний шлях
   // цього конкретного проходження, для щоденних завдань mazeChest1/mazeSecret1.
   function completeMaze(coinGain, xpGain, extra = {}) {
-    const { chestsFound = 0, secretFound = false } = extra;
-    let p = ensureDaily(progress);
-    p = {
-      ...p,
-      coins: p.coins + coinGain,
-      xp: (p.xp ?? 0) + xpGain,
-      mazeCompletions: (p.mazeCompletions ?? 0) + 1,
-      // Розділ 21: НАЗАВЖДИ (на відміну від daily.mazeChestsToday/
-      // mazeSecretToday нижче, які скидаються щодня) — для бейджів
-      // "10 скринь"/"5 секретних шляхів".
-      totalChestsOpened: (p.totalChestsOpened ?? 0) + chestsFound,
-      totalSecretsFound: (p.totalSecretsFound ?? 0) + (secretFound ? 1 : 0),
-      daily: {
-        ...p.daily,
-        mazeChestsToday: (p.daily.mazeChestsToday ?? 0) + chestsFound,
-        mazeSecretToday: p.daily.mazeSecretToday || secretFound,
-      },
-    };
-    p = checkBadges(p);
-    p = checkQuests(p);
-    persist(p);
+    const { progress: next, earnedBadges } = reducers.completeMaze(progress, coinGain, xpGain, extra);
+    showEarnedBadges(earnedBadges);
+    persist(next);
   }
 
   // Складність тепер обирає сам гравець (RaceDifficultyScreen) — тут лише
-  // нараховуємо нагороду й ведемо бухгалтерію: історію останніх 5 заїздів
-  // (для рекомендації складності наступного разу), особисті рекорди на
-  // кожній складності, розблокування чемпіонського заїзду, і лічильник
-  // сьогоднішніх перемог тренувального заїзду (м'який захист від фарму).
-  // Також рахує щоденні завдання raceTop2_1/raceBest1.
+  // нараховуємо нагороду й ведемо бухгалтерію: історію останніх заїздів
+  // (для рекомендації складності наступного разу), особисті рекорди,
+  // розблокування чемпіонського заїзду, лічильник сьогоднішніх перемог
+  // тренувального заїзду (м'який захист від фарму) — усе в reducers.completeRace.
   function completeRace(coinGain, xpGain, meta) {
-    let p = ensureDaily(progress);
-    p = {
-      ...p,
-      coins: p.coins + coinGain,
-      xp: (p.xp ?? 0) + xpGain,
-      raceCompletions: (p.raceCompletions ?? 0) + 1,
-    };
-    if (meta) {
-      const { p: nextP, isPersonalBest } = recordRaceResult(p, meta);
-      p = nextP;
-      p = {
-        ...p,
-        daily: {
-          ...p.daily,
-          raceTop2Today: meta.place <= 2 ? (p.daily.raceTop2Today ?? 0) + 1 : (p.daily.raceTop2Today ?? 0),
-          raceBestToday: p.daily.raceBestToday || isPersonalBest,
-        },
-      };
-      // Розділ 21: "10 перемог у перегонах" / "Перемога у чемпіонському заїзді".
-      if (meta.place === 1) {
-        p = { ...p, totalRaceWins: (p.totalRaceWins ?? 0) + 1 };
-        if (meta.difficulty === "champion") p = { ...p, championRaceWon: true };
-      }
-    }
-    p = checkBadges(p);
-    p = checkQuests(p);
-    persist(p);
+    const { progress: next, earnedBadges } = reducers.completeRace(progress, coinGain, xpGain, meta);
+    showEarnedBadges(earnedBadges);
+    persist(next);
     if (meta) trackEvent("race_finished", meta);
   }
 
   // Завершення онбордингу (launch-plan.md, розділ 4) — приходить рівно
-  // один раз, від OnboardingScreen.jsx. Зібрані під час діагностики facts
-  // зливаємо в progress.facts (та сама структура, якою вже користується
-  // getWeakFacts()/generateQuestion.js — жодного окремого сховища не
-  // потрібно), даємо невелику стартову нагороду за навчальний бій, і
-  // позначаємо onboardingComplete=true, щоб цей екран більше не з'являвся.
+  // один раз, від OnboardingScreen.jsx.
   function completeOnboarding({ facts, confidenceLevel }) {
-    let p = ensureDaily(progress);
-    const mergedFacts = { ...p.facts };
-    for (const [pair, stat] of Object.entries(facts ?? {})) {
-      const existing = mergedFacts[pair] ?? { correct: 0, wrong: 0 };
-      mergedFacts[pair] = { correct: existing.correct + stat.correct, wrong: existing.wrong + stat.wrong };
-    }
-    p = {
-      ...p,
-      onboardingComplete: true,
-      onboardingConfidence: confidenceLevel,
-      facts: mergedFacts,
-      coins: p.coins + 15,
-      xp: (p.xp ?? 0) + 30,
-    };
-    p = checkQuests(p);
-    persist(p);
+    const next = reducers.completeOnboarding(progress, { facts, confidenceLevel });
+    persist(next);
     setScreen("menu");
   }
 
@@ -335,40 +198,11 @@ export default function App() {
   // (скільки зірок/монет/XP отримано, чи піднявся рівень героя), щоб
   // екран результатів міг одразу його показати й анімувати.
   function completeLevel(levelId, mistakes) {
-    let p = ensureDaily(progress);
-    const newStars = starsForMistakes(mistakes);
-    const oldStars = p.levels[levelId]?.stars ?? 0;
-    const stars = Math.max(oldStars, newStars);
-    const coinGain = Math.max(0, newStars - oldStars) * 10;
-    const xpGain = 15 + newStars * 10;
-    const levels = { ...p.levels, [levelId]: { stars } };
-    const totalStars = Object.values(levels).reduce((s, l) => s + l.stars, 0);
-    const prevHero = heroLevelFromXp(p.xp ?? 0);
-    // Розділ 21: "Повернувся після поразки й переміг" — lastFailedLevelId
-    // виставляється в onGameOver нижче й очищається тут при БУДЬ-ЯКІЙ
-    // перемозі (не лише на тому самому рівні), щоб не лишався застряглим.
-    const cameBack = p.lastFailedLevelId === levelId;
-
-    let next = {
-      ...p, levels, totalStars,
-      coins: p.coins + coinGain,
-      xp: (p.xp ?? 0) + xpGain,
-      daily: { ...p.daily, levelsToday: p.daily.levelsToday + 1, perfectToday: p.daily.perfectToday || mistakes === 0 },
-      lastFailedLevelId: null,
-      hadComeback: p.hadComeback || cameBack,
-    };
-
-    next = checkBadges(next);
-    next = checkQuests(next);
-    const newHero = heroLevelFromXp(next.xp);
-
+    const { progress: next, earnedBadges, result } = reducers.completeLevel(progress, levelId, mistakes);
+    showEarnedBadges(earnedBadges);
     persist(next);
-    trackEvent("level_completed", { levelId, stars, mistakes });
-
-    return {
-      levelId, stars, newStars, mistakes, coinGain, xpGain,
-      leveledUp: newHero.level > prevHero.level,
-    };
+    trackEvent("level_completed", { levelId: result.levelId, stars: result.stars, mistakes: result.mistakes });
+    return result;
   }
 
   // Розділ 21: фіксує "щойно програно рівень N" — completeLevel() вище
@@ -377,7 +211,7 @@ export default function App() {
   // бо це єдине місце, де програш узагалі торкається progress/persist —
   // досі onGameOver лише надсилав аналітику, нічого не зберігаючи.
   function recordLevelFailure(levelId) {
-    persist({ ...progress, lastFailedLevelId: levelId });
+    persist(reducers.recordLevelFailure(progress, levelId));
   }
 
   // Відмічає, що гравець щойно бачив свій прогрес (лише для бейджа "Нове"
@@ -385,9 +219,8 @@ export default function App() {
   // критична дія, тож немає сенсу писати таймстемп, якщо він уже свіжіший
   // (наприклад, повторний виклик з того самого рендера).
   function markKnowledgeSeen() {
-    const ts = Date.now();
-    if ((progress.knowledgeLastSeenAt ?? 0) >= ts) return;
-    persist({ ...progress, knowledgeLastSeenAt: ts });
+    const next = reducers.markKnowledgeSeen(progress);
+    if (next !== progress) persist(next);
   }
 
   function openKnowledge(returnTo) {

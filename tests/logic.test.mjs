@@ -38,6 +38,10 @@ import {
 } from "../src/game/raceEngine.js";
 import { QUEST_POOL, pickDailyQuestIds, BADGES } from "../src/data/rewards.js";
 import { AVATARS } from "../src/data/cosmetics.js";
+import {
+  checkBadges, purchaseAvatar, selectAvatar, recordFact, completeLevel,
+  recordLevelFailure, markKnowledgeSeen, completeOnboarding,
+} from "../src/game/reducers.js";
 
 // --------------------------------------------------------- mini harness ---
 let passed = 0;
@@ -603,6 +607,143 @@ test("overallAverageResponseTime: null без даних, середнє по в
     "4x5": { totalResponseTimeMs: 6000, answeredCount: 2 },
   };
   assertEqual(overallAverageResponseTime(facts), 2500);
+});
+
+// ============================================================== reducers.js ===
+// roles-and-architecture-plan.md, розділ 22.3/38.1/40 (крок 1) — чисті
+// редьюсери, винесені з App.jsx. Тут перевіряємо саму екстракцію: та сама
+// поведінка, що й раніше, тепер доступна й тестовна без React.
+
+test("reducers.completeLevel: перша перемога без помилок -> 3 зірки, правильні coin/xp", () => {
+  const p = defaultProgress();
+  const { progress: next, result } = completeLevel(p, "forest-01", 0);
+  assertEqual(result.stars, 3);
+  assertEqual(result.newStars, 3);
+  // result.coinGain/xpGain — суто нагорода ЗА РІВЕНЬ, не рахує можливий
+  // бонус за автоматично виконане щоденне завдання (checkQuests()
+  // всередині completeLevel може додати ще монет/XP у next.coins/next.xp
+  // окремо, якщо на сьогодні активне завдання "пройти 1 рівень" тощо —
+  // тому тут звіряємо саме result.*, а не next.coins напряму).
+  assertEqual(result.coinGain, 30, "0 старих зірок -> 3 нових = 3*10 монет");
+  assertEqual(result.xpGain, 15 + 3 * 10);
+  assertEqual(next.levels["forest-01"].stars, 3);
+  assert(next.coins >= p.coins + result.coinGain, "фінальний баланс щонайменше включає нагороду за рівень (плюс можливий бонус щоденного завдання)");
+  assertEqual(next.totalStars, 3);
+});
+
+test("reducers.completeLevel: гірший повторний результат не забирає вже здобуті зірки", () => {
+  let p = defaultProgress();
+  p = completeLevel(p, "forest-01", 0).progress; // 3 зірки
+  const { progress: next, result } = completeLevel(p, "forest-01", 2); // гірше -> 1 зірка
+  assertEqual(result.stars, 3, "max(старі, нові) -- зірки не можуть зменшитись");
+  assertEqual(result.coinGain, 0, "монети лише за НОВІ зірки понад старі");
+  assertEqual(next.levels["forest-01"].stars, 3);
+});
+
+test("reducers.completeLevel: не мутує вхідний progress (чиста функція)", () => {
+  const p = defaultProgress();
+  const before = JSON.stringify(p);
+  completeLevel(p, "forest-01", 1);
+  assertEqual(JSON.stringify(p), before, "оригінальний об'єкт progress має лишитись незмінним");
+});
+
+test("reducers.purchaseAvatar: успішна покупка списує монети й додає в ownedAvatars", () => {
+  const p = { ...defaultProgress(), coins: 100 };
+  const result = purchaseAvatar(p, "knight"); // cost: 50
+  assertEqual(result.success, true);
+  assertEqual(result.changed, true);
+  assertEqual(result.progress.coins, 50);
+  assert(result.progress.ownedAvatars.includes("knight"));
+});
+
+test("reducers.purchaseAvatar: недостатньо монет -> success=false, changed=false, progress незмінний", () => {
+  const p = { ...defaultProgress(), coins: 10 };
+  const result = purchaseAvatar(p, "knight"); // cost: 50
+  assertEqual(result.success, false);
+  assertEqual(result.changed, false);
+  assertEqual(result.progress, p, "нічого не має змінитись при невдалій спробі");
+});
+
+test("reducers.purchaseAvatar: уже куплений аватар -> success=true, changed=false (монети не списуються вдруге)", () => {
+  const p = { ...defaultProgress(), coins: 100, ownedAvatars: ["wizard", "knight"] };
+  const result = purchaseAvatar(p, "knight");
+  assertEqual(result.success, true);
+  assertEqual(result.changed, false);
+  assertEqual(result.progress.coins, 100, "повторна покупка не повинна чіпати баланс");
+});
+
+test("reducers.selectAvatar: непридбаний аватар -> повертає ТОЙ САМИЙ об'єкт (no-op)", () => {
+  const p = defaultProgress();
+  const next = selectAvatar(p, "dragon"); // не в ownedAvatars
+  assert(next === p, "reducer має повернути посилання на той самий progress, коли нічого не змінилось");
+});
+
+test("reducers.selectAvatar: придбаний аватар -> новий об'єкт з оновленим avatar", () => {
+  const p = { ...defaultProgress(), ownedAvatars: ["wizard", "knight"] };
+  const next = selectAvatar(p, "knight");
+  assert(next !== p);
+  assertEqual(next.avatar, "knight");
+});
+
+test("reducers.recordFact: правильна відповідь оновлює facts і глобальний answerStreak", () => {
+  const p = defaultProgress();
+  const { progress: next } = recordFact(p, "3x4", true, "classic", 2000);
+  assertEqual(next.facts["3x4"].correct, 1);
+  assertEqual(next.facts["3x4"].wrong, 0);
+  assertEqual(next.answerStreak, 1);
+  assertEqual(next.daily.correctToday, 1);
+});
+
+test("reducers.recordFact: неправильна відповідь скидає answerStreak, зберігає bestAnswerStreak", () => {
+  let p = defaultProgress();
+  p = recordFact(p, "3x4", true, "classic", 2000).progress;
+  p = recordFact(p, "5x6", true, "classic", 2000).progress;
+  assertEqual(p.answerStreak, 2);
+  p = recordFact(p, "2x2", false, "classic", 2000).progress;
+  assertEqual(p.answerStreak, 0, "серія скидається на помилку");
+  assertEqual(p.bestAnswerStreak, 2, "найкраща серія лишається зафіксованою");
+});
+
+test("reducers.recordFact: 'combined'/'compare' не пишуться у facts (не є одним фактом множення)", () => {
+  const p = defaultProgress();
+  const { progress: next } = recordFact(p, "3x4+2", true, "combined", 2000);
+  assertEqual(next.facts["3x4+2"], undefined);
+  assertEqual(next.daily.correctToday, 1, "але денний лічильник правильних відповідей усе одно рахується");
+});
+
+test("reducers.checkBadges: earnedBadges порожній, коли нема нових бейджів", () => {
+  const p = defaultProgress();
+  const { progress: next, earnedBadges } = checkBadges(p);
+  assertEqual(earnedBadges.length, 0);
+  assertEqual(next, p, "без нових бейджів повертає той самий стан badges");
+});
+
+test("reducers.recordLevelFailure: лише позначає lastFailedLevelId, не чіпає решту прогресу", () => {
+  const p = defaultProgress();
+  const next = recordLevelFailure(p, "forest-02");
+  assertEqual(next.lastFailedLevelId, "forest-02");
+  assertEqual(next.coins, p.coins);
+});
+
+test("reducers.markKnowledgeSeen: другий виклик поспіль повертає ТОЙ САМИЙ об'єкт", () => {
+  const p = defaultProgress();
+  const first = markKnowledgeSeen(p);
+  assert(first !== p, "перший виклик має оновити timestamp");
+  const second = markKnowledgeSeen(first);
+  assert(second === first, "повторний виклик у ту саму мілісекунду/пізніше не повинен нічого писати повторно");
+});
+
+test("reducers.completeOnboarding: зливає діагностичні facts і дає стартову нагороду", () => {
+  const p = defaultProgress();
+  const next = completeOnboarding(p, {
+    facts: { "2x2": { correct: 3, wrong: 1 } },
+    confidenceLevel: "beginner",
+  });
+  assertEqual(next.onboardingComplete, true);
+  assertEqual(next.onboardingConfidence, "beginner");
+  assertEqual(next.facts["2x2"].correct, 3);
+  assertEqual(next.coins, 15);
+  assertEqual(next.xp, 30);
 });
 
 // ================================================================ підсумок ===
