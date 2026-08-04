@@ -6,7 +6,8 @@ import { hasNewMasteryActivity } from "./game/mastery.js";
 import { initMusic } from "./game/music.js";
 import { preloadCoreSfx, playAchievementSfx } from "./game/sfx.js";
 import { initAnalytics, trackEvent } from "./game/analytics.js";
-import { logout as authLogout } from "./game/auth.js";
+import { logout as authLogout, fetchMe } from "./game/auth.js";
+import { AUTH_ENABLED } from "./config.js";
 import {
   loadProgress, saveProgress, todaysTrainingWins,
   takeLoadWarning, recordActivity,
@@ -52,9 +53,16 @@ export default function App() {
   const [screen, setScreen] = useState("menu");
   // Акаунт (email/пароль, frontend-backend-integration-plan.md) —
   // необов'язкова фіча: null означає гостя, гра й далі повністю грається
-  // без входу. Відновлення сесії при старті (fetchMe()) — окремий крок 4,
-  // тут лише сам факт входу/виходу під час поточного сеансу.
+  // без входу. Відновлюється при старті нижче (useEffect із fetchMe()),
+  // якщо AUTH_ENABLED.
   const [user, setUser] = useState(null);
+  // roles-and-architecture-plan.md, розділ 40, крок 2 (Стадія A) —
+  // frontend-backend-integration-plan.md, Крок 4: відновлення сесії при
+  // старті через fetchMe() (функція в auth.js була написана давно, але
+  // ніде не викликалась). Поки AUTH_ENABLED=false — жодного мережевого
+  // виклику взагалі не відбувається, sessionChecked одразу true, тож
+  // гість, що не користується акаунтом, нічого не помічає (нуль затримки).
+  const [sessionChecked, setSessionChecked] = useState(!AUTH_ENABLED);
   const [activeLevel, setActiveLevel] = useState(null);
   const [raceDifficulty, setRaceDifficulty] = useState(null);
   const [outcome, setOutcome] = useState(null);
@@ -82,6 +90,23 @@ export default function App() {
     // onboardingComplete=true (progress.js), тож нинішні гравці цього не
     // побачать.
     if (!p.onboardingComplete) setScreen("onboarding");
+  }, []);
+
+  // Відновлення дорослої сесії при старті (Крок 4, див. коментар біля
+  // sessionChecked вище) — якщо токен у localStorage ще дійсний, гравець
+  // одразу залогінений без повторного вводу пароля; якщо прострочений/
+  // недійсний, fetchMe() сама тихо чистить токен і повертає null (без
+  // тривожних помилок дитині). Мережева помилка (сервер тимчасово
+  // недоступний тощо) — токен НЕ чиститься, просто цього разу лишаємось
+  // гостем поточного сеансу; наступний запуск спробує знову.
+  useEffect(() => {
+    if (!AUTH_ENABLED) return;
+    let cancelled = false;
+    fetchMe()
+      .then((u) => { if (!cancelled) setUser(u); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setSessionChecked(true); });
+    return () => { cancelled = true; };
   }, []);
 
   // Фонова тема стартує один раз на весь час життя застосунку — вона не
@@ -248,7 +273,7 @@ export default function App() {
     }
   }
 
-  if (!progress) {
+  if (!progress || !sessionChecked) {
     return <LoadingGate />;
   }
 
