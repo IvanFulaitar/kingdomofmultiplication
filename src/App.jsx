@@ -13,7 +13,7 @@ import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
   starsForMistakes, heroLevelFromXp,
   recordRaceResult, todaysTrainingWins,
-  takeLoadWarning,
+  takeLoadWarning, recordActivity,
 } from "./game/progress.js";
 
 // MenuScreen — перше, що бачить гравець, тому вантажиться одразу.
@@ -25,6 +25,7 @@ import SaveNoticeToast from "./components/SaveNoticeToast.jsx";
 import UpdateBanner from "./components/UpdateBanner.jsx";
 const OnboardingScreen = lazy(() => import("./screens/OnboardingScreen.jsx"));
 const MyKnowledgeScreen = lazy(() => import("./screens/MyKnowledgeScreen.jsx"));
+const ParentScreen = lazy(() => import("./screens/ParentScreen.jsx"));
 const ShopScreen = lazy(() => import("./screens/ShopScreen.jsx"));
 const TrainingScreen = lazy(() => import("./screens/TrainingScreen.jsx"));
 const MemoryScreen = lazy(() => import("./screens/MemoryScreen.jsx"));
@@ -99,7 +100,13 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [screen]);
 
-  function persist(next) {
+  function persist(rawNext) {
+    // launch-plan.md, розділ 8 — тут, а не в кожному окремому обробнику
+    // (recordFact/completeLevel/completeMaze/...), бо persist() — єдина
+    // точка, через яку проходить УСЯ ігрова активність. recordActivity сама
+    // ідемпотентно оновлює "сьогоднішній" запис activityLog за розривом від
+    // попереднього виклику (progress.js:SESSION_GAP_MS).
+    const next = recordActivity(rawNext);
     setProgress(next);
     const ok = saveProgress(next);
     // Показуємо попередження про невдалий запис (напр. QuotaExceededError,
@@ -427,11 +434,15 @@ export default function App() {
           hasNewKnowledge={hasNewMasteryActivity(progress.facts, progress.knowledgeLastSeenAt ?? 0)}
           user={user}
           onAccount={() => setScreen("auth")}
+          onParent={() => setScreen("parent")}
         />
       )}
       <Suspense fallback={<LoadingGate />}>
         {screen === "onboarding" && (
           <OnboardingScreen onComplete={completeOnboarding} />
+        )}
+        {screen === "parent" && (
+          <ParentScreen progress={progress} onBack={() => setScreen("menu")} />
         )}
         {screen === "shop" && (
           <ShopScreen

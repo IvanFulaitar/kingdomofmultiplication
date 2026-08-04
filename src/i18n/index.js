@@ -28,6 +28,7 @@ import ukShop from "./locales/uk/shop.json";
 import ukMaze from "./locales/uk/maze.json";
 import ukMemory from "./locales/uk/memory.json";
 import ukOnboarding from "./locales/uk/onboarding.json";
+import ukParent from "./locales/uk/parent.json";
 
 import enCommon from "./locales/en/common.json";
 import enMenu from "./locales/en/menu.json";
@@ -48,6 +49,7 @@ import enShop from "./locales/en/shop.json";
 import enMaze from "./locales/en/maze.json";
 import enMemory from "./locales/en/memory.json";
 import enOnboarding from "./locales/en/onboarding.json";
+import enParent from "./locales/en/parent.json";
 
 import plCommon from "./locales/pl/common.json";
 import plMenu from "./locales/pl/menu.json";
@@ -68,6 +70,7 @@ import plShop from "./locales/pl/shop.json";
 import plMaze from "./locales/pl/maze.json";
 import plMemory from "./locales/pl/memory.json";
 import plOnboarding from "./locales/pl/onboarding.json";
+import plParent from "./locales/pl/parent.json";
 
 import deCommon from "./locales/de/common.json";
 import deMenu from "./locales/de/menu.json";
@@ -88,6 +91,7 @@ import deShop from "./locales/de/shop.json";
 import deMaze from "./locales/de/maze.json";
 import deMemory from "./locales/de/memory.json";
 import deOnboarding from "./locales/de/onboarding.json";
+import deParent from "./locales/de/parent.json";
 
 import esCommon from "./locales/es/common.json";
 import esMenu from "./locales/es/menu.json";
@@ -108,6 +112,7 @@ import esShop from "./locales/es/shop.json";
 import esMaze from "./locales/es/maze.json";
 import esMemory from "./locales/es/memory.json";
 import esOnboarding from "./locales/es/onboarding.json";
+import esParent from "./locales/es/parent.json";
 
 import csCommon from "./locales/cs/common.json";
 import csMenu from "./locales/cs/menu.json";
@@ -128,6 +133,7 @@ import csShop from "./locales/cs/shop.json";
 import csMaze from "./locales/cs/maze.json";
 import csMemory from "./locales/cs/memory.json";
 import csOnboarding from "./locales/cs/onboarding.json";
+import csParent from "./locales/cs/parent.json";
 
 import skCommon from "./locales/sk/common.json";
 import skMenu from "./locales/sk/menu.json";
@@ -148,6 +154,7 @@ import skShop from "./locales/sk/shop.json";
 import skMaze from "./locales/sk/maze.json";
 import skMemory from "./locales/sk/memory.json";
 import skOnboarding from "./locales/sk/onboarding.json";
+import skParent from "./locales/sk/parent.json";
 
 import huCommon from "./locales/hu/common.json";
 import huMenu from "./locales/hu/menu.json";
@@ -168,6 +175,7 @@ import huShop from "./locales/hu/shop.json";
 import huMaze from "./locales/hu/maze.json";
 import huMemory from "./locales/hu/memory.json";
 import huOnboarding from "./locales/hu/onboarding.json";
+import huParent from "./locales/hu/parent.json";
 
 // Порядок тут = порядок у перемикачі мови (MenuScreen/LanguagePickerModal).
 // code — ISO 639-1 (українська навмисно "uk", а НЕ технічний "ua").
@@ -191,49 +199,49 @@ const resources = {
     common: ukCommon, menu: ukMenu, auth: ukAuth, validation: ukValidation, errors: ukErrors,
     regions: ukRegions, achievements: ukAchievements, quests: ukQuests, avatars: ukAvatars,
     race: ukRace, battle: ukBattle, map: ukMap, training: ukTraining, results: ukResults,
-    knowledge: ukKnowledge, shop: ukShop, maze: ukMaze, memory: ukMemory, onboarding: ukOnboarding,
+    knowledge: ukKnowledge, shop: ukShop, maze: ukMaze, memory: ukMemory, onboarding: ukOnboarding, parent: ukParent,
   },
   en: {
     common: enCommon, menu: enMenu, auth: enAuth, validation: enValidation, errors: enErrors,
     regions: enRegions, achievements: enAchievements, quests: enQuests, avatars: enAvatars,
     race: enRace, battle: enBattle, map: enMap, training: enTraining, results: enResults,
-    knowledge: enKnowledge, shop: enShop, maze: enMaze, memory: enMemory, onboarding: enOnboarding,
+    knowledge: enKnowledge, shop: enShop, maze: enMaze, memory: enMemory, onboarding: enOnboarding, parent: enParent,
   },
   pl: {
     common: plCommon, menu: plMenu, auth: plAuth, validation: plValidation, errors: plErrors,
     regions: plRegions, achievements: plAchievements, quests: plQuests, avatars: plAvatars,
     race: plRace, battle: plBattle, map: plMap, training: plTraining, results: plResults,
-    knowledge: plKnowledge, shop: plShop, maze: plMaze, memory: plMemory, onboarding: plOnboarding,
+    knowledge: plKnowledge, shop: plShop, maze: plMaze, memory: plMemory, onboarding: plOnboarding, parent: plParent,
   },
   de: {
     common: deCommon, menu: deMenu, auth: deAuth, validation: deValidation, errors: deErrors,
     regions: deRegions, achievements: deAchievements, quests: deQuests, avatars: deAvatars,
     race: deRace, battle: deBattle, map: deMap, training: deTraining, results: deResults,
-    knowledge: deKnowledge, shop: deShop, maze: deMaze, memory: deMemory, onboarding: deOnboarding,
+    knowledge: deKnowledge, shop: deShop, maze: deMaze, memory: deMemory, onboarding: deOnboarding, parent: deParent,
   },
   es: {
     common: esCommon, menu: esMenu, auth: esAuth, validation: esValidation, errors: esErrors,
     regions: esRegions, achievements: esAchievements, quests: esQuests, avatars: esAvatars,
     race: esRace, battle: esBattle, map: esMap, training: esTraining, results: esResults,
-    knowledge: esKnowledge, shop: esShop, maze: esMaze, memory: esMemory, onboarding: esOnboarding,
+    knowledge: esKnowledge, shop: esShop, maze: esMaze, memory: esMemory, onboarding: esOnboarding, parent: esParent,
   },
   cs: {
     common: csCommon, menu: csMenu, auth: csAuth, validation: csValidation, errors: csErrors,
     regions: csRegions, achievements: csAchievements, quests: csQuests, avatars: csAvatars,
     race: csRace, battle: csBattle, map: csMap, training: csTraining, results: csResults,
-    knowledge: csKnowledge, shop: csShop, maze: csMaze, memory: csMemory, onboarding: csOnboarding,
+    knowledge: csKnowledge, shop: csShop, maze: csMaze, memory: csMemory, onboarding: csOnboarding, parent: csParent,
   },
   sk: {
     common: skCommon, menu: skMenu, auth: skAuth, validation: skValidation, errors: skErrors,
     regions: skRegions, achievements: skAchievements, quests: skQuests, avatars: skAvatars,
     race: skRace, battle: skBattle, map: skMap, training: skTraining, results: skResults,
-    knowledge: skKnowledge, shop: skShop, maze: skMaze, memory: skMemory, onboarding: skOnboarding,
+    knowledge: skKnowledge, shop: skShop, maze: skMaze, memory: skMemory, onboarding: skOnboarding, parent: skParent,
   },
   hu: {
     common: huCommon, menu: huMenu, auth: huAuth, validation: huValidation, errors: huErrors,
     regions: huRegions, achievements: huAchievements, quests: huQuests, avatars: huAvatars,
     race: huRace, battle: huBattle, map: huMap, training: huTraining, results: huResults,
-    knowledge: huKnowledge, shop: huShop, maze: huMaze, memory: huMemory, onboarding: huOnboarding,
+    knowledge: huKnowledge, shop: huShop, maze: huMaze, memory: huMemory, onboarding: huOnboarding, parent: huParent,
   },
 };
 
@@ -274,7 +282,7 @@ i18n.use(initReactI18next).init({
     "common", "menu", "auth", "validation", "errors",
     "regions", "achievements", "quests", "avatars",
     "race", "battle", "map", "training", "results",
-    "knowledge", "shop", "maze", "memory", "onboarding",
+    "knowledge", "shop", "maze", "memory", "onboarding", "parent",
   ],
   defaultNS: "common",
   interpolation: { escapeValue: false }, // React сам екранує — подвійне екранування зайве

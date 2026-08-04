@@ -1,4 +1,5 @@
 import { QUEST_POOL, pickDailyQuestIds } from "../data/rewards.js";
+import { overallMastery } from "./mastery.js";
 
 export const STORAGE_KEY = "kingdom-multiplication-progress";
 // Резервна копія — завжди попередній успішно збережений стан, на випадок
@@ -98,6 +99,20 @@ export function defaultProgress() {
     championRaceWon: false,
     lastFailedLevelId: null,
     hadComeback: false,
+    // launch-plan.md, розділ 8 "Додати окремий режим для дорослого" —
+    // ParentScreen.jsx показує батькам/вчителю заняття за тиждень і
+    // тренд засвоєння за 7/30 днів. activityLog — до 30 останніх ДНІВ, У
+    // ЯКИХ БУЛА хоч якась активність (не порожній запис на кожен
+    // календарний день): { date, sessions, activeMs, masteryScore }.
+    // Заповнюється й оновлюється лише через recordActivity() нижче —
+    // викликається з App.jsx:persist() на кожному збереженні прогресу,
+    // тож покриває практично всі ігрові дії без потреби чіпати кожен
+    // виклик окремо. lastActiveAt — час (мс) останнього виклику
+    // recordActivity, використовується лише для визначення межі сесії
+    // (розрив > SESSION_GAP_MS -> нова сесія), сам по собі ніде не
+    // показується.
+    activityLog: [],
+    lastActiveAt: 0,
   };
 }
 
@@ -157,9 +172,16 @@ function migrateProgress(p) {
   const lastFailedLevelId = p.lastFailedLevelId ?? null;
   const hadComeback = p.hadComeback ?? false;
 
+  // Розділ 8 — старі збереження просто не мали цих полів (ParentScreen.jsx
+  // покаже їм порожній стан "ще немає даних", доки не з'явиться нова
+  // активність — це чесно, заднім числом історію занять не відновити).
+  const activityLog = p.activityLog ?? [];
+  const lastActiveAt = p.lastActiveAt ?? 0;
+
   return {
     ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily, daily, onboardingComplete, knowledgeLastSeenAt,
     answerStreak, bestAnswerStreak, totalChestsOpened, totalSecretsFound, totalRaceWins, championRaceWon, lastFailedLevelId, hadComeback,
+    activityLog, lastActiveAt,
   };
 }
 
@@ -305,6 +327,57 @@ export function saveProgress(p) {
     // цей конкретний запис на диск не вдався.
     return false;
   }
+}
+
+// ===================== Активність для екрана батьків (розділ 8) =====================
+
+// Розрив без жодної дії довший за це -> вважаємо, що почалась НОВА сесія
+// (а не продовження попередньої). Пороги свідомо приблизні (не точний
+// таймер сесії, а легка евристика без окремого heartbeat/visibilitychange
+// інфраструктури): 5 хв тиші — розумна межа для дитячої гри, де відповідь
+// на приклад чи екран результатів рідко займають стільки часу самі по собі.
+const SESSION_GAP_MS = 5 * 60 * 1000;
+// Кожен виклик recordActivity зараховує в "активний час" лише розрив із
+// ПОПЕРЕДНЬОГО виклику (не абсолютний годинник) — і лише до цієї стелі,
+// щоб один довгий відхід від екрана (без явного розриву сесії) не
+// зарахувався як активна гра.
+const MAX_ACTIVE_TICK_MS = 2 * 60 * 1000;
+// Скільки останніх ДНІВ активності зберігати (не календарних днів — лише
+// тих, коли справді щось відбувалось) — достатньо для вікна 30 днів навіть
+// якщо грали не щодня.
+const MAX_ACTIVITY_LOG_DAYS = 30;
+
+function todayDateStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// Викликається з App.jsx:persist() на КОЖНОМУ збереженні прогресу (не з
+// окремих ігрових подій) — так покриває практично всі дії гравця (бій,
+// лабіринт, перегони, тренування, магазин) без потреби додавати виклик у
+// кожен окремий обробник. Ідемпотентний відносно порядку: просто оновлює
+// "сьогоднішній" запис і зсуває lastActiveAt.
+export function recordActivity(p) {
+  const now = Date.now();
+  const today = todayDateStr();
+  const gap = p.lastActiveAt ? now - p.lastActiveAt : Infinity;
+  const isNewSession = gap > SESSION_GAP_MS;
+  const activeDelta = isNewSession ? 0 : Math.min(gap, MAX_ACTIVE_TICK_MS);
+  const masteryScore = overallMastery(p.facts ?? {}).score;
+
+  const log = [...(p.activityLog ?? [])];
+  const idx = log.findIndex((e) => e.date === today);
+  if (idx === -1) {
+    log.push({ date: today, sessions: 1, activeMs: 0, masteryScore });
+  } else {
+    log[idx] = {
+      ...log[idx],
+      sessions: log[idx].sessions + (isNewSession ? 1 : 0),
+      activeMs: log[idx].activeMs + activeDelta,
+      masteryScore,
+    };
+  }
+
+  return { ...p, activityLog: log.slice(-MAX_ACTIVITY_LOG_DAYS), lastActiveAt: now };
 }
 
 // ===================== Перегони: складність, історія, рекорди =====================

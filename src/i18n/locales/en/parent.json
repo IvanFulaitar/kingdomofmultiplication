@@ -1,0 +1,32 @@
+{
+  "screenTitle": "Parent progress report",
+  "subtitle": "A quick overview of how your child is learning",
+  "localOnlyNote": "Data is stored only on this device",
+
+  "noDataTitle": "No data yet",
+  "noDataBody": "Your child hasn't answered any question yet — stats will appear after the first sessions",
+
+  "accuracyLabel": "Overall accuracy",
+  "avgTimeLabel": "Average response time",
+
+  "activityTitle": "Sessions this week",
+  "sessionsCount_one": "{{count}} session",
+  "sessionsCount_other": "{{count}} sessions",
+  "activeTimeLabel": "Active time: {{value}} min",
+  "avgSessionLabel": "Average session length: {{value}} min",
+  "noActivityYet": "No sessions in the last 7 days",
+
+  "trend7dLabel": "Over 7 days",
+  "trend30dLabel": "Over 30 days",
+  "trendValue": "{{sign}}{{value}}%",
+  "trendNotEnoughData": "not enough data yet",
+
+  "tablesTitle": "Multiplication tables",
+  "strongestLabel": "Strongest",
+  "weakestLabel": "Needs attention",
+  "noStrongYet": "No well-learned table yet",
+  "noWeakYet": "No tables need attention right now — great job!",
+
+  "recommendTitle": "Worth practicing together",
+  "recommendAllGood": "Everything is well learned 🎉"
+}

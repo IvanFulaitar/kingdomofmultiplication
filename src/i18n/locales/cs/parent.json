@@ -1,0 +1,34 @@
+{
+  "screenTitle": "Přehled pro rodiče",
+  "subtitle": "Stručný přehled toho, jak se dítě učí",
+  "localOnlyNote": "Data se ukládají pouze na tomto zařízení",
+
+  "noDataTitle": "Zatím žádná data",
+  "noDataBody": "Dítě zatím neodpovědělo na žádný příklad — statistika se objeví po prvních lekcích",
+
+  "accuracyLabel": "Celková přesnost",
+  "avgTimeLabel": "Průměrný čas odpovědi",
+
+  "activityTitle": "Lekce tento týden",
+  "sessionsCount_one": "{{count}} lekce",
+  "sessionsCount_few": "{{count}} lekce",
+  "sessionsCount_many": "{{count}} lekce",
+  "sessionsCount_other": "{{count}} lekcí",
+  "activeTimeLabel": "Aktivní čas: {{value}} min",
+  "avgSessionLabel": "Průměrná délka lekce: {{value}} min",
+  "noActivityYet": "Za posledních 7 dní nebyla žádná lekce",
+
+  "trend7dLabel": "Za 7 dní",
+  "trend30dLabel": "Za 30 dní",
+  "trendValue": "{{sign}}{{value}}%",
+  "trendNotEnoughData": "zatím málo dat",
+
+  "tablesTitle": "Násobilka",
+  "strongestLabel": "Nejsilnější",
+  "weakestLabel": "Potřebují procvičit",
+  "noStrongYet": "Zatím žádná řada není dobře zvládnutá",
+  "noWeakYet": "Žádná řada teď nepotřebuje procvičit — skvělé!",
+
+  "recommendTitle": "Stojí za to procvičit společně",
+  "recommendAllGood": "Vše je už dobře zvládnuto 🎉"
+}

@@ -1,0 +1,34 @@
+{
+  "screenTitle": "Postępy dla rodziców",
+  "subtitle": "Krótki przegląd tego, jak uczy się dziecko",
+  "localOnlyNote": "Dane są przechowywane wyłącznie na tym urządzeniu",
+
+  "noDataTitle": "Jeszcze brak danych",
+  "noDataBody": "Dziecko nie odpowiedziało jeszcze na żadne pytanie — statystyki pojawią się po pierwszych zajęciach",
+
+  "accuracyLabel": "Ogólna dokładność",
+  "avgTimeLabel": "Średni czas odpowiedzi",
+
+  "activityTitle": "Zajęcia w tym tygodniu",
+  "sessionsCount_one": "{{count}} zajęcie",
+  "sessionsCount_few": "{{count}} zajęcia",
+  "sessionsCount_many": "{{count}} zajęć",
+  "sessionsCount_other": "{{count}} zajęcia",
+  "activeTimeLabel": "Aktywny czas: {{value}} min",
+  "avgSessionLabel": "Średni czas zajęcia: {{value}} min",
+  "noActivityYet": "W ciągu ostatnich 7 dni nie było zajęć",
+
+  "trend7dLabel": "Za 7 dni",
+  "trend30dLabel": "Za 30 dni",
+  "trendValue": "{{sign}}{{value}}%",
+  "trendNotEnoughData": "za mało danych",
+
+  "tablesTitle": "Tabliczka mnożenia",
+  "strongestLabel": "Najmocniejsze",
+  "weakestLabel": "Wymagają uwagi",
+  "noStrongYet": "Żadna tabliczka nie jest jeszcze dobrze opanowana",
+  "noWeakYet": "Żadna tabliczka nie wymaga teraz uwagi — świetnie!",
+
+  "recommendTitle": "Warto powtórzyć razem",
+  "recommendAllGood": "Wszystko jest już dobrze opanowane 🎉"
+}

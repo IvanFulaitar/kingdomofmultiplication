@@ -1,0 +1,32 @@
+{
+  "screenTitle": "Progreso para padres",
+  "subtitle": "Un resumen rápido de cómo aprende tu hijo/a",
+  "localOnlyNote": "Los datos se guardan solo en este dispositivo",
+
+  "noDataTitle": "Todavía no hay datos",
+  "noDataBody": "Tu hijo/a aún no ha respondido ningún ejercicio — las estadísticas aparecerán tras las primeras sesiones",
+
+  "accuracyLabel": "Precisión general",
+  "avgTimeLabel": "Tiempo medio de respuesta",
+
+  "activityTitle": "Sesiones esta semana",
+  "sessionsCount_one": "{{count}} sesión",
+  "sessionsCount_other": "{{count}} sesiones",
+  "activeTimeLabel": "Tiempo activo: {{value}} min",
+  "avgSessionLabel": "Duración media de la sesión: {{value}} min",
+  "noActivityYet": "No hubo sesiones en los últimos 7 días",
+
+  "trend7dLabel": "En 7 días",
+  "trend30dLabel": "En 30 días",
+  "trendValue": "{{sign}}{{value}}%",
+  "trendNotEnoughData": "aún faltan datos",
+
+  "tablesTitle": "Tablas de multiplicar",
+  "strongestLabel": "Más fuertes",
+  "weakestLabel": "Necesitan atención",
+  "noStrongYet": "Todavía no hay ninguna tabla bien aprendida",
+  "noWeakYet": "Ninguna tabla necesita atención ahora mismo — ¡genial!",
+
+  "recommendTitle": "Vale la pena practicar juntos",
+  "recommendAllGood": "Todo está ya bien aprendido 🎉"
+}

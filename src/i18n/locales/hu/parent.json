@@ -1,0 +1,32 @@
+{
+  "screenTitle": "Szülői előrehaladási jelentés",
+  "subtitle": "Rövid áttekintés arról, hogyan tanul a gyermeked",
+  "localOnlyNote": "Az adatok csak ezen az eszközön tárolódnak",
+
+  "noDataTitle": "Még nincs adat",
+  "noDataBody": "A gyermeked még nem válaszolt egyetlen feladatra sem — a statisztika az első gyakorlások után jelenik meg",
+
+  "accuracyLabel": "Összesített pontosság",
+  "avgTimeLabel": "Átlagos válaszidő",
+
+  "activityTitle": "Foglalkozások ezen a héten",
+  "sessionsCount_one": "{{count}} foglalkozás",
+  "sessionsCount_other": "{{count}} foglalkozás",
+  "activeTimeLabel": "Aktív idő: {{value}} perc",
+  "avgSessionLabel": "Átlagos foglalkozás hossza: {{value}} perc",
+  "noActivityYet": "Az elmúlt 7 napban nem volt foglalkozás",
+
+  "trend7dLabel": "7 nap alatt",
+  "trend30dLabel": "30 nap alatt",
+  "trendValue": "{{sign}}{{value}}%",
+  "trendNotEnoughData": "még kevés az adat",
+
+  "tablesTitle": "Szorzótáblák",
+  "strongestLabel": "Legerősebb",
+  "weakestLabel": "Gyakorlást igényel",
+  "noStrongYet": "Még egyetlen tábla sincs jól megtanulva",
+  "noWeakYet": "Egyik táblának sincs most szüksége gyakorlásra — remek!",
+
+  "recommendTitle": "Érdemes együtt gyakorolni",
+  "recommendAllGood": "Minden már jól megy 🎉"
+}

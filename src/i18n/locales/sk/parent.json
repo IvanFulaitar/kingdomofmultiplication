@@ -1,0 +1,34 @@
+{
+  "screenTitle": "Prehľad pre rodičov",
+  "subtitle": "Stručný prehľad toho, ako sa dieťa učí",
+  "localOnlyNote": "Údaje sa ukladajú iba na tomto zariadení",
+
+  "noDataTitle": "Zatiaľ žiadne údaje",
+  "noDataBody": "Dieťa zatiaľ neodpovedalo na žiadny príklad — štatistika sa zobrazí po prvých lekciách",
+
+  "accuracyLabel": "Celková presnosť",
+  "avgTimeLabel": "Priemerný čas odpovede",
+
+  "activityTitle": "Lekcie tento týždeň",
+  "sessionsCount_one": "{{count}} lekcia",
+  "sessionsCount_few": "{{count}} lekcie",
+  "sessionsCount_many": "{{count}} lekcie",
+  "sessionsCount_other": "{{count}} lekcií",
+  "activeTimeLabel": "Aktívny čas: {{value}} min",
+  "avgSessionLabel": "Priemerná dĺžka lekcie: {{value}} min",
+  "noActivityYet": "Za posledných 7 dní neboli žiadne lekcie",
+
+  "trend7dLabel": "Za 7 dní",
+  "trend30dLabel": "Za 30 dní",
+  "trendValue": "{{sign}}{{value}}%",
+  "trendNotEnoughData": "zatiaľ málo údajov",
+
+  "tablesTitle": "Násobilka",
+  "strongestLabel": "Najsilnejšie",
+  "weakestLabel": "Potrebujú precvičiť",
+  "noStrongYet": "Zatiaľ žiadny rad nie je dobre zvládnutý",
+  "noWeakYet": "Žiadny rad teraz nepotrebuje precvičiť — skvelé!",
+
+  "recommendTitle": "Oplatí sa precvičiť spolu",
+  "recommendAllGood": "Všetko je už dobre zvládnuté 🎉"
+}

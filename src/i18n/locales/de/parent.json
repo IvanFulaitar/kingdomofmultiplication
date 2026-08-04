@@ -1,0 +1,32 @@
+{
+  "screenTitle": "Fortschrittsbericht für Eltern",
+  "subtitle": "Ein kurzer Überblick, wie dein Kind lernt",
+  "localOnlyNote": "Die Daten werden nur auf diesem Gerät gespeichert",
+
+  "noDataTitle": "Noch keine Daten",
+  "noDataBody": "Dein Kind hat noch keine Aufgabe beantwortet — die Statistik erscheint nach den ersten Übungen",
+
+  "accuracyLabel": "Gesamtgenauigkeit",
+  "avgTimeLabel": "Durchschnittliche Antwortzeit",
+
+  "activityTitle": "Übungen diese Woche",
+  "sessionsCount_one": "{{count}} Übung",
+  "sessionsCount_other": "{{count}} Übungen",
+  "activeTimeLabel": "Aktive Zeit: {{value}} Min",
+  "avgSessionLabel": "Durchschnittliche Dauer: {{value}} Min",
+  "noActivityYet": "In den letzten 7 Tagen gab es keine Übungen",
+
+  "trend7dLabel": "Über 7 Tage",
+  "trend30dLabel": "Über 30 Tage",
+  "trendValue": "{{sign}}{{value}}%",
+  "trendNotEnoughData": "noch zu wenig Daten",
+
+  "tablesTitle": "Einmaleins-Reihen",
+  "strongestLabel": "Am stärksten",
+  "weakestLabel": "Brauchen Übung",
+  "noStrongYet": "Noch keine Reihe gut beherrscht",
+  "noWeakYet": "Aktuell braucht keine Reihe besondere Übung — super!",
+
+  "recommendTitle": "Gemeinsam üben lohnt sich",
+  "recommendAllGood": "Alles schon gut gelernt 🎉"
+}

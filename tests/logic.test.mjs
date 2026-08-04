@@ -20,8 +20,11 @@ import {
   defaultProgress, migrateSave, starsForMistakes, heroLevelFromXp,
   checkQuests, updateStreak, ensureDaily, saveProgress, loadProgress,
   takeLoadWarning, recordRaceResult, isChampionRaceUnlocked,
-  getRaceRecommendation, STORAGE_KEY, CURRENT_SAVE_VERSION,
+  getRaceRecommendation, STORAGE_KEY, CURRENT_SAVE_VERSION, recordActivity,
 } from "../src/game/progress.js";
+import {
+  activitySummary, masteryScoreDaysAgo, overallAverageResponseTime,
+} from "../src/game/parentStats.js";
 import {
   generateQuestion, buildFactQuestion, factKey, timeForLevel,
   getWeakFacts, factsUsedIn,
@@ -512,6 +515,75 @@ test("BADGES: table7_master вимагає реального майстерст
   const masterFacts = {};
   for (const m of MULTIPLIER_RANGE) masterFacts[`7x${m}`] = { correct: 10, wrong: 0, correctStreak: 5, totalResponseTimeMs: 10000, answeredCount: 10 };
   assertEqual(badge.check({ facts: masterFacts }), true);
+});
+
+// ==================================================== activity/parentStats ===
+
+test("recordActivity: перший виклик створює запис за сьогодні з 1 сесією", () => {
+  const p = recordActivity(defaultProgress());
+  assertEqual(p.activityLog.length, 1);
+  const today = new Date().toISOString().slice(0, 10);
+  assertEqual(p.activityLog[0].date, today);
+  assertEqual(p.activityLog[0].sessions, 1);
+  assertEqual(p.activityLog[0].activeMs, 0, "перший виклик — нема попереднього моменту, щоб рахувати активний час");
+});
+
+test("recordActivity: короткий розрив (та сама сесія) не додає нову сесію, але накопичує активний час", () => {
+  let p = recordActivity(defaultProgress());
+  // Симулюємо, що з моменту першого виклику минуло 30с (< SESSION_GAP_MS) —
+  // зсуваємо lastActiveAt назад, а не чекаємо реального часу в тесті.
+  p = { ...p, lastActiveAt: p.lastActiveAt - 30 * 1000 };
+  p = recordActivity(p);
+  assertEqual(p.activityLog.length, 1, "той самий день — один запис");
+  assertEqual(p.activityLog[0].sessions, 1, "короткий розрив — та сама сесія");
+  assert(p.activityLog[0].activeMs > 0, "активний час має накопичитись за розрив між викликами");
+});
+
+test("recordActivity: розрив довший за SESSION_GAP_MS рахує нову сесію того самого дня", () => {
+  let p = recordActivity(defaultProgress());
+  p = { ...p, lastActiveAt: p.lastActiveAt - 10 * 60 * 1000 }; // 10 хв тому — довше за поріг 5 хв
+  p = recordActivity(p);
+  assertEqual(p.activityLog.length, 1, "той самий календарний день — усе ще один запис");
+  assertEqual(p.activityLog[0].sessions, 2, "розрив > 5 хв -> нова сесія");
+});
+
+test("activitySummary: рахує сесії/активний час лише за останні N днів", () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const tenDaysAgo = new Date(Date.now() - 10 * 86400000).toISOString().slice(0, 10);
+  const log = [
+    { date: tenDaysAgo, sessions: 5, activeMs: 999999 },
+    { date: today, sessions: 2, activeMs: 60000 },
+  ];
+  const summary = activitySummary(log, 7);
+  assertEqual(summary.sessions, 2, "запис 10-денної давності не входить у вікно 7 днів");
+  assertEqual(summary.activeMs, 60000);
+});
+
+test("masteryScoreDaysAgo: null, якщо історія ще не сягає так далеко назад", () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const log = [{ date: today, sessions: 1, activeMs: 0, masteryScore: 50 }];
+  assertEqual(masteryScoreDaysAgo(log, 7), null);
+});
+
+test("masteryScoreDaysAgo: бере найближчий ПОПЕРЕДНІЙ запис до цільової дати", () => {
+  const daysAgoStr = (n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+  const log = [
+    { date: daysAgoStr(20), sessions: 1, activeMs: 0, masteryScore: 40 },
+    { date: daysAgoStr(9), sessions: 1, activeMs: 0, masteryScore: 55 },
+    { date: daysAgoStr(1), sessions: 1, activeMs: 0, masteryScore: 70 },
+  ];
+  // Ціль — "7 днів тому": запис 1-денної давності НЕ рахується (це ще
+  // ближче до сьогодні, ніж ціль), тож бере найближчий запис ДО цілі — 9-денної.
+  assertEqual(masteryScoreDaysAgo(log, 7), 55);
+});
+
+test("overallAverageResponseTime: null без даних, середнє по всіх фактах разом", () => {
+  assertEqual(overallAverageResponseTime({}), null);
+  const facts = {
+    "2x3": { totalResponseTimeMs: 4000, answeredCount: 2 },
+    "4x5": { totalResponseTimeMs: 6000, answeredCount: 2 },
+  };
+  assertEqual(overallAverageResponseTime(facts), 2500);
 });
 
 // ================================================================ підсумок ===

@@ -43,7 +43,7 @@ function ToggleSwitch({ checked }) {
 // ключ, а не випадково скинути вже зроблений вибір користувача.
 const CLOUD_NOTICE_DISMISSED_KEY = "kingdom-multiplication-cloud-notice-dismissed-v1";
 
-export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount }) {
+export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTraining, onKnowledge, hasNewKnowledge, user, onAccount, onParent }) {
   const { t, i18n } = useTranslation(["menu", "quests", "common"]);
   const avatar = AVATARS.find((a) => a.id === progress.avatar) ?? AVATARS[0];
   const { level, into, need } = heroLevelFromXp(progress.xp);
@@ -514,6 +514,19 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             <ArtImage src="/assets/icons/ui/target.png" fallback="🎯" alt="" className="text-3xl w-9 h-9 object-contain flex items-center justify-center" />
             <span className="font-bold text-sm text-white">{t("menu:navTraining")}</span>
             <span className="hidden sm:block invisible text-[11px] -mt-1" aria-hidden="true">{t("menu:navKnowledgeSubtitle")}</span>
+          </button>
+        </div>
+
+        {/* launch-plan.md, розділ 8 "Додати окремий режим для дорослого" —
+            навмисно скромне текстове посилання тут, а не картка в 2×2 сітці
+            вище: це екран ДЛЯ БАТЬКІВ, не для дитини, тож не повинен
+            виглядати як ще один ігровий режим і перетягувати увагу. */}
+        <div className="text-center pb-1">
+          <button
+            onClick={() => { playUiClick(); onParent?.(); }}
+            className="legal-footer-link"
+          >
+            {t("menu:parentLink")}
           </button>
         </div>
 

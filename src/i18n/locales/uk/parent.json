@@ -1,0 +1,34 @@
+{
+  "screenTitle": "Прогрес для батьків",
+  "subtitle": "Короткий огляд того, як дитина навчається",
+  "localOnlyNote": "Дані зберігаються лише на цьому пристрої",
+
+  "noDataTitle": "Ще немає даних",
+  "noDataBody": "Дитина ще не відповідала на жоден приклад — статистика з'явиться після перших занять",
+
+  "accuracyLabel": "Загальна точність",
+  "avgTimeLabel": "Середній час відповіді",
+
+  "activityTitle": "Заняття за тиждень",
+  "sessionsCount_one": "{{count}} заняття",
+  "sessionsCount_few": "{{count}} заняття",
+  "sessionsCount_many": "{{count}} занять",
+  "sessionsCount_other": "{{count}} занять",
+  "activeTimeLabel": "Активний час: {{value}} хв",
+  "avgSessionLabel": "Середня тривалість заняття: {{value}} хв",
+  "noActivityYet": "За останні 7 днів занять не було",
+
+  "trend7dLabel": "За 7 днів",
+  "trend30dLabel": "За 30 днів",
+  "trendValue": "{{sign}}{{value}}%",
+  "trendNotEnoughData": "замало даних",
+
+  "tablesTitle": "Таблиці множення",
+  "strongestLabel": "Найсильніші",
+  "weakestLabel": "Потребують уваги",
+  "noStrongYet": "Ще жодної добре засвоєної таблиці",
+  "noWeakYet": "Немає таблиць, які потребують уваги — чудово!",
+
+  "recommendTitle": "Варто повторити разом",
+  "recommendAllGood": "Усе вже добре засвоєно 🎉"
+}
