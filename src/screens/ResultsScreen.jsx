@@ -4,7 +4,6 @@ import { LEVEL_META, REGIONS } from "../data/regions.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { playUiClick, playUiPrimary, playUiBack, playStar, playCoin, playXpGain, playLevelUp } from "../game/sfx.js";
 import ArtImage from "../components/ArtImage.jsx";
-import InstallBanner from "../components/InstallBanner.jsx";
 
 const levelIds = Object.keys(LEVEL_META).map(Number).sort((a, b) => a - b);
 
@@ -212,8 +211,6 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
           <div className="h-full bg-gradient-to-r from-violet-500 to-violet-300 bar-grow" style={{ width: `${(heroInfo.into / heroInfo.need) * 100}%` }} />
         </div>
       </div>
-
-      <InstallBanner />
 
       <div className="w-full flex flex-col gap-3">
         <button
