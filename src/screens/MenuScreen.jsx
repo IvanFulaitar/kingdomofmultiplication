@@ -5,7 +5,7 @@ import { QUEST_POOL } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { isSoundEnabled, setSoundEnabled } from "../game/sound.js";
 import { isMusicEnabled, setMusicEnabled } from "../game/music.js";
-import { onInstallAvailable, promptInstall, isIosInstallHintAvailable } from "../game/pwa.js";
+import { useInstallFlow } from "../hooks/useInstallFlow.js";
 import { playUiClick, playUiPrimary } from "../game/sfx.js";
 import { APP_VERSION, LAST_UPDATE } from "../version.js";
 import { SUPPORTED_LANGUAGES } from "../i18n/index.js";
@@ -14,6 +14,7 @@ import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 import LanguagePickerModal from "../components/LanguagePickerModal.jsx";
 import IosInstallModal from "../components/IosInstallModal.jsx";
+import OpenInSafariModal from "../components/OpenInSafariModal.jsx";
 import SimpleToast from "../components/SimpleToast.jsx";
 
 function ToggleSwitch({ checked, onChange, label }) {
@@ -54,12 +55,10 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     try { return localStorage.getItem(CLOUD_NOTICE_DISMISSED_KEY) === "1"; } catch { return true; }
   });
   const [saveInfoOpen, setSaveInfoOpen] = useState(false);
-  const [installAvailable, setInstallAvailable] = useState(false);
-  const [iosInstallOpen, setIosInstallOpen] = useState(false);
-  // isIosInstallHintAvailable() читає navigator один раз при монтуванні —
-  // не змінюється протягом сесії (девайс не перетворюється з iPhone на
-  // Android), тож useState(() => ...) без ефекту цілком достатньо.
-  const [iosInstallable] = useState(() => isIosInstallHintAvailable());
+  const {
+    canInstall, handleInstallClick: handleInstallFlowClick,
+    iosInstallOpen, setIosInstallOpen, openInSafariOpen, setOpenInSafariOpen,
+  } = useInstallFlow();
   const settingsRef = useRef(null);
   const settingsToggleRef = useRef(null);
   const xpPct = (into / need) * 100;
@@ -125,22 +124,12 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     if (sfxOn) playUiClick();
   }
 
-  // "Встановити гру" (launch-plan.md, розділ 14) — з'являється, коли браузер
-  // сам сигналізує, що встановлення можливе (beforeinstallprompt,
-  // Chrome/Edge/Android), АБО коли це iOS (Safari та інші WebKit-браузери
-  // там), де такої події не існує в принципі — там кнопка теж показується,
-  // але замість системного діалогу відкриває покрокову інструкцію
-  // (IosInstallModal.jsx), бо програмного способу викликати
-  // "Додати на головний екран" на iOS немає.
-  useEffect(() => onInstallAvailable(setInstallAvailable), []);
-
+  // "Встановити гру" (launch-plan.md, розділ 14) — розгалуження "яку
+  // модалку відкрити" живе в useInstallFlow() (спільне з InstallBanner.jsx
+  // після перемоги). Тут лишається тільки SFX-обгортка.
   async function handleInstallClick() {
     if (sfxOn) playUiClick();
-    if (iosInstallable) {
-      setIosInstallOpen(true);
-      return;
-    }
-    await promptInstall();
+    await handleInstallFlowClick();
   }
 
   useEffect(() => {
@@ -260,7 +249,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
                 <span className="text-violet-300/60 text-xs" aria-hidden="true">›</span>
               </button>
 
-              {(installAvailable || iosInstallable) && (
+              {canInstall && (
                 <>
                   <div className="h-px bg-white/10 my-1.5" />
                   <button
@@ -274,7 +263,10 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
                       alt=""
                       className="w-8 h-8 object-contain flex items-center justify-center text-base shrink-0"
                     />
-                    <span className="text-sm font-semibold text-white flex-1">{t("menu:installGame")}</span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-semibold text-white">{t("menu:installGame")}</span>
+                      <span className="block text-[11px] text-violet-300/70 leading-snug mt-0.5">{t("menu:installTagline")}</span>
+                    </span>
                   </button>
                 </>
               )}
@@ -331,6 +323,9 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
       )}
       {iosInstallOpen && (
         <IosInstallModal onClose={() => setIosInstallOpen(false)} />
+      )}
+      {openInSafariOpen && (
+        <OpenInSafariModal onClose={() => setOpenInSafariOpen(false)} />
       )}
 
       <span className="app-version-tag absolute top-4 left-4 z-20 select-none leading-tight" aria-hidden="true">

@@ -145,3 +145,54 @@ export function isIosDevice() {
 export function isIosInstallHintAvailable() {
   return isIosDevice() && !isStandaloneDisplay();
 }
+
+// Спокійніша назва, що збігається з тим, як про це думає решта коду (і як
+// сформульовано в технічному завданні) — той самий standalone-прапорець.
+export { isStandaloneDisplay as isAppInstalled };
+
+// На iOS усі браузери (Chrome, Firefox, Edge, Opera, застосунки-вебвʼю
+// Instagram/Facebook тощо) працюють на тому самому WebKit-рушії, що й
+// Safari, тому мають ті самі поля navigator і той самий вигляд у UA —
+// АЛЕ жоден із них не показує "Поділитися" → "На екран «Домой»" так само,
+// як Safari (у декого цього пункту нема взагалі). Тому такі браузери
+// отримують окремий сценарій — "спочатку відкрий у Safari" (див.
+// OpenInSafariModal.jsx) — а не покрокову інструкцію під Safari.
+const NON_SAFARI_IOS_UA_TOKENS = /CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|Mercury|GSA|DuckDuckGo|YaBrowser|SamsungBrowser|Brave|Instagram|FBAN|FBAV|Line\//i;
+
+export function isIosSafariBrowser() {
+  if (!isIosDevice()) return false;
+  const ua = navigator.userAgent || "";
+  return !NON_SAFARI_IOS_UA_TOKENS.test(ua);
+}
+
+// ------------------------------------------- ненав'язлива пропозиція (банер)
+// Після "Не зараз" ховаємо автоматичну пропозицію (банер після рівня) на
+// 7 днів — та сама вимога, що й cloudNotice в MenuScreen.jsx, тільки для
+// встановлення. Постійна кнопка в налаштуваннях НЕ підпорядкована цьому
+// таймеру — вона керується лише isAppInstalled()/isIosInstallHintAvailable().
+const INSTALL_SUGGESTION_DISMISSED_KEY = "kingdom-multiplication-install-suggestion-dismissed-v1";
+const INSTALL_SUGGESTION_REMINDER_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function canShowInstallSuggestion() {
+  if (isStandaloneDisplay()) return false;
+  // На платформах без жодного встановлюваного шляху (нема ні
+  // beforeinstallprompt, ні iOS-інструкції) банер лише б дратував —
+  // показуємо його тільки там, де клік реально щось відкриє.
+  if (!isIosDevice() && !deferredInstallEvent) return false;
+  let dismissedAt = 0;
+  try {
+    dismissedAt = Number(localStorage.getItem(INSTALL_SUGGESTION_DISMISSED_KEY)) || 0;
+  } catch {
+    return true; // немає localStorage — просто не пам'ятаємо вибір, не критично
+  }
+  if (!dismissedAt) return true;
+  return Date.now() - dismissedAt >= INSTALL_SUGGESTION_REMINDER_DELAY_MS;
+}
+
+export function dismissInstallSuggestion() {
+  try {
+    localStorage.setItem(INSTALL_SUGGESTION_DISMISSED_KEY, Date.now().toString());
+  } catch {
+    /* немає localStorage — банер може з'явитись знову цього ж сеансу, не критично */
+  }
+}
