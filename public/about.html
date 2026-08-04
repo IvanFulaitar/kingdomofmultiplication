@@ -55,10 +55,10 @@
 </head>
 <body>
 <main>
-  <a class="back-link" href="/">← Повернутися до гри</a>
-  <h1>Про гру «Королівство Математики»</h1>
+  <a class="back-link" href="/" data-i18n="nav.back">← Повернутися до гри</a>
+  <h1 data-i18n="h1">Про гру «Королівство Математики»</h1>
 
-  <p>
+  <p data-i18n="intro">
     «Королівство Математики» — казкова RPG-гра для дітей, у якій герой
     подорожує світом, б'ється з монстрами й проходить випробування,
     розв'язуючи приклади на множення та інші теми математики. Гра
@@ -67,35 +67,37 @@
     прикладів.
   </p>
 
-  <h2>Кому призначена гра</h2>
-  <p>
+  <h2 data-i18n="whoTitle">Кому призначена гра</h2>
+  <p data-i18n="whoBody">
     Гра розрахована переважно на дітей орієнтовно 8–12 років, які
     вивчають або повторюють таблицю множення й базові теми шкільної
     математики. Дорослі також можуть грати чи проходити рівні разом із
     дитиною.
   </p>
 
-  <h2>Автор</h2>
-  <p>
+  <h2 data-i18n="authorTitle">Автор</h2>
+  <p data-i18n="authorBody">
     Гру створив Ivan Stepanowich. Контакти вказані на сторінці
     <a href="/contact.html">«Контакти»</a>.
   </p>
 
-  <h2>Чого гра не робить</h2>
-  <p>
+  <h2 data-i18n="notTitle">Чого гра не робить</h2>
+  <p data-i18n="notBody">
     Гра не замінює шкільного вчителя й офіційну навчальну програму —
     це додатковий тренажер для практики та повторення, а не повний курс
     математики.
   </p>
 
   <div class="legal-nav">
-    <a href="/about.html">Про гру</a>
-    <a href="/privacy.html">Політика приватності</a>
-    <a href="/terms.html">Умови використання</a>
-    <a href="/contact.html">Контакти</a>
+    <a href="/about.html" data-i18n="nav.about">Про гру</a>
+    <a href="/privacy.html" data-i18n="nav.privacy">Політика приватності</a>
+    <a href="/terms.html" data-i18n="nav.terms">Умови використання</a>
+    <a href="/contact.html" data-i18n="nav.contact">Контакти</a>
   </div>
 
-  <p class="updated">Востаннє оновлено: серпень 2026.</p>
+  <p class="updated" data-i18n="common.updated">Востаннє оновлено: серпень 2026.</p>
 </main>
+<script src="/assets/legal-i18n.js"></script>
+<script>window.applyLegalI18n && window.applyLegalI18n("about");</script>
 </body>
 </html>

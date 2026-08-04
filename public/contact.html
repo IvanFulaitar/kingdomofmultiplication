@@ -67,34 +67,36 @@
 </head>
 <body>
 <main>
-  <a class="back-link" href="/">← Повернутися до гри</a>
-  <h1>Контакти</h1>
-  <p>
+  <a class="back-link" href="/" data-i18n="nav.back">← Повернутися до гри</a>
+  <h1 data-i18n="h1">Контакти</h1>
+  <p data-i18n="intro">
     Автор гри — Ivan Stepanowich. Пишіть, якщо знайшли помилку в грі,
     маєте пропозицію (наприклад, як учитель чи батьки) або питання щодо
     приватності:
   </p>
 
   <ul class="contact-list">
-    <li><span class="icon" aria-hidden="true">✉️</span> Email: <a href="mailto:fulaytar2405@gmail.com">fulaytar2405@gmail.com</a></li>
-    <li><span class="icon" aria-hidden="true">📷</span> Instagram: <a href="https://www.instagram.com/ivan_stepanowich" target="_blank" rel="noopener noreferrer">@ivan_stepanowich</a></li>
+    <li><span class="icon" aria-hidden="true">✉️</span> <span data-i18n="emailLabel">Email:</span> <a href="mailto:fulaytar2405@gmail.com">fulaytar2405@gmail.com</a></li>
+    <li><span class="icon" aria-hidden="true">📷</span> <span data-i18n="instagramLabel">Instagram:</span> <a href="https://www.instagram.com/ivan_stepanowich" target="_blank" rel="noopener noreferrer">@ivan_stepanowich</a></li>
   </ul>
 
-  <h2>Про що можна писати</h2>
-  <p>
+  <h2 data-i18n="aboutTitle">Про що можна писати</h2>
+  <p data-i18n="aboutBody">
     Повідомлення про баги, пропозиції щодо нових рівнів чи режимів,
     відгуки вчителів і батьків, а також питання щодо
     <a href="/privacy.html">Політики приватності</a>.
   </p>
 
   <div class="legal-nav">
-    <a href="/about.html">Про гру</a>
-    <a href="/privacy.html">Політика приватності</a>
-    <a href="/terms.html">Умови використання</a>
-    <a href="/contact.html">Контакти</a>
+    <a href="/about.html" data-i18n="nav.about">Про гру</a>
+    <a href="/privacy.html" data-i18n="nav.privacy">Політика приватності</a>
+    <a href="/terms.html" data-i18n="nav.terms">Умови використання</a>
+    <a href="/contact.html" data-i18n="nav.contact">Контакти</a>
   </div>
 
-  <p class="updated">Востаннє оновлено: серпень 2026.</p>
+  <p class="updated" data-i18n="common.updated">Востаннє оновлено: серпень 2026.</p>
 </main>
+<script src="/assets/legal-i18n.js"></script>
+<script>window.applyLegalI18n && window.applyLegalI18n("contact");</script>
 </body>
 </html>
