@@ -7,6 +7,7 @@ import { getWeakFacts } from "./game/generateQuestion.js";
 import { hasNewMasteryActivity } from "./game/mastery.js";
 import { initMusic } from "./game/music.js";
 import { preloadCoreSfx, playAchievementSfx } from "./game/sfx.js";
+import { initAnalytics, trackEvent } from "./game/analytics.js";
 import { logout as authLogout } from "./game/auth.js";
 import {
   loadProgress, saveProgress, ensureDaily, checkQuests,
@@ -87,6 +88,7 @@ export default function App() {
   useEffect(() => {
     initMusic();
     preloadCoreSfx();
+    initAnalytics(); // no-op, поки ANALYTICS_ENABLED=false (src/config.js)
   }, []);
 
   // Без цього перехід між екранами лишає стару прокрутку сторінки,
@@ -115,6 +117,7 @@ export default function App() {
       coins: progress.coins - av.cost,
       ownedAvatars: [...progress.ownedAvatars, avatarId],
     });
+    trackEvent("avatar_purchased", { avatarId, cost: av.cost });
     return true;
   }
 
@@ -246,6 +249,7 @@ export default function App() {
     }
     p = checkQuests(p);
     persist(p);
+    if (meta) trackEvent("race_finished", meta);
   }
 
   // Завершення онбордингу (launch-plan.md, розділ 4) — приходить рівно
@@ -305,6 +309,7 @@ export default function App() {
     const newHero = heroLevelFromXp(next.xp);
 
     persist(next);
+    trackEvent("level_completed", { levelId, stars, mistakes });
 
     return {
       levelId, stars, newStars, mistakes, coinGain, xpGain,
@@ -362,7 +367,7 @@ export default function App() {
           onPlay={() => setScreen("map")}
           onBadges={() => setShowBadges(true)}
           onShop={() => setScreen("shop")}
-          onTraining={() => setScreen("training")}
+          onTraining={() => { trackEvent("training_started"); setScreen("training"); }}
           onKnowledge={() => openKnowledge("menu")}
           hasNewKnowledge={hasNewMasteryActivity(progress.facts, progress.knowledgeLastSeenAt ?? 0)}
           user={user}
@@ -419,7 +424,7 @@ export default function App() {
           <RaceDifficultyScreen
             progress={progress}
             onBack={() => setScreen("training")}
-            onStart={(difficultyId) => { setRaceDifficulty(difficultyId); setScreen("race"); }}
+            onStart={(difficultyId) => { trackEvent("race_difficulty_selected", { difficultyId }); setRaceDifficulty(difficultyId); setScreen("race"); }}
           />
         )}
         {screen === "race" && (
@@ -462,6 +467,7 @@ export default function App() {
               setScreen("results");
             }}
             onGameOver={(correctCount) => {
+              trackEvent("level_failed", { levelId: activeLevel, correctCount });
               setOutcome({ won: false, levelId: activeLevel, correctCount });
               setScreen("results");
             }}

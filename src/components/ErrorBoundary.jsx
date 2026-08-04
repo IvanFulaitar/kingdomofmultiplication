@@ -1,4 +1,5 @@
 import { Component } from "react";
+import { trackEvent } from "../game/analytics.js";
 
 // Глобальний запобіжник рендера (launch-plan.md, розділ 16 "Стабільність і
 // обробка помилок"). Без цього будь-який неспійманий виняток у дереві
@@ -24,9 +25,13 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // Лишаємо слід у консолі для діагностики (нема аналітики помилок —
-    // див. launch-plan.md розділ 15, це поки не блокує реліз).
+    // Лишаємо слід у консолі для діагностики.
     console.error("ErrorBoundary зловив помилку рендера:", error, info?.componentStack);
+    // app_error (launch-plan.md, розділ 15) — навмисно лише узагальнена
+    // назва класу помилки (напр. "TypeError"), БЕЗ message/stack: текст
+    // помилки міг би випадково містити щось із контексту рендера, а нам
+    // потрібен лише грубий сигнал "як часто й де падає", не конкретика.
+    trackEvent("app_error", { errorName: error?.name ?? "Error" });
   }
 
   handleReload = () => {

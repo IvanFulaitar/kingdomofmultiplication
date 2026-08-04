@@ -605,6 +605,34 @@ revalidate". `public/offline.html` — fallback-сторінка, коли вз�
 рекламних профілів. Якщо додається будь-яке відстеження користувачів,
 його потрібно окремо перевірити з погляду правил дитячої приватності.
 
+**Реалізовано (лише фронтенд).** `src/config.js` — `ANALYTICS_ENABLED`
+(за замовчуванням `false`, той самий підхід, що й `AUTH_ENABLED`) і
+окремий `ANALYTICS_ENDPOINT` (навмисно НЕ той самий бекенд, що
+`VITE_API_URL` — акаунти/синхронізація прогресу й далі заморожені за
+попереднім рішенням, аналітика від них не залежить і не вимагає
+входу). `src/game/analytics.js` — `trackEvent()` є повним no-op, поки
+прапорець вимкнено (нічого не пишеться навіть у localStorage); коли
+увімкнено — події чергуються локально (з обмеженням розміру) і батчами
+йдуть на `ANALYTICS_ENDPOINT` (fetch з ретраєм, `sendBeacon` на
+`pagehide`/приховану вкладку); без заданого endpoint черга просто
+накопичується локально й нікуди не йде. Підключено 14 із 15 подій зі
+списку вище: `app_open`, `tutorial_started`, `tutorial_completed`,
+`diagnostic_completed`, `level_started`, `level_completed`,
+`level_failed`, `answer_submitted` (skillId/correct/
+responseTimeBucket/mode/levelId — без точного часу), `hint_used`,
+`avatar_purchased`, `training_started`, `race_difficulty_selected`,
+`race_finished`, `app_error` (лише узагальнена назва класу помилки,
+без message/stack). `save_exported` — НЕ підключено: наразі в
+застосунку немає UI для експорту збереження у файл (сама функція
+export/import ще не винесена на жоден екран), тож тригера для цієї
+події поки не існує.
+
+Щоб система реально запрацювала: (1) підняти окремий self-hosted чи
+агрегований сервіс прийому подій, (2) виставити
+`VITE_ANALYTICS_ENDPOINT` і `VITE_ANALYTICS_ENABLED=true` в `.env`, (3)
+окремо перевірити цей сервіс із погляду дитячої приватності, як і
+зазначено вище.
+
 ## 16. Стабільність і обробка помилок
 
 Додати глобальний ErrorBoundary. Замість білого екрана:

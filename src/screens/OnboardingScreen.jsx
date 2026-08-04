@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { generateQuestion, factsUsedIn } from "../game/generateQuestion.js";
+import { trackEvent } from "../game/analytics.js";
 import {
   playUiClick, playUiPrimary, playAttack, playEnemyHit, playHeartLost,
   playVictory, playStar, playCoin, playXpGain,
@@ -127,6 +128,8 @@ export default function OnboardingScreen({ onComplete }) {
     setTimeout(() => {
       const nextIndex = dIndex + 1;
       if (nextIndex >= DIAGNOSTIC_QUESTIONS) {
+        trackEvent("diagnostic_completed", { correct: dCorrect + (correct ? 1 : 0), total: DIAGNOSTIC_QUESTIONS });
+        trackEvent("tutorial_started");
         setStep("tutorial");
         return;
       }
@@ -152,6 +155,7 @@ export default function OnboardingScreen({ onComplete }) {
     setTimeout(() => {
       if (correct) {
         setTWon(true);
+        trackEvent("tutorial_completed");
         playVictory();
       } else {
         // Демо не повинно "провалюватись" насправді — це показ механіки,

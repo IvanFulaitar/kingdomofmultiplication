@@ -8,3 +8,14 @@
 // VITE_AUTH_ENABLED=true в .env вмикає акаунти назад одним прапорцем,
 // без розкиданих перевірок по десятках компонентів.
 export const AUTH_ENABLED = import.meta.env.VITE_AUTH_ENABLED === "true";
+
+// Аналітика продукту (launch-plan.md, розділ 15) — той самий підхід, що й
+// AUTH_ENABLED: за замовчуванням повністю вимкнена (жодних подій, жодного
+// запису в localStorage, жодних мережевих запитів), щоб не додавати
+// відстеження без свідомого рішення. ANALYTICS_ENDPOINT навмисно
+// відокремлено від бекенду акаунтів (server/, VITE_API_URL) — це може бути
+// зовсім інший, self-hosted або агрегований сервіс без реєстрації
+// користувачів; якщо не задано, trackEvent() і далі нічого нікуди не
+// відправляє, навіть якщо ANALYTICS_ENABLED=true.
+export const ANALYTICS_ENABLED = import.meta.env.VITE_ANALYTICS_ENABLED === "true";
+export const ANALYTICS_ENDPOINT = import.meta.env.VITE_ANALYTICS_ENDPOINT || null;

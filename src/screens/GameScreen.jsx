@@ -6,6 +6,7 @@ import { generateQuestion, QUESTIONS_PER_LEVEL, timeForLevel, factsUsedIn } from
 import { explainFromPair } from "../game/explainFact.js";
 import { setMusicIntensity } from "../game/music.js";
 import { preloadSfxGroup, playAttack, playEnemyHit, playHeartLost, playVictory, playDefeat, playModalOpen } from "../game/sfx.js";
+import { trackEvent, bucketResponseTime } from "../game/analytics.js";
 import ArtImage from "../components/ArtImage.jsx";
 import ExitConfirmModal from "../components/ExitConfirmModal.jsx";
 
@@ -58,7 +59,9 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
   useEffect(() => {
     setMusicIntensity("active");
     preloadSfxGroup("combat");
+    trackEvent("level_started", { levelId });
     return () => setMusicIntensity("calm");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -116,6 +119,10 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
     if (correct) setCorrectCount((c) => c + 1);
     const responseTimeMs = Date.now() - questionStartRef.current;
     onAnswer(question.pair, correct, question.kind, responseTimeMs);
+    trackEvent("answer_submitted", {
+      skillId: question.pair, correct, mode: "battle", levelId,
+      responseTimeBucket: bucketResponseTime(responseTimeMs),
+    });
     if (correct) {
       playAttack();
       setTimeout(playEnemyHit, 90);

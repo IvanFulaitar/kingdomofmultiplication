@@ -5,6 +5,7 @@ import { CELL, generateMaze, tierForCompletions, cellNeighbors, mainPathAnchorIn
 import { generateMazeQuestion, pickKind } from "../game/mazeQuestions.js";
 import { shuffle } from "../game/random.js";
 import { setMusicIntensity } from "../game/music.js";
+import { trackEvent } from "../game/analytics.js";
 import {
   preloadSfxGroup, playAnswerCorrect, playAnswerWrong, playHeartLost, playDefeat, playModalOpen,
   playMazeMove, playKeyPickup, playChestOpen, playHintSfx, playCoin, playTrapSfx, playPortal, playMazeExit,
@@ -519,6 +520,7 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
     setEliminated((e) => new Set([...e, ...toRemove]));
     setHints((h) => h - 1);
     playHintSfx();
+    trackEvent("hint_used", { mode: "maze" });
   }
 
   function handleTreasureAnswer(value) {
