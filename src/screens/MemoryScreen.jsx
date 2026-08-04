@@ -115,7 +115,7 @@ export default function MemoryScreen({ onBack, onComplete }) {
 
       <div className="relative z-10 max-w-md mx-auto px-4 py-8 pb-10 min-h-dvh flex flex-col">
         <div className="flex items-start gap-2 w-full min-w-0">
-          <button onClick={() => { playModalOpen(); setShowExitConfirm(true); }} className="rpg-panel rounded-xl w-11 h-11 flex items-center justify-center text-xl text-amber-100 active:scale-95 transition shrink-0 mt-2">←</button>
+          <button onClick={() => { playModalOpen(); setShowExitConfirm(true); }} aria-label={t("common:back")} className="rpg-panel rounded-xl w-11 h-11 flex items-center justify-center text-xl text-amber-100 active:scale-95 transition shrink-0 mt-2">←</button>
 
           <div className="flex-1 min-w-0 relative mt-6">
             <div className="modal-ornament absolute -top-9 left-1/2 -translate-x-1/2 z-10" style={{ width: "3.25rem", height: "3.25rem", fontSize: "1.5rem", background: "linear-gradient(180deg, #fbcfe8, #f472b6 60%, #db2777)" }}>

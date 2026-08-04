@@ -16,6 +16,24 @@ html, body {
 #root {
   min-height: 100dvh;
 }
+
+/* prefers-reduced-motion (launch-plan.md, розділ 12) — глобальний
+   запобіжник замість переліку окремих класів (той нижче лишається як
+   "явний" список, але дублює цей). Гра рясніє власними @keyframes
+   (пульси клітинок лабіринту, іскри перемоги, гойдання аватара, тремтіння
+   серця тощо) — перелічувати кожен вручну ризиковано забути новий. Жодна
+   логіка в JS не чекає на animationend/transitionend (перевірено), тож
+   стиснення до ~0 безпечне: анімація технічно "відбувається", просто
+   миттєво, замість того щоб зникнути й зламати код, який на неї покладався б. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 .font-display { font-family: 'Cinzel', serif; letter-spacing: 0.02em; }
 .font-body { font-family: 'Baloo 2', sans-serif; }
 
@@ -31,7 +49,11 @@ html, body {
 .legal-footer-link:hover,
 .legal-footer-link:focus-visible {
   color: #f5b942;
+}
+.legal-footer-link:focus-visible {
   outline: none;
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px rgba(245, 185, 66, 0.75);
 }
 .legal-footer-dot {
   color: rgba(217, 209, 255, 0.3);

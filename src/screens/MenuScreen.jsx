@@ -430,7 +430,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
                   </span>
                 </div>
                 <p className="text-xs text-violet-200/80 leading-snug">{t("menu:cloudNoticeSubtitle")}</p>
-                <p className="text-xs text-violet-300/60 leading-snug mt-1">{t("menu:cloudNoticeExtra")}</p>
+                <p className="text-xs text-violet-300/80 leading-snug mt-1">{t("menu:cloudNoticeExtra")}</p>
                 <button
                   onClick={handleAccountClick}
                   className="mt-2 text-xs font-display font-bold text-amber-300 hover:text-amber-200 transition"

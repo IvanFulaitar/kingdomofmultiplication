@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, setLanguage } from "../i18n/index.js";
 import { playModalOpen, playModalClose, playUiClick } from "../game/sfx.js";
+import { useModalDialog } from "../hooks/useModalDialog.js";
 
 // Мова другою мовою кожного рядка написана СВОЄЮ ж рідною назвою
 // (Українська/English/Polski), не перекладена — так завжди зрозуміло,
@@ -9,12 +10,10 @@ import { playModalOpen, playModalClose, playUiClick } from "../game/sfx.js";
 // замінює прапор — англійська, наприклад, не належить лише одній країні.
 export default function LanguagePickerModal({ onClose, onLanguageChanged }) {
   const { t, i18n } = useTranslation("common");
+  const { titleId, panelRef } = useModalDialog(onClose);
 
   useEffect(() => {
-    const original = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     playModalOpen();
-    return () => { document.body.style.overflow = original; };
   }, []);
 
   function handleClose() {
@@ -36,13 +35,14 @@ export default function LanguagePickerModal({ onClose, onLanguageChanged }) {
   return (
     <div className="modal-backdrop fixed inset-0 flex items-end sm:items-center justify-center z-50 p-4" onClick={handleClose}>
       <div
+        ref={panelRef}
         className="rpg-panel rpg-panel-gold relative rounded-t-3xl sm:rounded-[26px] w-full max-w-[420px] screen-in px-5 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6"
         role="dialog"
         aria-modal="true"
-        aria-label={t("chooseLanguage")}
+        aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-display gold-text text-xl font-extrabold text-center mb-4">
+        <h2 id={titleId} className="font-display gold-text text-xl font-extrabold text-center mb-4">
           {t("chooseLanguage")}
         </h2>
 

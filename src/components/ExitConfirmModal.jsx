@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { playModalClose } from "../game/sfx.js";
 import ArtImage from "./ArtImage.jsx";
@@ -30,12 +30,26 @@ export default function ExitConfirmModal({
 }) {
   const { t } = useTranslation("common");
   const [exiting, setExiting] = useState(false);
+  const titleId = useId();
 
   // Поки модалка відкрита, сайт позаду не повинен прокручуватись.
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = original; };
+  }, []);
+
+  // Escape = те саме, що кнопка "Продовжити" (onContinue) — найбезпечніша
+  // дія за замовчуванням, аналогічно до заднього фону, який тут навмисно
+  // НЕ закриває модалку кліком (щоб не втратити прогрес випадковим тапом
+  // повз кнопки) — але клавіатурний Escape усе одно повинен працювати.
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "Escape") { playModalClose(); onContinue(); }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const copy = MODE_COPY[modeType] ?? MODE_COPY.story;
@@ -53,14 +67,14 @@ export default function ExitConfirmModal({
   }
 
   return (
-    <div className="exit-modal-backdrop fixed inset-0 z-[70] flex items-center justify-center px-5 py-8" role="dialog" aria-modal="true">
+    <div className="exit-modal-backdrop fixed inset-0 z-[70] flex items-center justify-center px-5 py-8" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <div className="exit-modal-panel relative w-full max-w-sm rounded-3xl px-5 pt-10 pb-5 text-center">
         <div className="exit-modal-ornament absolute -top-7 left-1/2 -translate-x-1/2" aria-hidden="true">
           <span className="exit-modal-shield" />
         </div>
 
         <div className="text-xs font-display font-bold text-amber-200/80 mb-1 truncate">{levelName}</div>
-        <h2 className="font-display gold-text text-2xl font-extrabold leading-tight mb-3">
+        <h2 id={titleId} className="font-display gold-text text-2xl font-extrabold leading-tight mb-3">
           {title ?? t(copy.titleKey)}
         </h2>
         <p className="text-violet-100 text-base leading-snug mb-4">

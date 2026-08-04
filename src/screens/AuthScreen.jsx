@@ -544,7 +544,7 @@ export default function AuthScreen({ user, avatarId, onBack, onAuthenticated, on
             </button>
 
             {mode === "register" && !success && (
-              <p className="font-body text-xs text-violet-300/60 text-center -mt-1">
+              <p className="font-body text-xs text-violet-300/80 text-center -mt-1">
                 {t("auth:registerRecoveryHint")}
               </p>
             )}
