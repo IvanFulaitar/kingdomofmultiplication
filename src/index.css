@@ -19,69 +19,6 @@ html, body {
 .font-display { font-family: 'Cinzel', serif; letter-spacing: 0.02em; }
 .font-body { font-family: 'Baloo 2', sans-serif; }
 
-/* Підпис автора внизу головного екрана — під навігацією, щоб не заважав грі */
-.creator-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-
-  width: fit-content;
-  max-width: calc(100% - 32px);
-  margin: 28px auto max(24px, env(safe-area-inset-bottom));
-  padding: 7px 14px;
-
-  color: #d9d1ff;
-  font-size: 12px;
-  line-height: 1.2;
-  text-decoration: none;
-
-  background: rgba(30, 27, 75, 0.5);
-  border: 1px solid rgba(245, 185, 66, 0.3);
-  border-radius: 999px;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-
-  backdrop-filter: blur(8px);
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background-color 160ms ease;
-}
-.creator-link__label {
-  color: rgba(217, 209, 255, 0.75);
-}
-
-.creator-link strong {
-  color: #f5b942;
-  font-weight: 700;
-}
-
-.creator-link__icon {
-  display: grid;
-  place-items: center;
-
-  width: 24px;
-  height: 24px;
-
-  color: #f5b942;
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.creator-link:hover,
-.creator-link:focus-visible {
-  background: rgba(67, 42, 133, 0.9);
-  border-color: #f5b942;
-  transform: translateY(-2px);
-  outline: none;
-}
-
-.creator-link:active {
-  transform: scale(0.97);
-}
-
 /* Обов'язкові сторінки (launch-plan.md, розділ 11) — непомітний рядок
    посилань під підписом автора, навмисно приглушений, щоб не тягнути
    увагу дитини від "ГРАТИ". */
