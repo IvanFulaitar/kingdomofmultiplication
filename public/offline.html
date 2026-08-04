@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Немає з'єднання — Королівство Математики</title>
+<link rel="icon" type="image/png" href="/favicon.png" />
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+    color: #f4f1ff;
+    background: linear-gradient(180deg, #1e1b4b, #312e81, #1e1b4b);
+    padding: 1.5rem;
+    text-align: center;
+  }
+  main {
+    max-width: 420px;
+    background: linear-gradient(180deg, rgba(64, 51, 110, 0.75), rgba(30, 23, 66, 0.85));
+    border: 1px solid rgba(245, 185, 66, 0.3);
+    border-radius: 22px;
+    padding: 2.25rem 1.75rem;
+    box-shadow: 0 10px 24px -8px rgba(0,0,0,0.55);
+  }
+  .icon { font-size: 3rem; margin-bottom: 0.75rem; }
+  h1 {
+    font-family: "Cinzel", Georgia, serif;
+    color: #f5b942;
+    font-size: 1.4rem;
+    margin: 0 0 0.75rem;
+  }
+  p { line-height: 1.6; color: #e8e3ff; font-size: 1rem; margin: 0 0 1.5rem; }
+  button {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e1b4b;
+    background: linear-gradient(180deg, #fcd34d, #f5b942);
+    border: none;
+    border-radius: 14px;
+    padding: 0.85rem 1.75rem;
+    cursor: pointer;
+  }
+  button:active { transform: scale(0.97); }
+  .hint { margin-top: 1rem; font-size: 0.85rem; color: #a5a0c9; }
+</style>
+</head>
+<body>
+<main>
+  <div class="icon" aria-hidden="true">🏰</div>
+  <h1>Немає з'єднання з інтернетом</h1>
+  <p>
+    Схоже, зараз немає доступу до мережі, а ця сторінка гри ще не
+    завантажувалась раніше на цьому пристрої. Підключіться до інтернету
+    й спробуйте ще раз — після першого успішного запуску гра зможе
+    відкриватись швидше навіть за нестабільного з'єднання.
+  </p>
+  <button type="button" onclick="location.reload()">Спробувати знову</button>
+  <p class="hint">No internet connection — please reconnect and reload.</p>
+</main>
+</body>
+</html>

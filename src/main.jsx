@@ -7,6 +7,13 @@ import ErrorBoundary from "./components/ErrorBoundary.jsx";
 // підключаються через useTranslation()), достатньо факту імпорту.
 import "./i18n/index.js";
 import "./index.css";
+import { registerServiceWorker, initInstallPrompt } from "./game/pwa.js";
+
+// PWA (launch-plan.md, розділ 14): реєстрація SW і перехоплення
+// beforeinstallprompt мають статись якнайраніше — до першого рендера,
+// щоб UpdateBanner/кнопка "Встановити гру" не пропустили ранню подію.
+registerServiceWorker();
+initInstallPrompt();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

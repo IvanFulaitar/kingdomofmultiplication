@@ -20,5 +20,9 @@
   "exitProgressWithTotal": "{{label}}: {{current}} z {{total}}",
   "exitProgressNoTotal": "{{label}}: {{current}}",
   "exitContinue": "Pokračovať v hre",
-  "exitButton": "Odísť"
+  "exitButton": "Odísť",
+  "updateAvailableTitle": "Dostupná aktualizácia",
+  "updateAvailableBody": "Je k dispozícii nová verzia hry. Aktualizuj a získaj najnovšie vylepšenia.",
+  "updateApplying": "Aktualizuje sa…",
+  "updateNow": "Aktualizovať"
 }

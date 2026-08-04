@@ -20,5 +20,9 @@
   "exitProgressWithTotal": "{{label}}: {{current}} de {{total}}",
   "exitProgressNoTotal": "{{label}}: {{current}}",
   "exitContinue": "Seguir jugando",
-  "exitButton": "Salir"
+  "exitButton": "Salir",
+  "updateAvailableTitle": "Actualización disponible",
+  "updateAvailableBody": "Hay una nueva versión del juego. Actualiza para obtener las últimas mejoras.",
+  "updateApplying": "Actualizando…",
+  "updateNow": "Actualizar"
 }

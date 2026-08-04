@@ -1,0 +1,19 @@
+{
+  "name": "Королівство Математики",
+  "short_name": "Королівство",
+  "description": "Королівство Математики — казкова RPG-гра для дітей, де можна подорожувати світом, битися з монстрами й опановувати множення, дроби, рівняння та інші теми математики.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#1e1b4b",
+  "lang": "uk",
+  "dir": "ltr",
+  "categories": ["education", "kids", "games"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

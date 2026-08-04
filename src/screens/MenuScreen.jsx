@@ -5,6 +5,7 @@ import { QUEST_POOL } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { isSoundEnabled, setSoundEnabled } from "../game/sound.js";
 import { isMusicEnabled, setMusicEnabled } from "../game/music.js";
+import { onInstallAvailable, promptInstall } from "../game/pwa.js";
 import { playUiClick, playUiPrimary } from "../game/sfx.js";
 import { APP_VERSION, LAST_UPDATE } from "../version.js";
 import { SUPPORTED_LANGUAGES } from "../i18n/index.js";
@@ -52,6 +53,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     try { return localStorage.getItem(CLOUD_NOTICE_DISMISSED_KEY) === "1"; } catch { return true; }
   });
   const [saveInfoOpen, setSaveInfoOpen] = useState(false);
+  const [installAvailable, setInstallAvailable] = useState(false);
   const settingsRef = useRef(null);
   const settingsToggleRef = useRef(null);
   const xpPct = (into / need) * 100;
@@ -115,6 +117,18 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     setMusicOn(next);
     setMusicEnabled(next);
     if (sfxOn) playUiClick();
+  }
+
+  // "Встановити гру" (launch-plan.md, розділ 14) — з'являється лише тоді,
+  // коли браузер сам сигналізує, що встановлення можливе (beforeinstallprompt,
+  // Chrome/Edge/Android); на iOS Safari цієї події нема, тож кнопка там
+  // просто не показується (немає надійного програмного способу викликати
+  // "Додати на головний екран" там).
+  useEffect(() => onInstallAvailable(setInstallAvailable), []);
+
+  async function handleInstallClick() {
+    if (sfxOn) playUiClick();
+    await promptInstall();
   }
 
   useEffect(() => {
@@ -233,6 +247,25 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
                 <span className="text-xs text-violet-300/80">{currentLanguageName}</span>
                 <span className="text-violet-300/60 text-xs" aria-hidden="true">›</span>
               </button>
+
+              {installAvailable && (
+                <>
+                  <div className="h-px bg-white/10 my-1.5" />
+                  <button
+                    type="button"
+                    onClick={handleInstallClick}
+                    className="flex items-center gap-2.5 px-1.5 py-2 rounded-lg hover:bg-white/5 transition text-left"
+                  >
+                    <ArtImage
+                      src="/assets/icons/ui/install.png"
+                      fallback="📲"
+                      alt=""
+                      className="w-8 h-8 object-contain flex items-center justify-center text-base shrink-0"
+                    />
+                    <span className="text-sm font-semibold text-white flex-1">{t("menu:installGame")}</span>
+                  </button>
+                </>
+              )}
 
               <div className="h-px bg-white/10 my-1.5" />
 

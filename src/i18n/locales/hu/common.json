@@ -20,5 +20,9 @@
   "exitProgressWithTotal": "{{label}}: {{current}}/{{total}}",
   "exitProgressNoTotal": "{{label}}: {{current}}",
   "exitContinue": "Játék folytatása",
-  "exitButton": "Kilépés"
+  "exitButton": "Kilépés",
+  "updateAvailableTitle": "Elérhető frissítés",
+  "updateAvailableBody": "Elérhető a játék új verziója. Frissíts, hogy megkapd a legújabb fejlesztéseket.",
+  "updateApplying": "Frissítés…",
+  "updateNow": "Frissítés"
 }

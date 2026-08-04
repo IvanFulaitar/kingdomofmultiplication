@@ -21,6 +21,7 @@ import {
 import MenuScreen from "./screens/MenuScreen.jsx";
 import BadgeToast from "./components/BadgeToast.jsx";
 import SaveNoticeToast from "./components/SaveNoticeToast.jsx";
+import UpdateBanner from "./components/UpdateBanner.jsx";
 const OnboardingScreen = lazy(() => import("./screens/OnboardingScreen.jsx"));
 const MyKnowledgeScreen = lazy(() => import("./screens/MyKnowledgeScreen.jsx"));
 const ShopScreen = lazy(() => import("./screens/ShopScreen.jsx"));
@@ -479,6 +480,7 @@ export default function App() {
       </Suspense>
       {newBadge && <BadgeToast badge={newBadge} onClose={() => setNewBadge(null)} />}
       {saveWarning && <SaveNoticeToast reason={saveWarning} onClose={() => setSaveWarning(null)} />}
+      <UpdateBanner />
     </main>
   );
 }

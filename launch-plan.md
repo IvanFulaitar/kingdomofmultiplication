@@ -534,6 +534,23 @@ Instagram можна залишити, але бажано також мати e
 Не кешувати старий JS назавжди. Потрібна контрольована стратегія
 оновлення, щоб користувачі не залишалися на застарілій версії.
 
+**Реалізовано.** `public/manifest.webmanifest` (name/short_name, icons
+192/512/maskable-512, `theme_color`/`background_color` #1e1b4b,
+`display: standalone`), підключено в `index.html` разом із
+`<meta name="theme-color">`. `public/service-worker.js` — рукописний, без
+build-плагіна: navigation — "network first" (завжди свіжий index.html,
+коли є мережа, кеш лише як fallback — вимога "не кешувати старий JS
+назавжди" виконана явно), `/assets/*` + шрифти — "stale while
+revalidate". `public/offline.html` — fallback-сторінка, коли взагалі
+немає ні мережі, ні кешу. Оновлення НЕ застосовується автоматично: нова
+версія чекає в стані "waiting", `UpdateBanner.jsx` показує
+"Доступне оновлення" з кнопкою "Оновити" (шле `SKIP_WAITING`, чекає
+`controllerchange`, тоді reload) — щоб дитину не перекинуло посеред
+бою. Кнопка "Встановити гру" (`src/game/pwa.js`, `beforeinstallprompt`)
+з'являється в попапі налаштувань лише коли браузер сам підтверджує, що
+встановлення можливе (Chrome/Edge/Android; iOS Safari цієї події не
+надсилає — кнопки там нема, окремого workaround не робили).
+
 ## 15. Аналітика без порушення приватності
 
 Без аналітики після запуску не буде видно:

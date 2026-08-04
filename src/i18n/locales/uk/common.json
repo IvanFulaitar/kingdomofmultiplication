@@ -20,5 +20,9 @@
   "exitProgressWithTotal": "{{label}}: {{current}} з {{total}}",
   "exitProgressNoTotal": "{{label}}: {{current}}",
   "exitContinue": "Продовжити гру",
-  "exitButton": "Вийти"
+  "exitButton": "Вийти",
+  "updateAvailableTitle": "Доступне оновлення",
+  "updateAvailableBody": "Вийшла нова версія гри. Онови, щоб отримати останні покращення.",
+  "updateApplying": "Оновлюємо…",
+  "updateNow": "Оновити"
 }
