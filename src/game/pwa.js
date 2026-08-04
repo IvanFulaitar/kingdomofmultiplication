@@ -114,3 +114,34 @@ export async function promptInstall() {
     return null;
   }
 }
+
+// ------------------------------------------------- iOS Safari "ручний" шлях
+// iOS (будь-який браузер, бо всі вони на WebKit) НІКОЛИ не надсилає
+// beforeinstallprompt — Apple свідомо не дала сайтам змоги самим викликати
+// системний діалог встановлення. Єдиний спосіб на iPhone/iPad — це вручну
+// відкрити "Поділитися" → "На екран «Домой»", тож замість кнопки, що сама
+// щось запускає, там показуємо інструкцію (IosInstallModal.jsx).
+export function isStandaloneDisplay() {
+  if (typeof window === "undefined") return false;
+  try {
+    if (window.navigator.standalone === true) return true; // iOS Safari-специфічний прапорець
+    return window.matchMedia?.("(display-mode: standalone)").matches ?? false;
+  } catch {
+    return false;
+  }
+}
+
+export function isIosDevice() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  // iPadOS 13+ маскується під "MacIntel" у navigator.platform — окрема
+  // перевірка на сенсорні точки відрізняє iPad від звичайного Mac.
+  const isIPadOS13Plus = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  return /iPad|iPhone|iPod/.test(ua) || isIPadOS13Plus;
+}
+
+// true, коли варто показати кнопку "Встановити гру" з інструкцією замість
+// (чи на додачу до) звичайного beforeinstallprompt-шляху.
+export function isIosInstallHintAvailable() {
+  return isIosDevice() && !isStandaloneDisplay();
+}

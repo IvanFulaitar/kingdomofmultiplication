@@ -5,7 +5,7 @@ import { QUEST_POOL } from "../data/rewards.js";
 import { heroLevelFromXp } from "../game/progress.js";
 import { isSoundEnabled, setSoundEnabled } from "../game/sound.js";
 import { isMusicEnabled, setMusicEnabled } from "../game/music.js";
-import { onInstallAvailable, promptInstall } from "../game/pwa.js";
+import { onInstallAvailable, promptInstall, isIosInstallHintAvailable } from "../game/pwa.js";
 import { playUiClick, playUiPrimary } from "../game/sfx.js";
 import { APP_VERSION, LAST_UPDATE } from "../version.js";
 import { SUPPORTED_LANGUAGES } from "../i18n/index.js";
@@ -13,6 +13,7 @@ import { AUTH_ENABLED } from "../config.js";
 import StarIcon from "../components/StarIcon.jsx";
 import ArtImage from "../components/ArtImage.jsx";
 import LanguagePickerModal from "../components/LanguagePickerModal.jsx";
+import IosInstallModal from "../components/IosInstallModal.jsx";
 import SimpleToast from "../components/SimpleToast.jsx";
 
 function ToggleSwitch({ checked, onChange, label }) {
@@ -54,6 +55,11 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   });
   const [saveInfoOpen, setSaveInfoOpen] = useState(false);
   const [installAvailable, setInstallAvailable] = useState(false);
+  const [iosInstallOpen, setIosInstallOpen] = useState(false);
+  // isIosInstallHintAvailable() читає navigator один раз при монтуванні —
+  // не змінюється протягом сесії (девайс не перетворюється з iPhone на
+  // Android), тож useState(() => ...) без ефекту цілком достатньо.
+  const [iosInstallable] = useState(() => isIosInstallHintAvailable());
   const settingsRef = useRef(null);
   const settingsToggleRef = useRef(null);
   const xpPct = (into / need) * 100;
@@ -119,15 +125,21 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
     if (sfxOn) playUiClick();
   }
 
-  // "Встановити гру" (launch-plan.md, розділ 14) — з'являється лише тоді,
-  // коли браузер сам сигналізує, що встановлення можливе (beforeinstallprompt,
-  // Chrome/Edge/Android); на iOS Safari цієї події нема, тож кнопка там
-  // просто не показується (немає надійного програмного способу викликати
-  // "Додати на головний екран" там).
+  // "Встановити гру" (launch-plan.md, розділ 14) — з'являється, коли браузер
+  // сам сигналізує, що встановлення можливе (beforeinstallprompt,
+  // Chrome/Edge/Android), АБО коли це iOS (Safari та інші WebKit-браузери
+  // там), де такої події не існує в принципі — там кнопка теж показується,
+  // але замість системного діалогу відкриває покрокову інструкцію
+  // (IosInstallModal.jsx), бо програмного способу викликати
+  // "Додати на головний екран" на iOS немає.
   useEffect(() => onInstallAvailable(setInstallAvailable), []);
 
   async function handleInstallClick() {
     if (sfxOn) playUiClick();
+    if (iosInstallable) {
+      setIosInstallOpen(true);
+      return;
+    }
     await promptInstall();
   }
 
@@ -248,7 +260,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
                 <span className="text-violet-300/60 text-xs" aria-hidden="true">›</span>
               </button>
 
-              {installAvailable && (
+              {(installAvailable || iosInstallable) && (
                 <>
                   <div className="h-px bg-white/10 my-1.5" />
                   <button
@@ -316,6 +328,9 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
       )}
       {languageToast && (
         <SimpleToast message={languageToast} onClose={() => setLanguageToast(null)} />
+      )}
+      {iosInstallOpen && (
+        <IosInstallModal onClose={() => setIosInstallOpen(false)} />
       )}
 
       <span className="app-version-tag absolute top-4 left-4 z-20 select-none leading-tight" aria-hidden="true">
