@@ -21,7 +21,10 @@ export default function UpdateBanner() {
   }
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 max-w-sm mx-auto toast-in">
+    <div
+      className="fixed inset-x-4 z-50 max-w-sm mx-auto toast-in"
+      style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
+    >
       <div className="rpg-panel rpg-panel-gold rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-2xl">
         <span className="text-xl shrink-0" aria-hidden="true">✨</span>
         <div className="flex-1 min-w-0">

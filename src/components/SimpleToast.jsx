@@ -14,7 +14,8 @@ export default function SimpleToast({ message, duration = 2200, onClose }) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed top-6 left-1/2 -translate-x-1/2 bg-amber-400 text-indigo-950 rounded-2xl px-5 py-3 shadow-2xl z-[60] font-body font-bold toast-in"
+      className="fixed left-1/2 -translate-x-1/2 bg-amber-400 text-indigo-950 rounded-2xl px-5 py-3 shadow-2xl z-[60] font-body font-bold toast-in"
+      style={{ top: "max(1.5rem, env(safe-area-inset-top))" }}
     >
       {message}
     </div>

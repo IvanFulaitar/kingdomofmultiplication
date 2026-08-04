@@ -34,7 +34,7 @@ export default function IosInstallModal({ onClose }) {
     <div className="modal-backdrop fixed inset-0 flex items-end sm:items-center justify-center z-50 p-4" onClick={handleClose}>
       <div
         ref={panelRef}
-        className="rpg-panel rpg-panel-gold relative rounded-t-3xl sm:rounded-[26px] w-full max-w-[420px] screen-in px-5 py-6 max-h-[88dvh] overflow-y-auto"
+        className="rpg-panel rpg-panel-gold relative rounded-t-3xl sm:rounded-[26px] w-full max-w-[420px] screen-in px-5 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6 max-h-[88dvh] overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

@@ -124,7 +124,7 @@ export default function AvatarPurchaseModal({
         <button
           onClick={safeClose}
           aria-label={t("common:close")}
-          className="modal-x-button absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold z-10"
+          className="modal-x-button absolute top-2 right-2 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold z-10"
         >
           ✕
         </button>

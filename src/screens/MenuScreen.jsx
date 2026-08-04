@@ -17,20 +17,21 @@ import IosInstallModal from "../components/IosInstallModal.jsx";
 import OpenInSafariModal from "../components/OpenInSafariModal.jsx";
 import SimpleToast from "../components/SimpleToast.jsx";
 
-function ToggleSwitch({ checked, onChange, label }) {
+// Суто візуальний повзунок — сам не клікабельний (клік/aria-стан обробляє
+// button-обгортка нижче, в попапі налаштувань). Раніше сам перемикач був
+// окремою <button> лише 44×24px — на реальному тачскрін-екрані це занадто
+// вузька ціль по вертикалі для дитини 10-12 років; тепер тапабельна вся
+// смуга рядка (як інші рядки в цьому попапі — installGame/language).
+function ToggleSwitch({ checked }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={() => onChange(!checked)}
+    <span
+      aria-hidden="true"
       className={`relative w-11 h-6 rounded-full shrink-0 transition-colors duration-200 ${checked ? "bg-emerald-500/90" : "bg-white/15"}`}
     >
       <span
         className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all duration-200 ${checked ? "left-[22px]" : "left-0.5"}`}
       />
-    </button>
+    </span>
   );
 }
 
@@ -273,14 +274,28 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
 
               <div className="h-px bg-white/10 my-1.5" />
 
-              <div className="flex items-center justify-between gap-3 px-1.5 py-1">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={musicOn}
+                aria-label={t("menu:musicAriaLabel")}
+                onClick={() => toggleMusic(!musicOn)}
+                className="w-full flex items-center justify-between gap-3 px-1.5 py-2.5 rounded-lg hover:bg-white/5 transition text-left"
+              >
                 <span className="text-sm font-semibold text-white">{t("menu:music")}</span>
-                <ToggleSwitch checked={musicOn} onChange={toggleMusic} label={t("menu:musicAriaLabel")} />
-              </div>
-              <div className="flex items-center justify-between gap-3 px-1.5 py-1">
+                <ToggleSwitch checked={musicOn} />
+              </button>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={sfxOn}
+                aria-label={t("menu:soundAriaLabel")}
+                onClick={() => toggleSfx(!sfxOn)}
+                className="w-full flex items-center justify-between gap-3 px-1.5 py-2.5 rounded-lg hover:bg-white/5 transition text-left"
+              >
                 <span className="text-sm font-semibold text-white">{t("menu:sound")}</span>
-                <ToggleSwitch checked={sfxOn} onChange={toggleSfx} label={t("menu:soundAriaLabel")} />
-              </div>
+                <ToggleSwitch checked={sfxOn} />
+              </button>
 
               {/* Постійний ненав'язливий статус (auth-freeze-brief.md, розділ
                   3) — не в центральному ігровому потоці, а тут, у
@@ -396,7 +411,7 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             <button
               onClick={dismissCloudNotice}
               aria-label={t("menu:cloudNoticeCloseAria")}
-              className="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center text-violet-300/60 hover:text-white text-base leading-none transition"
+              className="absolute top-1 right-1 w-9 h-9 flex items-center justify-center text-violet-300/60 hover:text-white text-base leading-none transition"
             >
               ×
             </button>

@@ -23,7 +23,10 @@ export default function BadgeToast({ badge, onClose }) {
   const badgeName = t(badge.nameKey);
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-amber-400 text-indigo-950 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-3 z-50 font-body toast-in">
+    <div
+      className="fixed left-1/2 -translate-x-1/2 bg-amber-400 text-indigo-950 rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-3 z-50 font-body toast-in"
+      style={{ top: "max(1.5rem, env(safe-area-inset-top))" }}
+    >
       <ArtImage
         src={`/assets/icons/achievements/${BADGE_ICON_FILE[badge.id]}.png`}
         fallback={badge.icon}

@@ -24,7 +24,10 @@ export default function SaveNoticeToast({ reason, onClose }) {
   if (!msg) return null;
 
   return (
-    <div className="fixed inset-x-4 top-4 z-50 max-w-sm mx-auto toast-in">
+    <div
+      className="fixed inset-x-4 z-50 max-w-sm mx-auto toast-in"
+      style={{ top: "max(1rem, env(safe-area-inset-top))" }}
+    >
       <div className="rpg-panel rpg-panel-gold rounded-2xl px-4 py-3.5 flex flex-col gap-2 shadow-2xl">
         <div className="flex items-start gap-2.5">
           <span className="text-xl shrink-0" aria-hidden="true">⚠️</span>

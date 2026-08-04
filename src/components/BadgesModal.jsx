@@ -39,7 +39,7 @@ export default function BadgesModal({ progress, onClose }) {
       >
         <div className="modal-ornament absolute -top-6 left-1/2 -translate-x-1/2 z-10">💎</div>
 
-        <div className="pt-9 pb-6 px-6 max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl">
+        <div className="pt-9 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:pb-6 px-6 max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl">
           <h2 className="font-display gold-text text-3xl font-extrabold text-center mt-2 mb-1 tracking-wide">{t("achievements:screenTitle")}</h2>
           <p className="text-violet-200 text-center text-sm mb-6">{t("achievements:subtitle")}</p>
 
