@@ -31,5 +31,11 @@
   "saveResetBody": "Tanto la partida principal como la copia de seguridad estaban dañadas, así que el progreso empezó de nuevo.",
   "saveFailedTitle": "No se pudo guardar el progreso",
   "saveFailedBody": "Parece que el dispositivo se quedó sin espacio de almacenamiento. Intenta liberar espacio y el progreso volverá a guardarse.",
-  "gotIt": "Entendido"
+  "gotIt": "Entendido",
+  "streakAlt": "racha",
+  "errorBoundaryTitle": "Algo salió mal",
+  "errorBoundaryBody": "Tu progreso está guardado. Intenta reiniciar el juego.",
+  "errorBoundaryReload": "Reiniciar",
+  "errorBoundaryBackToMenu": "Volver al menú principal",
+  "errorBoundaryCopyError": "Copiar código de error"
 }

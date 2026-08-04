@@ -31,5 +31,11 @@
   "saveResetBody": "Zarówno główny zapis, jak i kopia zapasowa okazały się uszkodzone, więc postęp zaczął się od nowa.",
   "saveFailedTitle": "Nie udało się zapisać postępu",
   "saveFailedBody": "Wygląda na to, że na urządzeniu zabrakło miejsca. Spróbuj zwolnić trochę pamięci — postęp znów zacznie się zapisywać.",
-  "gotIt": "Rozumiem"
+  "gotIt": "Rozumiem",
+  "streakAlt": "seria",
+  "errorBoundaryTitle": "Coś poszło nie tak",
+  "errorBoundaryBody": "Twój postęp jest zapisany. Spróbuj zrestartować grę.",
+  "errorBoundaryReload": "Zrestartuj",
+  "errorBoundaryBackToMenu": "Wróć do menu głównego",
+  "errorBoundaryCopyError": "Skopiuj kod błędu"
 }

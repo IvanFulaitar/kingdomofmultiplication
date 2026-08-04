@@ -31,5 +31,11 @@
   "saveResetBody": "Both the main save and the backup were corrupted, so progress started over.",
   "saveFailedTitle": "Could not save progress",
   "saveFailedBody": "It looks like your device is out of storage space. Try freeing up some space — progress will save again.",
-  "gotIt": "Got it"
+  "gotIt": "Got it",
+  "streakAlt": "streak",
+  "errorBoundaryTitle": "Something went wrong",
+  "errorBoundaryBody": "Your progress is saved. Try restarting the game.",
+  "errorBoundaryReload": "Restart",
+  "errorBoundaryBackToMenu": "Back to main menu",
+  "errorBoundaryCopyError": "Copy error code"
 }

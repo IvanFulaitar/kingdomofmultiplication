@@ -31,5 +31,11 @@
   "saveResetBody": "Hlavná uložená pozícia aj záloha boli poškodené, preto postup začal odznova.",
   "saveFailedTitle": "Postup sa nepodarilo uložiť",
   "saveFailedBody": "Vyzerá to, že na zariadení došlo úložisko. Skús uvoľniť trochu miesta — postup sa potom znova uloží.",
-  "gotIt": "Rozumiem"
+  "gotIt": "Rozumiem",
+  "streakAlt": "séria",
+  "errorBoundaryTitle": "Niečo sa pokazilo",
+  "errorBoundaryBody": "Tvoj postup je uložený. Skús hru reštartovať.",
+  "errorBoundaryReload": "Reštartovať",
+  "errorBoundaryBackToMenu": "Späť do hlavného menu",
+  "errorBoundaryCopyError": "Kopírovať kód chyby"
 }

@@ -367,11 +367,11 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             <StarIcon filled /> <span className="font-extrabold text-xl">{progress.totalStars}</span>
           </div>
           <div className="menu-resource-pill-gold rounded-2xl px-3 py-2.5 flex items-center justify-center gap-2 text-indigo-950">
-            <ArtImage src="/assets/icons/ui/coin.png" fallback="🪙" alt="монети" className="w-6 h-6 object-contain inline-flex items-center justify-center" />
+            <ArtImage src="/assets/icons/ui/coin.png" fallback="🪙" alt={t("common:coinAlt")} className="w-6 h-6 object-contain inline-flex items-center justify-center" />
             <span className="font-extrabold text-2xl">{progress.coins}</span>
           </div>
           <div className="menu-resource-pill rounded-2xl px-3 py-2.5 flex items-center justify-center gap-2">
-            <ArtImage src="/assets/icons/ui/flame.png" fallback="🔥" alt="стрік" className="w-6 h-6 object-contain inline-flex items-center justify-center" />
+            <ArtImage src="/assets/icons/ui/flame.png" fallback="🔥" alt={t("common:streakAlt")} className="w-6 h-6 object-contain inline-flex items-center justify-center" />
             <span className="font-extrabold text-xl">{progress.streak.current}</span>
           </div>
         </div>

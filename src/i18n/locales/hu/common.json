@@ -31,5 +31,11 @@
   "saveResetBody": "Mind a fő mentés, mind a biztonsági mentés sérült volt, ezért a haladás elölről kezdődött.",
   "saveFailedTitle": "Nem sikerült menteni a haladást",
   "saveFailedBody": "Úgy tűnik, elfogyott a tárhely az eszközön. Próbálj meg helyet felszabadítani — a haladás ismét menthető lesz.",
-  "gotIt": "Értem"
+  "gotIt": "Értem",
+  "streakAlt": "sorozat",
+  "errorBoundaryTitle": "Valami elromlott",
+  "errorBoundaryBody": "A haladásod el van mentve. Próbáld újraindítani a játékot.",
+  "errorBoundaryReload": "Újraindítás",
+  "errorBoundaryBackToMenu": "Vissza a főmenübe",
+  "errorBoundaryCopyError": "Hibakód másolása"
 }

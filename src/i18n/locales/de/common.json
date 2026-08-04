@@ -31,5 +31,11 @@
   "saveResetBody": "Sowohl der Hauptspeicherstand als auch die Sicherung waren beschädigt, daher hat der Fortschritt von vorn begonnen.",
   "saveFailedTitle": "Fortschritt konnte nicht gespeichert werden",
   "saveFailedBody": "Es sieht so aus, als wäre der Speicherplatz auf dem Gerät voll. Versuch, etwas Speicherplatz freizugeben – dann wird wieder gespeichert.",
-  "gotIt": "Verstanden"
+  "gotIt": "Verstanden",
+  "streakAlt": "Serie",
+  "errorBoundaryTitle": "Etwas ist schiefgelaufen",
+  "errorBoundaryBody": "Dein Fortschritt ist gespeichert. Versuch, das Spiel neu zu starten.",
+  "errorBoundaryReload": "Neu starten",
+  "errorBoundaryBackToMenu": "Zurück zum Hauptmenü",
+  "errorBoundaryCopyError": "Fehlercode kopieren"
 }
