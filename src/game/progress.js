@@ -77,6 +77,27 @@ export function defaultProgress() {
     raceBest: {},
     raceChampionUnlocked: false,
     raceDaily: { date: null, trainingWins: 0 },
+    // launch-plan.md, розділ 21 "Досягнення також потрібно розширити" —
+    // лічильники для нових бейджів (rewards.js: BADGES), яких раніше не
+    // існувало в прогресі. answerStreak/bestAnswerStreak — глобальна серія
+    // правильних відповідей поспіль (App.jsx:recordFact), НЕ те саме, що
+    // per-fact correctStreak у facts[pair] (mastery.js) — та рахує серію
+    // для ОДНОГО факту, ця — для будь-яких відповідей поспіль в межах
+    // бою/"Моїх знань". totalChestsOpened/totalSecretsFound — лабіринт,
+    // рахуються НАЗАВЖДИ (на відміну від daily.mazeChestsToday, який
+    // скидається щодня). totalRaceWins/championRaceWon — перегони.
+    // lastFailedLevelId/hadComeback — "повернувся після поразки й
+    // переміг": lastFailedLevelId — транзитивна позначка (яку саме
+    // сторінку щойно програно), очищається при наступній перемозі на
+    // ній же; hadComeback — сам факт, назавжди.
+    answerStreak: 0,
+    bestAnswerStreak: 0,
+    totalChestsOpened: 0,
+    totalSecretsFound: 0,
+    totalRaceWins: 0,
+    championRaceWon: false,
+    lastFailedLevelId: null,
+    hadComeback: false,
   };
 }
 
@@ -125,7 +146,21 @@ function migrateProgress(p) {
   const onboardingComplete = p.onboardingComplete === true || hasPriorProgress;
   const knowledgeLastSeenAt = p.knowledgeLastSeenAt ?? 0;
 
-  return { ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily, daily, onboardingComplete, knowledgeLastSeenAt };
+  // Розділ 21 — нові лічильники для бейджів (див. коментар у
+  // defaultProgress вище); старі збереження просто не мали цих полів.
+  const answerStreak = p.answerStreak ?? 0;
+  const bestAnswerStreak = p.bestAnswerStreak ?? 0;
+  const totalChestsOpened = p.totalChestsOpened ?? 0;
+  const totalSecretsFound = p.totalSecretsFound ?? 0;
+  const totalRaceWins = p.totalRaceWins ?? 0;
+  const championRaceWon = p.championRaceWon ?? false;
+  const lastFailedLevelId = p.lastFailedLevelId ?? null;
+  const hadComeback = p.hadComeback ?? false;
+
+  return {
+    ...p, ownedAvatars, mazeCompletions, raceCompletions, raceHistory, raceBest, raceChampionUnlocked, raceDaily, daily, onboardingComplete, knowledgeLastSeenAt,
+    answerStreak, bestAnswerStreak, totalChestsOpened, totalSecretsFound, totalRaceWins, championRaceWon, lastFailedLevelId, hadComeback,
+  };
 }
 
 // Версійна міграція формату збереження (окремо від migrateProgress вище,

@@ -6,11 +6,11 @@
 // Навмисно БЕЗ vitest/jest: у цьому середовищі немає доступу до npm-реєстру
 // для встановлення нового test-раннера (лише те, що вже є в node_modules).
 // Замість цього — крихітний вбудований harness (test/assert нижче) і
-// запуск через esbuild (вже присутній як транзитивна залежність vite),
-// що дозволяє напряму імпортувати справжні ESM-модулі гри (включно з
-// JSON-локалями). Дивись scripts/run-tests.mjs — саме він збирає й
-// виконує цей файл; напряму `node tests/logic.test.mjs` не запуститься
-// (JSON-імпорти й import.meta.env не проходять без збірки).
+// Node ESM loader-хук (scripts/json-loader.mjs, зареєстрований у
+// scripts/run-tests.mjs), що дозволяє напряму імпортувати справжні
+// ESM-модулі гри (включно з JSON-локалями src/i18n/index.js) без збірки.
+// Напряму `node tests/logic.test.mjs` не запуститься — саме тому є
+// scripts/run-tests.mjs (`npm test`), який спершу реєструє loader.
 //
 // Якщо колись з'явиться доступ до npm-реєстру — цей файл легко
 // переноситься під vitest/jest майже без змін (test()/assert* тут навмисно
@@ -33,7 +33,8 @@ import {
 import {
   opponentGain, streakBonus, starsForRace, computeRaceReward, rankParticipants,
 } from "../src/game/raceEngine.js";
-import { QUEST_POOL, pickDailyQuestIds } from "../src/data/rewards.js";
+import { QUEST_POOL, pickDailyQuestIds, BADGES } from "../src/data/rewards.js";
+import { AVATARS } from "../src/data/cosmetics.js";
 
 // --------------------------------------------------------- mini harness ---
 let passed = 0;
@@ -444,6 +445,73 @@ test("pickDailyQuestIds: завжди по одному easy/medium/training, у
     const tiers = ids.map((id) => QUEST_POOL.find((q) => q.id === id)?.tier);
     assertEqual(tiers.join(","), "easy,medium,training");
   }
+});
+
+// ============================================================== BADGES ===
+// launch-plan.md, розділ 21 "Досягнення також потрібно розширити".
+
+test("BADGES: усі id унікальні", () => {
+  const ids = BADGES.map((b) => b.id);
+  assertEqual(new Set(ids).size, ids.length, "два бейджі з однаковим id перезаписували б один одного в progress.badges");
+});
+
+test("BADGES: свіжий гравець (defaultProgress) не має жодного розблокованого бейджа", () => {
+  const p = defaultProgress();
+  const unlocked = BADGES.filter((b) => b.check(p)).map((b) => b.id);
+  assertEqual(unlocked.join(","), "", `на порожньому прогресі не повинно спрацьовувати НІЧОГО, спрацювало: ${unlocked.join(",")}`);
+});
+
+test("BADGES: 100/500 правильних відповідей рахуються по сумі facts[*].correct", () => {
+  const makeFacts = (totalCorrect) => ({ "2x3": { correct: totalCorrect, wrong: 0 } });
+  const c100 = BADGES.find((b) => b.id === "correct100");
+  const c500 = BADGES.find((b) => b.id === "correct500");
+  assertEqual(c100.check({ facts: makeFacts(99) }), false);
+  assertEqual(c100.check({ facts: makeFacts(100) }), true);
+  assertEqual(c500.check({ facts: makeFacts(499) }), false);
+  assertEqual(c500.check({ facts: makeFacts(500) }), true);
+});
+
+test("BADGES: streak20 звіряється з bestAnswerStreak (не поточним answerStreak)", () => {
+  const b = BADGES.find((b) => b.id === "streak20");
+  assertEqual(b.check({ bestAnswerStreak: 19 }), false);
+  assertEqual(b.check({ bestAnswerStreak: 20 }), true);
+  // Серія вже зірвалась (answerStreak=0), але рекорд (bestAnswerStreak) лишається зарахованим.
+  assertEqual(b.check({ answerStreak: 0, bestAnswerStreak: 25 }), true);
+});
+
+test("BADGES: лабіринт/перегони/колекція звіряються з правильними лічильниками", () => {
+  assertEqual(BADGES.find((b) => b.id === "chests10").check({ totalChestsOpened: 10 }), true);
+  assertEqual(BADGES.find((b) => b.id === "chests10").check({ totalChestsOpened: 9 }), false);
+  assertEqual(BADGES.find((b) => b.id === "secrets5").check({ totalSecretsFound: 5 }), true);
+  assertEqual(BADGES.find((b) => b.id === "race_wins10").check({ totalRaceWins: 10 }), true);
+  assertEqual(BADGES.find((b) => b.id === "champion_win").check({ championRaceWon: true }), true);
+  assertEqual(BADGES.find((b) => b.id === "champion_win").check({ championRaceWon: false }), false);
+  assertEqual(BADGES.find((b) => b.id === "comeback").check({ hadComeback: true }), true);
+  assertEqual(BADGES.find((b) => b.id === "streak7days").check({ streak: { current: 7 } }), true);
+  assertEqual(BADGES.find((b) => b.id === "streak7days").check({ streak: { current: 6 } }), false);
+});
+
+test("BADGES: колекція аватарів (firstAvatarBought/avatars5/allAvatars)", () => {
+  const first = BADGES.find((b) => b.id === "first_avatar_bought");
+  const five = BADGES.find((b) => b.id === "avatars5");
+  const all = BADGES.find((b) => b.id === "all_avatars");
+  assertEqual(first.check({ ownedAvatars: ["wizard"] }), false, "лише безкоштовний wizard — ще не куплено жодного");
+  assertEqual(first.check({ ownedAvatars: ["wizard", "knight"] }), true);
+  assertEqual(five.check({ ownedAvatars: ["wizard", "a", "b", "c"] }), false);
+  assertEqual(five.check({ ownedAvatars: ["wizard", "a", "b", "c", "d"] }), true);
+  assertEqual(all.check({ ownedAvatars: AVATARS.map((a) => a.id) }), true);
+  assertEqual(all.check({ ownedAvatars: AVATARS.slice(0, -1).map((a) => a.id) }), false, "бракує одного аватара — ще не вся колекція");
+});
+
+test("BADGES: table7_master вимагає реального майстерства (не лише спроб)", () => {
+  const badge = BADGES.find((b) => b.id === "table7_master");
+  const weakFacts = {};
+  for (const m of MULTIPLIER_RANGE) weakFacts[`7x${m}`] = { correct: 1, wrong: 5 };
+  assertEqual(badge.check({ facts: weakFacts }), false, "багато спроб, але низька точність — не майстер");
+
+  const masterFacts = {};
+  for (const m of MULTIPLIER_RANGE) masterFacts[`7x${m}`] = { correct: 10, wrong: 0, correctStreak: 5, totalResponseTimeMs: 10000, answeredCount: 10 };
+  assertEqual(badge.check({ facts: masterFacts }), true);
 });
 
 // ================================================================ підсумок ===

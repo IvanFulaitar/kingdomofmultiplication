@@ -9,5 +9,20 @@
   "streak3": "3 Days in a Row",
   "screenTitle": "Achievements",
   "subtitle": "Earn stars and victories to unlock all the rewards",
-  "newAchievement": "New achievement!"
+  "newAchievement": "New achievement!",
+  "correct100": "100 correct answers",
+  "correct500": "500 correct answers",
+  "table7Master": "Master of the 7 times table",
+  "allTablesGood": "All tables mastered",
+  "streak20": "20 in a row",
+  "chests10": "10 chests opened",
+  "secrets5": "5 secret paths",
+  "raceWins10": "10 race wins",
+  "championWin": "Race champion",
+  "comeback": "Did not give up",
+  "streak7days": "A week in a row",
+  "sessions30": "30 practice sessions",
+  "firstAvatarBought": "First purchase",
+  "avatars5": "5 avatars",
+  "allAvatars": "Full collection"
 }

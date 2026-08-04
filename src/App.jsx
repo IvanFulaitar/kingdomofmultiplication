@@ -113,6 +113,20 @@ export default function App() {
     }
   }
 
+  // Перевірка досягнень (launch-plan.md, розділ 21) — спільна для КОЖНОЇ
+  // дії, що може розблокувати бейдж (рівень, лабіринт, перегони, "Мої
+  // знання"/тренування слабких прикладів, покупка аватара), а не лише
+  // completeLevel() як було раніше. Інакше, наприклад, "10 відкритих
+  // скринь" у лабіринті технічно ставало б true одразу, але спливало б
+  // лише при НАСТУПНІЙ перемозі в бою — довільна затримка без причини.
+  function checkBadges(p) {
+    const earned = BADGES.filter((b) => !p.badges.includes(b.id) && b.check(p));
+    if (!earned.length) return p;
+    setNewBadge(earned[0]);
+    playAchievementSfx();
+    return { ...p, badges: [...p.badges, ...earned.map((b) => b.id)] };
+  }
+
   // Купівля й вибір аватара — окремі дії (щоб магазин міг спершу показати
   // модалку підтвердження, і лише після явного натискання "Придбати"
   // списати монети — випадковий тап більше не витрачає їх одразу).
@@ -122,11 +136,13 @@ export default function App() {
     if (progress.ownedAvatars.includes(avatarId)) return true; // вже куплений — вважаємо успіхом, монети не чіпаємо
     const av = AVATARS.find((a) => a.id === avatarId);
     if (!av || progress.coins < av.cost) return false;
-    persist({
+    let p = {
       ...progress,
       coins: progress.coins - av.cost,
       ownedAvatars: [...progress.ownedAvatars, avatarId],
-    });
+    };
+    p = checkBadges(p);
+    persist(p);
     trackEvent("avatar_purchased", { avatarId, cost: av.cost });
     return true;
   }
@@ -193,6 +209,13 @@ export default function App() {
         p = { ...p, daily: { ...p.daily, weakFixedToday: (p.daily.weakFixedToday ?? 0) + 1 } };
       }
     }
+    // Розділ 21: глобальна серія правильних відповідей поспіль (бій +
+    // "Мої знання"/тренування слабких прикладів разом — обидва йдуть
+    // через recordFact) — для бейджа "20 поспіль", окремо від per-fact
+    // correctStreak вище (той рахує серію для ОДНОГО конкретного факту).
+    const newAnswerStreak = correct ? (p.answerStreak ?? 0) + 1 : 0;
+    p = { ...p, answerStreak: newAnswerStreak, bestAnswerStreak: Math.max(p.bestAnswerStreak ?? 0, newAnswerStreak) };
+    p = checkBadges(p);
     p = checkQuests(p);
     persist(p);
   }
@@ -205,6 +228,7 @@ export default function App() {
       xp: (p.xp ?? 0) + xpGain,
       daily: { ...p.daily, memoryPairsToday: (p.daily.memoryPairsToday ?? 0) + pairsFound },
     };
+    p = checkBadges(p);
     p = checkQuests(p);
     persist(p);
   }
@@ -221,12 +245,18 @@ export default function App() {
       coins: p.coins + coinGain,
       xp: (p.xp ?? 0) + xpGain,
       mazeCompletions: (p.mazeCompletions ?? 0) + 1,
+      // Розділ 21: НАЗАВЖДИ (на відміну від daily.mazeChestsToday/
+      // mazeSecretToday нижче, які скидаються щодня) — для бейджів
+      // "10 скринь"/"5 секретних шляхів".
+      totalChestsOpened: (p.totalChestsOpened ?? 0) + chestsFound,
+      totalSecretsFound: (p.totalSecretsFound ?? 0) + (secretFound ? 1 : 0),
       daily: {
         ...p.daily,
         mazeChestsToday: (p.daily.mazeChestsToday ?? 0) + chestsFound,
         mazeSecretToday: p.daily.mazeSecretToday || secretFound,
       },
     };
+    p = checkBadges(p);
     p = checkQuests(p);
     persist(p);
   }
@@ -256,7 +286,13 @@ export default function App() {
           raceBestToday: p.daily.raceBestToday || isPersonalBest,
         },
       };
+      // Розділ 21: "10 перемог у перегонах" / "Перемога у чемпіонському заїзді".
+      if (meta.place === 1) {
+        p = { ...p, totalRaceWins: (p.totalRaceWins ?? 0) + 1 };
+        if (meta.difficulty === "champion") p = { ...p, championRaceWon: true };
+      }
     }
+    p = checkBadges(p);
     p = checkQuests(p);
     persist(p);
     if (meta) trackEvent("race_finished", meta);
@@ -301,20 +337,21 @@ export default function App() {
     const levels = { ...p.levels, [levelId]: { stars } };
     const totalStars = Object.values(levels).reduce((s, l) => s + l.stars, 0);
     const prevHero = heroLevelFromXp(p.xp ?? 0);
+    // Розділ 21: "Повернувся після поразки й переміг" — lastFailedLevelId
+    // виставляється в onGameOver нижче й очищається тут при БУДЬ-ЯКІЙ
+    // перемозі (не лише на тому самому рівні), щоб не лишався застряглим.
+    const cameBack = p.lastFailedLevelId === levelId;
 
     let next = {
       ...p, levels, totalStars,
       coins: p.coins + coinGain,
       xp: (p.xp ?? 0) + xpGain,
       daily: { ...p.daily, levelsToday: p.daily.levelsToday + 1, perfectToday: p.daily.perfectToday || mistakes === 0 },
+      lastFailedLevelId: null,
+      hadComeback: p.hadComeback || cameBack,
     };
 
-    const earned = BADGES.filter((b) => !p.badges.includes(b.id) && b.check(next));
-    if (earned.length) {
-      next.badges = [...p.badges, ...earned.map((b) => b.id)];
-      setNewBadge(earned[0]);
-      playAchievementSfx();
-    }
+    next = checkBadges(next);
     next = checkQuests(next);
     const newHero = heroLevelFromXp(next.xp);
 
@@ -325,6 +362,15 @@ export default function App() {
       levelId, stars, newStars, mistakes, coinGain, xpGain,
       leveledUp: newHero.level > prevHero.level,
     };
+  }
+
+  // Розділ 21: фіксує "щойно програно рівень N" — completeLevel() вище
+  // звіряє з цим при наступній перемозі для бейджа "Повернувся після
+  // поразки й переміг". Окрема функція (не всередині onGameOver прямо),
+  // бо це єдине місце, де програш узагалі торкається progress/persist —
+  // досі onGameOver лише надсилав аналітику, нічого не зберігаючи.
+  function recordLevelFailure(levelId) {
+    persist({ ...progress, lastFailedLevelId: levelId });
   }
 
   // Відмічає, що гравець щойно бачив свій прогрес (лише для бейджа "Нове"
@@ -476,6 +522,7 @@ export default function App() {
               setScreen("results");
             }}
             onGameOver={(correctCount) => {
+              recordLevelFailure(activeLevel);
               trackEvent("level_failed", { levelId: activeLevel, correctCount });
               setOutcome({ won: false, levelId: activeLevel, correctCount });
               setScreen("results");
