@@ -12,6 +12,11 @@ import { activitySummary, masteryScoreDaysAgo, overallAverageResponseTime } from
 // 26 — прибрано навмисно, синхронізація прогресу піде через акаунт, коли
 // AUTH_ENABLED увімкнеться, а не через файл).
 
+// Той самий словник reason->ключ, що й у MyKnowledgeScreen.jsx
+// (RECOMMEND_KEY) — навмисно перевикористовуємо готові knowledge:* рядки,
+// а не заводимо власні дублікати "почни з таблиці на N" у parent.json.
+const RECOMMEND_KEY = { weak: "recommendWeak", almost: "recommendAlmost", untried: "recommendUntried" };
+
 function trendValue(t, current, past) {
   if (past === null) return null;
   const diff = Math.round(current - past);
@@ -29,11 +34,15 @@ function StatCard({ label, value, sub }) {
   );
 }
 
+// entry — елемент overallMastery(facts).tables (mastery.js:tableMastery),
+// який уже містить {icon, tier, ...} з того самого TIERS-словника, що й
+// "Мої знання" — навмисно НЕ дублюємо tier->emoji мапінг тут окремо
+// (раніше був дубльований inline-тернарник, який міг розійтися з mastery.js,
+// якщо там колись зміняться іконки чи додасться новий тір).
 function TableChip({ t, entry }) {
-  const status = { icon: entry.tier === "master" ? "⭐" : entry.tier === "good" ? "🟢" : entry.tier === "almost" ? "🟡" : entry.tier === "weak" ? "🔴" : "⚪" };
   return (
     <div className="knowledge-fact-row rounded-xl px-3 py-2 flex items-center gap-2.5">
-      <span aria-hidden="true" className="text-lg shrink-0">{status.icon}</span>
+      <span aria-hidden="true" className="text-lg shrink-0">{entry.icon}</span>
       <span className="font-body text-sm text-violet-100 flex-1">{t("knowledge:tableName", { n: entry.number })}</span>
       <span className="font-display font-bold text-sm shrink-0">{entry.attempts > 0 ? formatPercent(entry.score) : "—"}</span>
     </div>
@@ -144,11 +153,19 @@ export default function ParentScreen({ progress, onBack }) {
             <span>{t("parent:recommendTitle")}</span>
           </div>
           {toRepeat.length > 0 ? (
-            <p className="text-sm">
-              {toRepeat.map((f) => `${f.a} × ${f.b}`).join(`, `)}
-              {recommendation && ` — ${t("knowledge:tableName", { n: recommendation.number })}`}
-            </p>
+            // Реально слабкі/майже засвоєні ПРИКЛАДИ є — головний випадок,
+            // формат точно як у прикладі з launch-plan.md розділу 8.
+            <p className="text-sm">{toRepeat.map((f) => `${f.a} × ${f.b}`).join(`, `)}</p>
+          ) : recommendation ? (
+            // toRepeat порожній, але recommendTable() усе одно щось радить —
+            // означає, що дитина ще геть не пробувала якісь таблиці
+            // (reason==="untried"). БЕЗ цієї гілки тут помилково показувалось
+            // би "Усе вже добре засвоєно" для дитини, яка щойно почала грати
+            // (найчастіший стан, у якому батько вперше відкриє цей екран).
+            <p className="text-sm">{t(`knowledge:${RECOMMEND_KEY[recommendation.reason]}`, { n: recommendation.number })}</p>
           ) : (
+            // recommendTable() повернув null лише тоді, коли ЖОДНА з 8
+            // таблиць не weak/almost/untried — тобто справді все добре/майстер.
             <p className="text-sm">{t("parent:recommendAllGood")}</p>
           )}
         </div>

@@ -31,7 +31,7 @@ import {
 } from "../src/game/generateQuestion.js";
 import {
   computeMastery, masteryStatus, tableFacts, tableMastery, overallMastery,
-  recommendTable, MULTIPLIER_RANGE,
+  recommendTable, MULTIPLIER_RANGE, weakestFacts,
 } from "../src/game/mastery.js";
 import {
   opponentGain, streakBonus, starsForRace, computeRaceReward, rankParticipants,
@@ -575,6 +575,25 @@ test("masteryScoreDaysAgo: бере найближчий ПОПЕРЕДНІЙ з
   // Ціль — "7 днів тому": запис 1-денної давності НЕ рахується (це ще
   // ближче до сьогодні, ніж ціль), тож бере найближчий запис ДО цілі — 9-денної.
   assertEqual(masteryScoreDaysAgo(log, 7), 55);
+});
+
+test("ParentScreen: дитина щойно почала грати -> weakestFacts() порожній, але recommendTable() НЕ null", () => {
+  // Зафіксовано баг, знайдений при аудиті ParentScreen.jsx: дитина
+  // відповіла лише на ОДИН приклад (і добре) — жодного weak/almost факту
+  // немає (weakestFacts порожній), але 6 з 8 таблиць ще геть не чіпали.
+  // Через tableFacts() cross-table sharing (facts["5x2"] є партнером і для
+  // таблиці 5, і для таблиці 2 — див. коментар у mastery.js) обидві ці
+  // таблиці кепуються тіром "good" (не "master", бо не allCovered), тож
+  // recommendTable() усе одно щось радить (reason==="untried" серед решти
+  // 6 таблиць). ParentScreen мусить показати ЦЮ рекомендацію, а не банер
+  // "Усе вже добре засвоєно" (найчастіший стан при першому відкритті
+  // батьками цього екрана).
+  const facts = { "5x2": { correct: 5, wrong: 0, correctStreak: 5, totalResponseTimeMs: 10000, answeredCount: 5 } };
+  const toRepeat = weakestFacts(facts, { limit: 3 });
+  const recommendation = recommendTable(facts);
+  assertEqual(toRepeat.length, 0, "єдиний спробуваний факт — уже 'майстер', не weak/almost");
+  assert(recommendation !== null, "але має лишитись рекомендація (6 таблиць ще untried)");
+  assertEqual(recommendation.reason, "untried");
 });
 
 test("overallAverageResponseTime: null без даних, середнє по всіх фактах разом", () => {
