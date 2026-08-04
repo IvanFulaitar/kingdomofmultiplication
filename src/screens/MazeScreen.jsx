@@ -599,7 +599,9 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
           <div className="rpg-panel rpg-panel-gold battle-title rounded-xl px-4 py-2 text-center">
             <div className="font-display gold-text font-extrabold text-base leading-tight truncate">{t("maze:title")}</div>
             <div className="text-[11px] text-violet-200 font-semibold mt-0.5 truncate">
-              {phase === "playing" ? t("maze:stepProgress", { current: moveCount + 1, total: maze.mainPathLength }) : t(`maze:${maze.tierNameKey}`)}
+              {phase === "playing"
+                ? t("maze:stepProgress", { current: Math.min(moveCount + 1, maze.mainPathLength), total: maze.mainPathLength })
+                : t(`maze:${maze.tierNameKey}`)}
             </div>
           </div>
           <div className="rpg-panel battle-lives rounded-xl px-2.5 py-2">
@@ -639,6 +641,13 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                   const isRevealed = revealedSet.has(cell.key);
                   const displayType = !isVisited && cell.type === CELL.SECRET ? CELL.CORRIDOR : cell.type;
                   const isLockedExit = cell.type === CELL.EXIT && maze.requiresKey && !hasKey;
+                  // Клітинка з нагородою (монета/сердечко/підказка/ключ/скриня/
+                  // секрет/пастка/портал/скарб), яку вже забрано — картинка
+                  // лишається (видно, що там БУЛО), але тьмяніє, щоб не
+                  // виглядало, ніби нагороду досі можна взяти вдруге. Вихід
+                  // (EXIT) навмисно виключений — це ціль, вона не повинна
+                  // тьмяніти.
+                  const isCollected = isVisited && collected.has(cell.key) && cell.type !== CELL.EXIT;
                   const isTappable = canInteract && tappable.has(cell.key);
                   const isNew = isTappable && !isVisited;
                   const badge = isNew ? cellBadge(maze, cell.key) : null;
@@ -659,7 +668,9 @@ export default function MazeScreen({ avatar, completions = 0, onBack, onComplete
                       className={`maze-cell ${stateClass} ${riskClass} ${isTappable ? "maze-cell-tappable" : ""} ${isTappable && strongPulse && tappable.size === 1 ? "maze-cell-strong-pulse" : ""} ${isLockedExit ? "maze-cell-locked" : ""}`}
                     >
                       {!isCurrent && (isVisited || isRevealed) && displayType !== CELL.CORRIDOR && displayType !== CELL.START && (
-                        <div className="w-[58%] h-[58%]"><MazeIcon type={displayType} className="w-full h-full" /></div>
+                        <div className={`w-[58%] h-[58%] transition-opacity ${isCollected ? "opacity-40 grayscale-[40%]" : ""}`}>
+                          <MazeIcon type={displayType} className="w-full h-full" />
+                        </div>
                       )}
                       {!isCurrent && isVisited && (displayType === CELL.CORRIDOR || displayType === CELL.START) && (
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-300/50" />
