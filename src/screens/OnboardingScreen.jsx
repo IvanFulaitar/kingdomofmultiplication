@@ -415,7 +415,7 @@ export default function OnboardingScreen({ onComplete }) {
                   style={{ "--kr-delay": "0.36s" }}
                 >
                   <ArtImage
-                    src="/assets/backgrounds/A.png"
+                    src="/assets/backgrounds/A.webp"
                     fallback={REGIONS[0].icon}
                     alt=""
                     className="w-12 h-12 rounded-xl object-cover shrink-0 text-2xl flex items-center justify-center"

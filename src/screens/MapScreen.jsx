@@ -51,8 +51,8 @@ export default function MapScreen({ progress, onBack, onSelect }) {
               <div key={region.id}>
                 <div className={`relative overflow-hidden rounded-3xl shadow-lg ${frameClass}`}>
                   <div
-                    className={`absolute inset-0 ${locked ? "region-locked-art" : ""}`}
-                    style={{ backgroundImage: `url(/assets/backgrounds/${region.id}.png)`, backgroundSize: "cover", backgroundPosition: "center" }}
+                    className={`absolute inset-0 bg-region-${region.id} ${locked ? "region-locked-art" : ""}`}
+                    style={{ backgroundSize: "cover", backgroundPosition: "center" }}
                   />
                   <div className={`absolute inset-0 bg-gradient-to-r ${region.tint} ${locked ? "opacity-70" : "opacity-45"}`} />
                   <div className="relative px-4 py-5 flex items-center gap-3">

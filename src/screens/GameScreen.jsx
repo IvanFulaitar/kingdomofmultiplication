@@ -159,8 +159,8 @@ export default function GameScreen({ levelId, avatar, weakFacts, onAnswer, onExi
     <div className={`relative overflow-hidden min-h-dvh flex flex-col screen-in ${showExitConfirm ? "attempt-paused" : ""}`}>
       {region && (
         <div
-          className="absolute inset-0"
-          style={{ backgroundImage: `url(/assets/backgrounds/${region.id}.png)`, backgroundSize: "cover", backgroundPosition: "center" }}
+          className={`absolute inset-0 bg-region-${region.id}`}
+          style={{ backgroundSize: "cover", backgroundPosition: "center" }}
         />
       )}
       <div className="battle-vignette" />

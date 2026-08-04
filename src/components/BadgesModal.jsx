@@ -61,6 +61,7 @@ export default function BadgesModal({ progress, onClose }) {
                     src={`/assets/icons/achievements/${BADGE_ICON_FILE[b.id]}.png`}
                     fallback={b.icon}
                     alt={badgeName}
+                    loading="lazy"
                     className={`w-12 h-12 object-contain flex items-center justify-center text-4xl ${earned ? "" : "opacity-50 grayscale-[30%]"}`}
                   />
                   <span className={`text-xs font-semibold leading-tight ${earned ? "text-white" : "text-white/60"}`}>{badgeName}</span>

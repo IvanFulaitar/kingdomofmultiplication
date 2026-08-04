@@ -82,6 +82,7 @@ export default function ShopScreen({ progress, onPurchaseAvatar, onSelectAvatar,
                     src={`/assets/avatars/${av.id}.png`}
                     fallback={av.icon}
                     alt={avatarName}
+                    loading="lazy"
                     className={`text-5xl w-16 h-16 object-contain flex items-center justify-center ${owned ? "" : "opacity-60"}`}
                   />
                   <div className="h-5 flex items-center">

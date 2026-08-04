@@ -71,8 +71,8 @@ export default function ResultsScreen({ outcome, progress, onContinue, onRetry, 
       <div className="relative overflow-hidden min-h-dvh screen-in">
         {region && (
           <div
-            className="absolute inset-0"
-            style={{ backgroundImage: `url(/assets/backgrounds/${region.id}.png)`, backgroundSize: "cover", backgroundPosition: "center" }}
+            className={`absolute inset-0 bg-region-${region.id}`}
+            style={{ backgroundSize: "cover", backgroundPosition: "center" }}
           />
         )}
         <div className="battle-vignette" />

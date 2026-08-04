@@ -37,6 +37,32 @@ html, body {
 .font-display { font-family: 'Cinzel', serif; letter-spacing: 0.02em; }
 .font-body { font-family: 'Baloo 2', sans-serif; }
 
+/* Продуктивність (launch-plan.md, розділ 13): непрозорі фонові зображення
+   віддаються у WebP (~90% менший розмір за оригінальний PNG), з PNG як
+   резервним варіантом. Два послідовні оголошення background-image —
+   найнадійніший спосіб: браузер, що не розуміє image-set(), просто лишає
+   попереднє (PNG) значення, а не ламає весь стиль. Працює без жодного JS. */
+.bg-app-main {
+  background-image: url(/assets/backgrounds/app_bg.png), linear-gradient(180deg, #1e1b4b, #312e81, #1e1b4b);
+  background-image: image-set(url(/assets/backgrounds/app_bg.webp) type("image/webp"), url(/assets/backgrounds/app_bg.png) type("image/png")), linear-gradient(180deg, #1e1b4b, #312e81, #1e1b4b);
+}
+.bg-region-A {
+  background-image: url(/assets/backgrounds/A.png);
+  background-image: image-set(url(/assets/backgrounds/A.webp) type("image/webp"), url(/assets/backgrounds/A.png) type("image/png"));
+}
+.bg-region-B {
+  background-image: url(/assets/backgrounds/B.png);
+  background-image: image-set(url(/assets/backgrounds/B.webp) type("image/webp"), url(/assets/backgrounds/B.png) type("image/png"));
+}
+.bg-region-C {
+  background-image: url(/assets/backgrounds/C.png);
+  background-image: image-set(url(/assets/backgrounds/C.webp) type("image/webp"), url(/assets/backgrounds/C.png) type("image/png"));
+}
+.bg-region-D {
+  background-image: url(/assets/backgrounds/D.png);
+  background-image: image-set(url(/assets/backgrounds/D.webp) type("image/webp"), url(/assets/backgrounds/D.png) type("image/png"));
+}
+
 /* Обов'язкові сторінки (launch-plan.md, розділ 11) — непомітний рядок
    посилань під підписом автора, навмисно приглушений, щоб не тягнути
    увагу дитини від "ГРАТИ". */
