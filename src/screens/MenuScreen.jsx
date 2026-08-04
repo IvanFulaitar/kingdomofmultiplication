@@ -15,7 +15,6 @@ import ArtImage from "../components/ArtImage.jsx";
 import LanguagePickerModal from "../components/LanguagePickerModal.jsx";
 import IosInstallModal from "../components/IosInstallModal.jsx";
 import OpenInSafariModal from "../components/OpenInSafariModal.jsx";
-import InstallBanner from "../components/InstallBanner.jsx";
 import SimpleToast from "../components/SimpleToast.jsx";
 
 function ToggleSwitch({ checked, onChange, label }) {
@@ -126,8 +125,8 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
   }
 
   // "Встановити гру" (launch-plan.md, розділ 14) — розгалуження "яку
-  // модалку відкрити" живе в useInstallFlow() (спільне з InstallBanner.jsx
-  // після перемоги). Тут лишається тільки SFX-обгортка.
+  // модалку відкрити" живе в useInstallFlow(). Тут лишається тільки
+  // SFX-обгортка.
   async function handleInstallClick() {
     if (sfxOn) playUiClick();
     await handleInstallFlowClick();
@@ -427,16 +426,6 @@ export default function MenuScreen({ progress, onPlay, onBadges, onShop, onTrain
             </div>
           </div>
         )}
-
-        {/* Пропозиція встановити гру (технічне ТЗ від 04.08.2026) — одразу
-            на головному екрані, без вимоги спершу пройти рівень: на
-            Android постійний доступ так само не залежить від прогресу
-            (кнопка в налаштуваннях завжди тут), тож і для iOS тримаємо те
-            саме розташування й ту саму логіку показу/приховування —
-            канInstall (нема сенсу, якщо взагалі нема сценарію встановлення)
-            + 7-денний кулдаун після "Не зараз" (canShowInstallSuggestion()
-            в src/game/pwa.js). */}
-        <InstallBanner />
 
         <div className="w-full menu-panel rounded-3xl pt-8 pb-4 px-4 relative">
           <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 menu-quest-banner px-8 py-1 whitespace-nowrap">

@@ -26,8 +26,6 @@
   "installGame": "Játék telepítése",
   "installTagline": "Add hozzá a játékot a kezdőképernyőhöz, hogy egy koppintással megnyithasd.",
   "installNotNow": "Most nem",
-  "installBannerTitle": "Tetszett a kaland?",
-  "installBannerBody": "Add hozzá a játékot a kezdőképernyőhöz, hogy később könnyen visszatérj hozzá.",
   "iosInstallTitle": "Telepítsd a játékot iPhone-ra",
   "iosInstallBody": "Add hozzá a játékot a kezdőképernyőhöz, hogy egy sima alkalmazásként nyisd meg.",
   "iosInstallStep1": "Koppints a Megosztás gombra a Safariban — a felfelé mutató nyilas négyzet ikonra",
