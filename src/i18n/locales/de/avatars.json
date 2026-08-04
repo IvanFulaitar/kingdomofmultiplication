@@ -1,0 +1,18 @@
+{
+  "wizard": "Zauberer",
+  "knight": "Wächterritter",
+  "dragon": "Flammendrache",
+  "archer": "Jägerbogenschützin",
+  "sorceress": "Sternenmagierin",
+  "paladin": "Paladin des Lichts",
+  "ninja": "Schattenninja",
+  "barbarian": "Berserker-Barbar",
+  "necromancer": "Nekromant",
+  "monk": "Weiser Mönch",
+  "pirate": "Pirat der Meere",
+  "beastmaster": "Tierbändiger",
+  "alchemist": "Erfinder-Alchemist",
+  "samurai": "Samurai der Ehre",
+  "fairy": "Fee des Lichts",
+  "golem": "Wächtergolem"
+}

@@ -1,0 +1,22 @@
+{
+  "defeatTitle": "Most nem",
+  "enemyStoodFirm": "{{enemy}} kitartott — helyes válaszok:",
+  "tryAgainBold": "Próbáld újra",
+  "tryAgainRest": "— a gyenge példák most gyakrabban fognak megjelenni.",
+  "levelProgress": "✦ Szint haladása ✦",
+  "correctAnswersHint": "Helyes válaszok: {{count}}. Legközelebb még jobb lesz!",
+  "retry": "Próbáld újra",
+  "toMap": "A térképre",
+  "victoryTitle": "Győzelem!",
+  "enemyDefeated": "{{enemy}} legyőzve",
+  "coins": "Érmék",
+  "xp": "XP",
+  "heroLevel": "{{level}}. hősszint",
+  "newLevel": "Új szint!",
+  "playAgain": "Játssz újra",
+  "toKingdomMap": "A királyság térképére",
+  "allMapComplete": "Az egész elérhető térkép teljesítve",
+  "openNewRegion": "Új terület feloldása",
+  "nextChallenge": "Következő kihívás",
+  "nextChallengeSubtitle": "{{title}} — {{current}}/{{total}}. kihívás"
+}

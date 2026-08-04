@@ -1,0 +1,10 @@
+{
+  "EMAIL_REQUIRED": "Gib deinen Login ein",
+  "EMAIL_INVALID": "Ungültige E-Mail",
+  "PASSWORD_REQUIRED": "Passwort ist erforderlich",
+  "PASSWORD_REQUIRED_REGISTER": "Gib ein Passwort ein",
+  "PASSWORD_TOO_SHORT": "Das Passwort muss mindestens {{min}} Zeichen haben",
+  "PASSWORD_TOO_LONG": "Das Passwort ist zu lang (max. {{max}} Zeichen)",
+  "CONFIRM_REQUIRED": "Wiederhole das Passwort",
+  "CONFIRM_MISMATCH": "Die Passwörter stimmen nicht überein"
+}

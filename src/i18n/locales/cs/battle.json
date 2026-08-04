@@ -1,0 +1,18 @@
+{
+  "taskProgress": "Úkol {{current}} z {{total}}",
+  "enemyHealth": "Zdraví nepřítele",
+  "chooseAnswer": "Vyber správnou odpověď",
+  "correct": "✦ Správně! ✦",
+  "incorrect": "Nesprávně",
+  "exitToMap": "Na mapu",
+  "compareQuestion": "Který výraz má větší hodnotu?",
+  "wordProblemBasket": "Je {{a}} košů, v každém {{b}} jablek. Kolik jablek je celkem?",
+  "wordProblemBoxPencils": "Je {{a}} krabic, v každé {{b}} tužek. Kolik tužek je celkem?",
+  "wordProblemShelfBooks": "Na každé z {{a}} polic je {{b}} knih. Kolik knih je celkem?",
+  "wordProblemGnomeMushrooms": "{{a}} skřítků nasbíralo každý {{b}} hub. Kolik hub je celkem?",
+  "wordProblemGardenTrees": "V zahradě je {{a}} stromů, na každém {{b}} jablek. Kolik jablek je celkem?",
+  "wordProblemCartFlour": "{{a}} vozy vezou každý {{b}} pytlů mouky. Kolik pytlů je celkem?",
+  "wordProblemCageRabbits": "V každé z {{a}} klecí je {{b}} králíků. Kolik králíků je celkem?",
+  "wordProblemPlateCookies": "Na každém z {{a}} talířů je {{b}} sušenek. Kolik sušenek je celkem?",
+  "explainSmallGroups": "{{a}} × {{b}} je {{a}} skupin po {{b}}: {{groups}} = {{correct}}."
+}

@@ -1,0 +1,16 @@
+{
+  "title": "✦ Matematická paměť ✦",
+  "hintsLabel": "Nápovědy",
+  "movesCount": "Tahy: <b>{{count}}</b>",
+  "pairsCount": "Páry: <b>{{found}}/{{total}}</b>",
+  "matchFound": "Pár nalezen!",
+  "tryRemember": "Zkus si je zapamatovat",
+  "wizardTipTitle": "Tip čaroděje",
+  "wizardTipBody": "Zapamatuj si pozice karet, abys páry našel rychleji!",
+  "doneTitle": "Všechny páry nalezeny! 🎉",
+  "rewardLine": "Odměna: {{coins}} mincí, {{xp}} XP",
+  "claimingReward": "Vyzvedává se…",
+  "claimReward": "Vyzvednout odměnu",
+  "levelName": "Matematická paměť",
+  "exitToTraining": "Do tréninku"
+}

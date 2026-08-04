@@ -1,0 +1,11 @@
+{
+  "INVALID_CREDENTIALS": "Nesprávny e-mail alebo heslo",
+  "EMAIL_ALREADY_EXISTS": "Účet s týmto e-mailom už existuje",
+  "VALIDATION_ERROR": "Skontroluj zadané údaje",
+  "TOO_MANY_REQUESTS": "Príliš veľa pokusov. Skús to znova o pár minút.",
+  "NETWORK_ERROR": "Nepodarilo sa pripojiť k serveru. Skontroluj internetové pripojenie a skús to znova.",
+  "USER_NOT_FOUND": "Používateľ nenájdený",
+  "UNAUTHORIZED": "Prihlás sa prosím znova",
+  "INTERNAL_ERROR": "Nastala chyba servera. Skús to znova.",
+  "UNKNOWN": "Niečo sa pokazilo. Skús to znova."
+}

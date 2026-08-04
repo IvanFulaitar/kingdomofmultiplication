@@ -1,0 +1,36 @@
+{
+  "welcomeTitle": "Vítej v Království násobení!",
+  "welcomeSubtitle": "Řeš úkoly, poraz strážce a objevuj nové kraje.",
+  "startAdventure": "Začít dobrodružství",
+
+  "confidenceTitle": "Jak dobře znáš násobilku?",
+  "confidenceSubtitle": "Pomůže nám to vybrat pro tebe ty pravé první příklady",
+  "confidenceBeginner": "Teprve se učím násobilku",
+  "confidenceIntermediate": "Už něco vím",
+  "confidenceConfident": "Chci se otestovat",
+
+  "diagnosticBadge": "Rychlý test — bez trestů",
+  "diagnosticProgress": "Otázka {{current}} z {{total}}",
+
+  "tutorialTitle": "Tvůj první boj!",
+  "tutorialSubtitle": "Vyber správnou odpověď a způsob poškození",
+
+  "doneTitle": "Trénink dokončen!",
+  "doneSubtitle": "Jsi připraven na dobrodružství!",
+  "doneBody": "Řeš úkoly, poraz strážce a objevuj nové kraje království.",
+  "cycleStep1": "Vyřeš",
+  "cycleStep2": "Poraz",
+  "cycleStep3": "Objevuj kraje",
+
+  "firstRewardTitle": "Tvoje první odměna",
+  "rewardStar": "Hvězda",
+  "rewardCoins": "Mince",
+  "rewardXp": "XP",
+
+  "regionUnlocked": "Odemčeno: {{name}}",
+  "regionUnlockedSubtitle": "Tvé první dobrodružství už na tebe čeká",
+
+  "finishButton": "ZAČÍT DOBRODRUŽSTVÍ",
+  "finishAria": "Dokončit trénink a přejít na mapu království",
+  "finishHint": "Přejít na mapu království"
+}

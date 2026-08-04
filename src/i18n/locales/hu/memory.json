@@ -1,0 +1,16 @@
+{
+  "title": "✦ Matematikai memória ✦",
+  "hintsLabel": "Tippek",
+  "movesCount": "Lépések: <b>{{count}}</b>",
+  "pairsCount": "Párok: <b>{{found}}/{{total}}</b>",
+  "matchFound": "Pár megtalálva!",
+  "tryRemember": "Próbáld megjegyezni őket",
+  "wizardTipTitle": "A varázsló tanácsa",
+  "wizardTipBody": "Jegyezd meg a kártyák helyét, hogy gyorsabban találj párokat!",
+  "doneTitle": "Minden pár megtalálva! 🎉",
+  "rewardLine": "Jutalom: {{coins}} érme, {{xp}} XP",
+  "claimingReward": "Beváltás…",
+  "claimReward": "Jutalom beváltása",
+  "levelName": "Matematikai memória",
+  "exitToTraining": "Kilépés az Edzésbe"
+}

@@ -1,0 +1,10 @@
+{
+  "EMAIL_REQUIRED": "Zadaj prihlasovacie meno",
+  "EMAIL_INVALID": "Neplatný e-mail",
+  "PASSWORD_REQUIRED": "Heslo je povinné",
+  "PASSWORD_REQUIRED_REGISTER": "Zadaj heslo",
+  "PASSWORD_TOO_SHORT": "Heslo musí mať aspoň {{min}} znakov",
+  "PASSWORD_TOO_LONG": "Heslo je príliš dlhé (max. {{max}} znakov)",
+  "CONFIRM_REQUIRED": "Zopakuj heslo",
+  "CONFIRM_MISMATCH": "Heslá sa nezhodujú"
+}

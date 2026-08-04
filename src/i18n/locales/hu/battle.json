@@ -1,0 +1,18 @@
+{
+  "taskProgress": "{{current}}. / {{total}} feladat",
+  "enemyHealth": "Ellenfél életereje",
+  "chooseAnswer": "Válaszd ki a helyes választ",
+  "correct": "✦ Helyes! ✦",
+  "incorrect": "Helytelen",
+  "exitToMap": "Kilépés a térképre",
+  "compareQuestion": "Melyik kifejezés értéke nagyobb?",
+  "wordProblemBasket": "{{a}} kosár van, mindegyikben {{b}} alma. Hány alma van összesen?",
+  "wordProblemBoxPencils": "{{a}} doboz van, mindegyikben {{b}} ceruza. Hány ceruza van összesen?",
+  "wordProblemShelfBooks": "{{a}} polcon mindegyiken {{b}} könyv van. Hány könyv van összesen?",
+  "wordProblemGnomeMushrooms": "{{a}} manó gyűjtött, mindegyik {{b}} gombát. Hány gomba van összesen?",
+  "wordProblemGardenTrees": "A kertben {{a}} fa van, mindegyiken {{b}} alma. Hány alma van összesen?",
+  "wordProblemCartFlour": "{{a}} szekér visz, mindegyik {{b}} zsák lisztet. Hány zsák van összesen?",
+  "wordProblemCageRabbits": "{{a}} ketrecben mindegyikben {{b}} nyúl van. Hány nyúl van összesen?",
+  "wordProblemPlateCookies": "{{a}} tányéron mindegyiken {{b}} keksz van. Hány keksz van összesen?",
+  "explainSmallGroups": "{{a}} × {{b}} az {{a}} darab {{b}}-as csoport: {{groups}} = {{correct}}."
+}

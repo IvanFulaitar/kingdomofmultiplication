@@ -1,0 +1,8 @@
+{
+  "title": "Mapa království",
+  "lockedRequirement": "Dokonči všechny úrovně v „{{region}}“",
+  "locked": "Zamčeno",
+  "levelsCompleted": "{{done}}/{{total}} úrovní dokončeno",
+  "nextLevel": "➜ Další úroveň",
+  "tableOf": "řada {{sub}}"
+}

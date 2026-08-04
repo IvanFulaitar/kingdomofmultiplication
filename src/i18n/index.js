@@ -69,12 +69,117 @@ import plMaze from "./locales/pl/maze.json";
 import plMemory from "./locales/pl/memory.json";
 import plOnboarding from "./locales/pl/onboarding.json";
 
+import deCommon from "./locales/de/common.json";
+import deMenu from "./locales/de/menu.json";
+import deAuth from "./locales/de/auth.json";
+import deValidation from "./locales/de/validation.json";
+import deErrors from "./locales/de/errors.json";
+import deRegions from "./locales/de/regions.json";
+import deAchievements from "./locales/de/achievements.json";
+import deQuests from "./locales/de/quests.json";
+import deAvatars from "./locales/de/avatars.json";
+import deRace from "./locales/de/race.json";
+import deBattle from "./locales/de/battle.json";
+import deMap from "./locales/de/map.json";
+import deTraining from "./locales/de/training.json";
+import deResults from "./locales/de/results.json";
+import deKnowledge from "./locales/de/knowledge.json";
+import deShop from "./locales/de/shop.json";
+import deMaze from "./locales/de/maze.json";
+import deMemory from "./locales/de/memory.json";
+import deOnboarding from "./locales/de/onboarding.json";
+
+import esCommon from "./locales/es/common.json";
+import esMenu from "./locales/es/menu.json";
+import esAuth from "./locales/es/auth.json";
+import esValidation from "./locales/es/validation.json";
+import esErrors from "./locales/es/errors.json";
+import esRegions from "./locales/es/regions.json";
+import esAchievements from "./locales/es/achievements.json";
+import esQuests from "./locales/es/quests.json";
+import esAvatars from "./locales/es/avatars.json";
+import esRace from "./locales/es/race.json";
+import esBattle from "./locales/es/battle.json";
+import esMap from "./locales/es/map.json";
+import esTraining from "./locales/es/training.json";
+import esResults from "./locales/es/results.json";
+import esKnowledge from "./locales/es/knowledge.json";
+import esShop from "./locales/es/shop.json";
+import esMaze from "./locales/es/maze.json";
+import esMemory from "./locales/es/memory.json";
+import esOnboarding from "./locales/es/onboarding.json";
+
+import csCommon from "./locales/cs/common.json";
+import csMenu from "./locales/cs/menu.json";
+import csAuth from "./locales/cs/auth.json";
+import csValidation from "./locales/cs/validation.json";
+import csErrors from "./locales/cs/errors.json";
+import csRegions from "./locales/cs/regions.json";
+import csAchievements from "./locales/cs/achievements.json";
+import csQuests from "./locales/cs/quests.json";
+import csAvatars from "./locales/cs/avatars.json";
+import csRace from "./locales/cs/race.json";
+import csBattle from "./locales/cs/battle.json";
+import csMap from "./locales/cs/map.json";
+import csTraining from "./locales/cs/training.json";
+import csResults from "./locales/cs/results.json";
+import csKnowledge from "./locales/cs/knowledge.json";
+import csShop from "./locales/cs/shop.json";
+import csMaze from "./locales/cs/maze.json";
+import csMemory from "./locales/cs/memory.json";
+import csOnboarding from "./locales/cs/onboarding.json";
+
+import skCommon from "./locales/sk/common.json";
+import skMenu from "./locales/sk/menu.json";
+import skAuth from "./locales/sk/auth.json";
+import skValidation from "./locales/sk/validation.json";
+import skErrors from "./locales/sk/errors.json";
+import skRegions from "./locales/sk/regions.json";
+import skAchievements from "./locales/sk/achievements.json";
+import skQuests from "./locales/sk/quests.json";
+import skAvatars from "./locales/sk/avatars.json";
+import skRace from "./locales/sk/race.json";
+import skBattle from "./locales/sk/battle.json";
+import skMap from "./locales/sk/map.json";
+import skTraining from "./locales/sk/training.json";
+import skResults from "./locales/sk/results.json";
+import skKnowledge from "./locales/sk/knowledge.json";
+import skShop from "./locales/sk/shop.json";
+import skMaze from "./locales/sk/maze.json";
+import skMemory from "./locales/sk/memory.json";
+import skOnboarding from "./locales/sk/onboarding.json";
+
+import huCommon from "./locales/hu/common.json";
+import huMenu from "./locales/hu/menu.json";
+import huAuth from "./locales/hu/auth.json";
+import huValidation from "./locales/hu/validation.json";
+import huErrors from "./locales/hu/errors.json";
+import huRegions from "./locales/hu/regions.json";
+import huAchievements from "./locales/hu/achievements.json";
+import huQuests from "./locales/hu/quests.json";
+import huAvatars from "./locales/hu/avatars.json";
+import huRace from "./locales/hu/race.json";
+import huBattle from "./locales/hu/battle.json";
+import huMap from "./locales/hu/map.json";
+import huTraining from "./locales/hu/training.json";
+import huResults from "./locales/hu/results.json";
+import huKnowledge from "./locales/hu/knowledge.json";
+import huShop from "./locales/hu/shop.json";
+import huMaze from "./locales/hu/maze.json";
+import huMemory from "./locales/hu/memory.json";
+import huOnboarding from "./locales/hu/onboarding.json";
+
 // Порядок тут = порядок у перемикачі мови (MenuScreen/LanguagePickerModal).
 // code — ISO 639-1 (українська навмисно "uk", а НЕ технічний "ua").
 export const SUPPORTED_LANGUAGES = [
   { code: "uk", nativeName: "Українська" },
   { code: "en", nativeName: "English" },
   { code: "pl", nativeName: "Polski" },
+  { code: "de", nativeName: "Deutsch" },
+  { code: "es", nativeName: "Español" },
+  { code: "cs", nativeName: "Čeština" },
+  { code: "sk", nativeName: "Slovenčina" },
+  { code: "hu", nativeName: "Magyar" },
 ];
 const SUPPORTED_CODES = SUPPORTED_LANGUAGES.map((l) => l.code);
 export const FALLBACK_LANGUAGE = "uk";
@@ -99,6 +204,36 @@ const resources = {
     regions: plRegions, achievements: plAchievements, quests: plQuests, avatars: plAvatars,
     race: plRace, battle: plBattle, map: plMap, training: plTraining, results: plResults,
     knowledge: plKnowledge, shop: plShop, maze: plMaze, memory: plMemory, onboarding: plOnboarding,
+  },
+  de: {
+    common: deCommon, menu: deMenu, auth: deAuth, validation: deValidation, errors: deErrors,
+    regions: deRegions, achievements: deAchievements, quests: deQuests, avatars: deAvatars,
+    race: deRace, battle: deBattle, map: deMap, training: deTraining, results: deResults,
+    knowledge: deKnowledge, shop: deShop, maze: deMaze, memory: deMemory, onboarding: deOnboarding,
+  },
+  es: {
+    common: esCommon, menu: esMenu, auth: esAuth, validation: esValidation, errors: esErrors,
+    regions: esRegions, achievements: esAchievements, quests: esQuests, avatars: esAvatars,
+    race: esRace, battle: esBattle, map: esMap, training: esTraining, results: esResults,
+    knowledge: esKnowledge, shop: esShop, maze: esMaze, memory: esMemory, onboarding: esOnboarding,
+  },
+  cs: {
+    common: csCommon, menu: csMenu, auth: csAuth, validation: csValidation, errors: csErrors,
+    regions: csRegions, achievements: csAchievements, quests: csQuests, avatars: csAvatars,
+    race: csRace, battle: csBattle, map: csMap, training: csTraining, results: csResults,
+    knowledge: csKnowledge, shop: csShop, maze: csMaze, memory: csMemory, onboarding: csOnboarding,
+  },
+  sk: {
+    common: skCommon, menu: skMenu, auth: skAuth, validation: skValidation, errors: skErrors,
+    regions: skRegions, achievements: skAchievements, quests: skQuests, avatars: skAvatars,
+    race: skRace, battle: skBattle, map: skMap, training: skTraining, results: skResults,
+    knowledge: skKnowledge, shop: skShop, maze: skMaze, memory: skMemory, onboarding: skOnboarding,
+  },
+  hu: {
+    common: huCommon, menu: huMenu, auth: huAuth, validation: huValidation, errors: huErrors,
+    regions: huRegions, achievements: huAchievements, quests: huQuests, avatars: huAvatars,
+    race: huRace, battle: huBattle, map: huMap, training: huTraining, results: huResults,
+    knowledge: huKnowledge, shop: huShop, maze: huMaze, memory: huMemory, onboarding: huOnboarding,
   },
 };
 

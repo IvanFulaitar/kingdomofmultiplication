@@ -1,0 +1,16 @@
+{
+  "title": "✦ Mathe-Memory ✦",
+  "hintsLabel": "Hinweise",
+  "movesCount": "Züge: <b>{{count}}</b>",
+  "pairsCount": "Paare: <b>{{found}}/{{total}}</b>",
+  "matchFound": "Paar gefunden!",
+  "tryRemember": "Versuch, sie dir zu merken",
+  "wizardTipTitle": "Tipp des Zauberers",
+  "wizardTipBody": "Merke dir die Kartenpositionen, um Paare schneller zu finden!",
+  "doneTitle": "Alle Paare gefunden! 🎉",
+  "rewardLine": "Belohnung: {{coins}} Münzen, {{xp}} EP",
+  "claimingReward": "Wird eingelöst…",
+  "claimReward": "Belohnung einlösen",
+  "levelName": "Mathe-Memory",
+  "exitToTraining": "Zum Training"
+}

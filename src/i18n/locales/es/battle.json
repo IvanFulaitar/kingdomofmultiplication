@@ -1,0 +1,18 @@
+{
+  "taskProgress": "Tarea {{current}} de {{total}}",
+  "enemyHealth": "Vida del enemigo",
+  "chooseAnswer": "Elige la respuesta correcta",
+  "correct": "✦ ¡Correcto! ✦",
+  "incorrect": "Incorrecto",
+  "exitToMap": "Salir al mapa",
+  "compareQuestion": "¿Qué expresión tiene el valor mayor?",
+  "wordProblemBasket": "Hay {{a}} cestas con {{b}} manzanas cada una. ¿Cuántas manzanas hay en total?",
+  "wordProblemBoxPencils": "Hay {{a}} cajas con {{b}} lápices cada una. ¿Cuántos lápices hay en total?",
+  "wordProblemShelfBooks": "Hay {{b}} libros en cada uno de los {{a}} estantes. ¿Cuántos libros hay en total?",
+  "wordProblemGnomeMushrooms": "{{a}} gnomos recogieron {{b}} setas cada uno. ¿Cuántas setas hay en total?",
+  "wordProblemGardenTrees": "Hay {{a}} árboles en el jardín, cada uno con {{b}} manzanas. ¿Cuántas manzanas hay en total?",
+  "wordProblemCartFlour": "{{a}} carros llevan {{b}} sacos de harina cada uno. ¿Cuántos sacos hay en total?",
+  "wordProblemCageRabbits": "Hay {{b}} conejos en cada una de las {{a}} jaulas. ¿Cuántos conejos hay en total?",
+  "wordProblemPlateCookies": "Hay {{b}} galletas en cada uno de los {{a}} platos. ¿Cuántas galletas hay en total?",
+  "explainSmallGroups": "{{a}} × {{b}} son {{a}} grupos de {{b}}: {{groups}} = {{correct}}."
+}

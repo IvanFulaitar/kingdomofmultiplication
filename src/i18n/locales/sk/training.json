@@ -1,0 +1,14 @@
+{
+  "title": "Tréning",
+  "subtitle": "Doplnkové tréningové režimy — neovplyvňujú mapu kráľovstva.",
+  "memoryTitle": "Matematická pamäť",
+  "memoryDesc": "Nájdi páry: príklad a odpoveď",
+  "mazeTitle": "Bludisko",
+  "mazeDesc": "Rieš príklady a nájdi východ",
+  "raceTitle": "Preteky",
+  "raceDesc": "Odpovedaj rýchlo a dobehni prvý",
+  "play": "Hrať",
+  "knowledgeLinkAria": "Zobraziť učebný pokrok v Mojich vedomostiach",
+  "knowledgeLinkTitle": "Zobraziť môj pokrok",
+  "knowledgeLinkDesc": "Zisti, ktoré rady už ovládaš"
+}

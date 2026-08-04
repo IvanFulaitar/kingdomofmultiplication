@@ -1,0 +1,8 @@
+{
+  "title": "A királyság térképe",
+  "lockedRequirement": "Teljesítsd „{{region}}” összes szintjét",
+  "locked": "Zárolva",
+  "levelsCompleted": "{{done}}/{{total}} szint teljesítve",
+  "nextLevel": "➜ Következő szint",
+  "tableOf": "{{sub}}-as szorzótábla"
+}

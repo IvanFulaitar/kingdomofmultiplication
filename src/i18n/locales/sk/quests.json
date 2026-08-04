@@ -1,0 +1,17 @@
+{
+  "correct10": "Daj 10 správnych odpovedí",
+  "correct15": "Daj 15 správnych odpovedí",
+  "levels1": "Dokonči 1 úroveň",
+  "levels2": "Dokonči 2 úrovne",
+  "memoryPairs2": "Nájdi 2 páry v „Matematickej pamäti“",
+  "perfect1": "Dokonči úroveň bez jedinej chyby",
+  "levels3": "Dokonči 3 úrovne",
+  "correct25": "Daj 25 správnych odpovedí",
+  "weakFixed3": "Oprav 3 slabé príklady",
+  "table7x5": "Daj 5 správnych odpovedí z rady sedem",
+  "memoryPairs3": "Nájdi 3 páry v „Matematickej pamäti“",
+  "mazeChest1": "Otvor truhlicu v bludisku",
+  "mazeSecret1": "Nájdi tajnú cestu v bludisku",
+  "raceTop2_1": "Umiestni sa na 1. alebo 2. mieste v pretekoch",
+  "raceBest1": "Prekonaj svoj osobný rekord v pretekoch"
+}

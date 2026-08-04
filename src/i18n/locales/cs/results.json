@@ -1,0 +1,22 @@
+{
+  "defeatTitle": "Tentokrát ne",
+  "enemyStoodFirm": "{{enemy}} vydržel — správné odpovědi:",
+  "tryAgainBold": "Zkus to znovu",
+  "tryAgainRest": "— slabé příklady se teď budou objevovat častěji.",
+  "levelProgress": "✦ Postup v úrovni ✦",
+  "correctAnswersHint": "Správné odpovědi: {{count}}. Příště to bude ještě lepší!",
+  "retry": "Zkusit znovu",
+  "toMap": "Na mapu",
+  "victoryTitle": "Vítězství!",
+  "enemyDefeated": "{{enemy}} poražen",
+  "coins": "Mince",
+  "xp": "XP",
+  "heroLevel": "Úroveň hrdiny {{level}}",
+  "newLevel": "Nová úroveň!",
+  "playAgain": "Hrát znovu",
+  "toKingdomMap": "Na mapu království",
+  "allMapComplete": "Celá dostupná mapa je dokončena",
+  "openNewRegion": "Odemknout novou oblast",
+  "nextChallenge": "Další výzva",
+  "nextChallengeSubtitle": "{{title}} — výzva {{current}}/{{total}}"
+}

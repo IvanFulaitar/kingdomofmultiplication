@@ -1,0 +1,36 @@
+{
+  "welcomeTitle": "Willkommen im Königreich der Multiplikation!",
+  "welcomeSubtitle": "Löse Aufgaben, besiege Wächter und entdecke neue Länder.",
+  "startAdventure": "Abenteuer starten",
+
+  "confidenceTitle": "Wie gut kennst du das Einmaleins?",
+  "confidenceSubtitle": "Das hilft uns, die ersten Aufgaben genau richtig für dich auszuwählen",
+  "confidenceBeginner": "Ich lerne gerade erst das Einmaleins",
+  "confidenceIntermediate": "Ich weiß schon etwas",
+  "confidenceConfident": "Ich will mich testen",
+
+  "diagnosticBadge": "Kurzer Check — ohne Strafen",
+  "diagnosticProgress": "Frage {{current}} von {{total}}",
+
+  "tutorialTitle": "Dein erster Kampf!",
+  "tutorialSubtitle": "Wähle die richtige Antwort, um Schaden zu verursachen",
+
+  "doneTitle": "Training abgeschlossen!",
+  "doneSubtitle": "Du bist bereit für das Abenteuer!",
+  "doneBody": "Löse Aufgaben, besiege Wächter und entdecke neue Länder des Königreichs.",
+  "cycleStep1": "Lösen",
+  "cycleStep2": "Besiegen",
+  "cycleStep3": "Länder entdecken",
+
+  "firstRewardTitle": "Deine erste Belohnung",
+  "rewardStar": "Stern",
+  "rewardCoins": "Münzen",
+  "rewardXp": "EP",
+
+  "regionUnlocked": "Freigeschaltet: {{name}}",
+  "regionUnlockedSubtitle": "Dein erstes Abenteuer wartet schon",
+
+  "finishButton": "ABENTEUER STARTEN",
+  "finishAria": "Training beenden und zur Königreichskarte gehen",
+  "finishHint": "Zur Königreichskarte gehen"
+}

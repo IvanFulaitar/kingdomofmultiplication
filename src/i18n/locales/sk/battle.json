@@ -1,0 +1,18 @@
+{
+  "taskProgress": "Úloha {{current}} z {{total}}",
+  "enemyHealth": "Zdravie nepriateľa",
+  "chooseAnswer": "Vyber správnu odpoveď",
+  "correct": "✦ Správne! ✦",
+  "incorrect": "Nesprávne",
+  "exitToMap": "Na mapu",
+  "compareQuestion": "Ktorý výraz má väčšiu hodnotu?",
+  "wordProblemBasket": "Je {{a}} košov, v každom {{b}} jabĺk. Koľko jabĺk je spolu?",
+  "wordProblemBoxPencils": "Je {{a}} škatúľ, v každej {{b}} ceruziek. Koľko ceruziek je spolu?",
+  "wordProblemShelfBooks": "Na každej z {{a}} políc je {{b}} kníh. Koľko kníh je spolu?",
+  "wordProblemGnomeMushrooms": "{{a}} škriatkovia nazbierali každý {{b}} húb. Koľko húb je spolu?",
+  "wordProblemGardenTrees": "V záhrade je {{a}} stromov, na každom {{b}} jabĺk. Koľko jabĺk je spolu?",
+  "wordProblemCartFlour": "{{a}} vozy vezú každý {{b}} vriec múky. Koľko vriec je spolu?",
+  "wordProblemCageRabbits": "V každej z {{a}} klietok je {{b}} králikov. Koľko králikov je spolu?",
+  "wordProblemPlateCookies": "Na každom z {{a}} tanierov je {{b}} sušienok. Koľko sušienok je spolu?",
+  "explainSmallGroups": "{{a}} × {{b}} je {{a}} skupín po {{b}}: {{groups}} = {{correct}}."
+}

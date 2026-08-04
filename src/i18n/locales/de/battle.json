@@ -1,0 +1,18 @@
+{
+  "taskProgress": "Aufgabe {{current}} von {{total}}",
+  "enemyHealth": "Leben des Gegners",
+  "chooseAnswer": "Wähle die richtige Antwort",
+  "correct": "✦ Richtig! ✦",
+  "incorrect": "Falsch",
+  "exitToMap": "Zur Karte",
+  "compareQuestion": "Welcher Ausdruck hat den größeren Wert?",
+  "wordProblemBasket": "Es gibt {{a}} Körbe mit je {{b}} Äpfeln. Wie viele Äpfel sind es insgesamt?",
+  "wordProblemBoxPencils": "Es gibt {{a}} Kisten mit je {{b}} Stiften. Wie viele Stifte sind es insgesamt?",
+  "wordProblemShelfBooks": "Auf jedem der {{a}} Regale stehen {{b}} Bücher. Wie viele Bücher sind es insgesamt?",
+  "wordProblemGnomeMushrooms": "{{a}} Zwerge sammelten je {{b}} Pilze. Wie viele Pilze sind es insgesamt?",
+  "wordProblemGardenTrees": "Im Garten stehen {{a}} Bäume mit je {{b}} Äpfeln. Wie viele Äpfel sind es insgesamt?",
+  "wordProblemCartFlour": "{{a}} Karren tragen je {{b}} Säcke Mehl. Wie viele Säcke sind es insgesamt?",
+  "wordProblemCageRabbits": "In jedem der {{a}} Käfige sind {{b}} Kaninchen. Wie viele Kaninchen sind es insgesamt?",
+  "wordProblemPlateCookies": "Auf jedem der {{a}} Teller liegen {{b}} Kekse. Wie viele Kekse sind es insgesamt?",
+  "explainSmallGroups": "{{a}} × {{b}} ist {{a}} Gruppen von {{b}}: {{groups}} = {{correct}}."
+}

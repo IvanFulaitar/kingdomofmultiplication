@@ -1,0 +1,14 @@
+{
+  "title": "Training",
+  "subtitle": "Zusätzliche Übungsmodi — sie wirken sich nicht auf die Königreichskarte aus.",
+  "memoryTitle": "Mathe-Memory",
+  "memoryDesc": "Finde Paare: Aufgabe und Antwort",
+  "mazeTitle": "Labyrinth",
+  "mazeDesc": "Löse Aufgaben und finde den Ausgang",
+  "raceTitle": "Rennen",
+  "raceDesc": "Antworte schnell und werde Erster",
+  "play": "Spielen",
+  "knowledgeLinkAria": "Lernfortschritt in Mein Wissen anzeigen",
+  "knowledgeLinkTitle": "Meinen Fortschritt anzeigen",
+  "knowledgeLinkDesc": "Finde heraus, welche Einmaleins-Reihen du schon beherrschst"
+}

@@ -1,0 +1,8 @@
+{
+  "title": "Karte des Königreichs",
+  "lockedRequirement": "Schließe alle Level von „{{region}}“ ab",
+  "locked": "Gesperrt",
+  "levelsCompleted": "{{done}}/{{total}} Level abgeschlossen",
+  "nextLevel": "➜ Nächstes Level",
+  "tableOf": "Einmaleins der {{sub}}"
+}

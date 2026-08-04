@@ -1,0 +1,16 @@
+{
+  "title": "✦ Memoria Matemática ✦",
+  "hintsLabel": "Pistas",
+  "movesCount": "Movimientos: <b>{{count}}</b>",
+  "pairsCount": "Parejas: <b>{{found}}/{{total}}</b>",
+  "matchFound": "¡Pareja encontrada!",
+  "tryRemember": "Intenta recordarlas",
+  "wizardTipTitle": "Consejo del mago",
+  "wizardTipBody": "¡Recuerda la posición de las cartas para encontrar parejas más rápido!",
+  "doneTitle": "¡Todas las parejas encontradas! 🎉",
+  "rewardLine": "Recompensa: {{coins}} monedas, {{xp}} XP",
+  "claimingReward": "Reclamando…",
+  "claimReward": "Reclamar recompensa",
+  "levelName": "Memoria Matemática",
+  "exitToTraining": "Salir al Entrenamiento"
+}

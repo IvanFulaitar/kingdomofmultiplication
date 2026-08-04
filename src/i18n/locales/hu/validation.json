@@ -1,0 +1,10 @@
+{
+  "EMAIL_REQUIRED": "Add meg a felhasználóneved",
+  "EMAIL_INVALID": "Érvénytelen e-mail cím",
+  "PASSWORD_REQUIRED": "A jelszó megadása kötelező",
+  "PASSWORD_REQUIRED_REGISTER": "Add meg a jelszavad",
+  "PASSWORD_TOO_SHORT": "A jelszónak legalább {{min}} karakter hosszúnak kell lennie",
+  "PASSWORD_TOO_LONG": "A jelszó túl hosszú (max. {{max}} karakter)",
+  "CONFIRM_REQUIRED": "Ismételd meg a jelszót",
+  "CONFIRM_MISMATCH": "A jelszavak nem egyeznek"
+}

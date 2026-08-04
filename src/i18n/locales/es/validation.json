@@ -1,0 +1,10 @@
+{
+  "EMAIL_REQUIRED": "Introduce tu usuario",
+  "EMAIL_INVALID": "Correo no válido",
+  "PASSWORD_REQUIRED": "La contraseña es obligatoria",
+  "PASSWORD_REQUIRED_REGISTER": "Introduce una contraseña",
+  "PASSWORD_TOO_SHORT": "La contraseña debe tener al menos {{min}} caracteres",
+  "PASSWORD_TOO_LONG": "La contraseña es demasiado larga (máx. {{max}} caracteres)",
+  "CONFIRM_REQUIRED": "Repite la contraseña",
+  "CONFIRM_MISMATCH": "Las contraseñas no coinciden"
+}

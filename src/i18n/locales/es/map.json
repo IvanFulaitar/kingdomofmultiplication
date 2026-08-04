@@ -1,0 +1,8 @@
+{
+  "title": "Mapa del reino",
+  "lockedRequirement": "Termina todos los niveles de «{{region}}»",
+  "locked": "Bloqueado",
+  "levelsCompleted": "{{done}}/{{total}} niveles completados",
+  "nextLevel": "➜ Siguiente nivel",
+  "tableOf": "tabla del {{sub}}"
+}

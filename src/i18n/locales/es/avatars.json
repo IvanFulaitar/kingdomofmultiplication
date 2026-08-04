@@ -1,0 +1,18 @@
+{
+  "wizard": "Mago",
+  "knight": "Caballero guardián",
+  "dragon": "Dragón de fuego",
+  "archer": "Arquera cazadora",
+  "sorceress": "Hechicera estelar",
+  "paladin": "Paladín de la luz",
+  "ninja": "Ninja de las sombras",
+  "barbarian": "Bárbaro berserker",
+  "necromancer": "Nigromante",
+  "monk": "Monje sabio",
+  "pirate": "Pirata de los mares",
+  "beastmaster": "Domador de bestias",
+  "alchemist": "Alquimista inventor",
+  "samurai": "Samurái del honor",
+  "fairy": "Hada de la luz",
+  "golem": "Gólem guardián"
+}

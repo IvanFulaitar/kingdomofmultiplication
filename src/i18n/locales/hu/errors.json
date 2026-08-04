@@ -1,0 +1,11 @@
+{
+  "INVALID_CREDENTIALS": "Hibás e-mail cím vagy jelszó",
+  "EMAIL_ALREADY_EXISTS": "Ezzel az e-mail címmel már létezik fiók",
+  "VALIDATION_ERROR": "Ellenőrizd a megadott adatokat",
+  "TOO_MANY_REQUESTS": "Túl sok próbálkozás. Próbáld újra néhány perc múlva.",
+  "NETWORK_ERROR": "Nem sikerült csatlakozni a szerverhez. Ellenőrizd az internetkapcsolatot, és próbáld újra.",
+  "USER_NOT_FOUND": "Felhasználó nem található",
+  "UNAUTHORIZED": "Jelentkezz be újra",
+  "INTERNAL_ERROR": "Szerverhiba történt. Próbáld újra.",
+  "UNKNOWN": "Valami hiba történt. Próbáld újra."
+}

@@ -1,0 +1,36 @@
+{
+  "welcomeTitle": "Üdvözlünk a Szorzás Királyságában!",
+  "welcomeSubtitle": "Oldj meg feladatokat, győzd le az őrzőket, és fedezz fel új vidékeket.",
+  "startAdventure": "Kaland indítása",
+
+  "confidenceTitle": "Mennyire ismered a szorzótáblát?",
+  "confidenceSubtitle": "Ez segít kiválasztani a hozzád illő első feladatokat",
+  "confidenceBeginner": "Csak most tanulom a szorzótáblát",
+  "confidenceIntermediate": "Már tudok egy kicsit",
+  "confidenceConfident": "Szeretném próbára tenni magam",
+
+  "diagnosticBadge": "Gyors teszt — büntetés nélkül",
+  "diagnosticProgress": "{{current}}. kérdés a(z) {{total}}-ból",
+
+  "tutorialTitle": "Az első csatád!",
+  "tutorialSubtitle": "Válaszd a helyes választ, hogy sebzést okozz",
+
+  "doneTitle": "Edzés befejezve!",
+  "doneSubtitle": "Készen állsz a kalandra!",
+  "doneBody": "Oldj meg feladatokat, győzd le az őrzőket, és fedezd fel a királyság új vidékeit.",
+  "cycleStep1": "Megoldás",
+  "cycleStep2": "Győzelem",
+  "cycleStep3": "Vidékek felfedezése",
+
+  "firstRewardTitle": "Az első jutalmad",
+  "rewardStar": "Csillag",
+  "rewardCoins": "Érmék",
+  "rewardXp": "XP",
+
+  "regionUnlocked": "Feloldva: {{name}}",
+  "regionUnlockedSubtitle": "Az első kalandod már vár rád",
+
+  "finishButton": "KALAND INDÍTÁSA",
+  "finishAria": "Edzés befejezése és ugrás a királyság térképére",
+  "finishHint": "Ugrás a királyság térképére"
+}

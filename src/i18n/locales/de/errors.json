@@ -1,0 +1,11 @@
+{
+  "INVALID_CREDENTIALS": "Falsche E-Mail oder falsches Passwort",
+  "EMAIL_ALREADY_EXISTS": "Ein Konto mit dieser E-Mail existiert bereits",
+  "VALIDATION_ERROR": "Bitte überprüfe die eingegebenen Daten",
+  "TOO_MANY_REQUESTS": "Zu viele Versuche. Bitte versuche es in ein paar Minuten erneut.",
+  "NETWORK_ERROR": "Verbindung zum Server nicht möglich. Überprüfe deine Internetverbindung und versuche es erneut.",
+  "USER_NOT_FOUND": "Benutzer nicht gefunden",
+  "UNAUTHORIZED": "Bitte melde dich erneut an",
+  "INTERNAL_ERROR": "Ein Serverfehler ist aufgetreten. Bitte versuche es erneut.",
+  "UNKNOWN": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+}

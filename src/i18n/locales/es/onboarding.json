@@ -1,0 +1,36 @@
+{
+  "welcomeTitle": "¡Bienvenido al Reino de la Multiplicación!",
+  "welcomeSubtitle": "Resuelve desafíos, derrota guardianes y descubre nuevas tierras.",
+  "startAdventure": "Comenzar aventura",
+
+  "confidenceTitle": "¿Qué tan bien conoces las tablas de multiplicar?",
+  "confidenceSubtitle": "Esto nos ayudará a elegir los primeros ejercicios perfectos para ti",
+  "confidenceBeginner": "Recién estoy aprendiendo las tablas",
+  "confidenceIntermediate": "Ya sé un poco",
+  "confidenceConfident": "Quiero ponerme a prueba",
+
+  "diagnosticBadge": "Comprobación rápida — sin penalizaciones",
+  "diagnosticProgress": "Pregunta {{current}} de {{total}}",
+
+  "tutorialTitle": "¡Tu primera batalla!",
+  "tutorialSubtitle": "Elige la respuesta correcta para causar daño",
+
+  "doneTitle": "¡Entrenamiento completado!",
+  "doneSubtitle": "¡Estás listo para la aventura!",
+  "doneBody": "Resuelve desafíos, derrota guardianes y descubre nuevas tierras del reino.",
+  "cycleStep1": "Resolver",
+  "cycleStep2": "Derrotar",
+  "cycleStep3": "Descubrir tierras",
+
+  "firstRewardTitle": "Tu primera recompensa",
+  "rewardStar": "Estrella",
+  "rewardCoins": "Monedas",
+  "rewardXp": "XP",
+
+  "regionUnlocked": "Desbloqueado: {{name}}",
+  "regionUnlockedSubtitle": "Tu primera aventura ya te está esperando",
+
+  "finishButton": "COMENZAR AVENTURA",
+  "finishAria": "Terminar el entrenamiento e ir al mapa del reino",
+  "finishHint": "Ir al mapa del reino"
+}
