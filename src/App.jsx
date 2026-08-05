@@ -6,8 +6,7 @@ import { hasNewMasteryActivity } from "./game/mastery.js";
 import { initMusic } from "./game/music.js";
 import { preloadCoreSfx, playAchievementSfx } from "./game/sfx.js";
 import { initAnalytics, trackEvent } from "./game/analytics.js";
-import { logout as authLogout, fetchMe } from "./game/auth.js";
-import { AUTH_ENABLED } from "./config.js";
+import { useAuth } from "./context/AuthContext.jsx";
 import {
   loadProgress, saveProgress, todaysTrainingWins,
   takeLoadWarning, recordActivity,
@@ -53,18 +52,11 @@ export default function App() {
   const [screen, setScreen] = useState("menu");
   // Акаунт (email/пароль, frontend-backend-integration-plan.md) —
   // необов'язкова фіча: null означає гостя, гра й далі повністю грається
-  // без входу. Відновлюється при старті нижче (useEffect із fetchMe()),
-  // якщо AUTH_ENABLED.
-  const [user, setUser] = useState(null);
-  // roles-and-architecture-plan.md, розділ 40, крок 2 (Стадія A) —
-  // frontend-backend-integration-plan.md, Крок 4: відновлення сесії при
-  // старті через fetchMe() (тепер це фактично POST /refresh за
-  // HttpOnly cookie, див. src/game/auth.js — access-токен більше не
-  // живе між перезавантаженнями сторінки сам по собі). Поки
-  // AUTH_ENABLED=false — жодного мережевого виклику взагалі не
-  // відбувається, sessionChecked одразу true, тож гість, що не
-  // користується акаунтом, нічого не помічає (нуль затримки).
-  const [sessionChecked, setSessionChecked] = useState(!AUTH_ENABLED);
+  // без входу. roles-and-architecture-plan.md, розділ 40, крок 3 —
+  // user/sessionChecked і відновлення сесії при старті тепер живуть у
+  // AuthContext (src/context/AuthContext.jsx), не тут; поведінка та
+  // сама, лише інша "труба" (main.jsx обгортає <App/> в <AuthProvider>).
+  const { user, setUser, sessionChecked, logout } = useAuth();
   const [activeLevel, setActiveLevel] = useState(null);
   const [raceDifficulty, setRaceDifficulty] = useState(null);
   const [outcome, setOutcome] = useState(null);
@@ -92,24 +84,6 @@ export default function App() {
     // onboardingComplete=true (progress.js), тож нинішні гравці цього не
     // побачать.
     if (!p.onboardingComplete) setScreen("onboarding");
-  }, []);
-
-  // Відновлення дорослої сесії при старті (Крок 4, див. коментар біля
-  // sessionChecked вище) — якщо refresh-cookie з минулого разу ще дійсна,
-  // гравець одразу залогінений без повторного вводу пароля (fetchMe()
-  // сама отримує новий access-токен через POST /refresh); якщо cookie
-  // нема/прострочена/відкликана — fetchMe() тихо повертає null (без
-  // тривожних помилок дитині). Мережева помилка (сервер тимчасово
-  // недоступний тощо) — не трактується як "сесії нема", просто цього
-  // разу лишаємось гостем поточного сеансу; наступний запуск спробує знову.
-  useEffect(() => {
-    if (!AUTH_ENABLED) return;
-    let cancelled = false;
-    fetchMe()
-      .then((u) => { if (!cancelled) setUser(u); })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setSessionChecked(true); });
-    return () => { cancelled = true; };
   }, []);
 
   // Фонова тема стартує один раз на весь час життя застосунку — вона не
@@ -263,8 +237,7 @@ export default function App() {
   }
 
   function handleLogout() {
-    authLogout();
-    setUser(null);
+    logout();
   }
 
   function startNextChallenge(levelId) {
