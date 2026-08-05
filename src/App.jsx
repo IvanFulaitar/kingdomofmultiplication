@@ -58,10 +58,12 @@ export default function App() {
   const [user, setUser] = useState(null);
   // roles-and-architecture-plan.md, розділ 40, крок 2 (Стадія A) —
   // frontend-backend-integration-plan.md, Крок 4: відновлення сесії при
-  // старті через fetchMe() (функція в auth.js була написана давно, але
-  // ніде не викликалась). Поки AUTH_ENABLED=false — жодного мережевого
-  // виклику взагалі не відбувається, sessionChecked одразу true, тож
-  // гість, що не користується акаунтом, нічого не помічає (нуль затримки).
+  // старті через fetchMe() (тепер це фактично POST /refresh за
+  // HttpOnly cookie, див. src/game/auth.js — access-токен більше не
+  // живе між перезавантаженнями сторінки сам по собі). Поки
+  // AUTH_ENABLED=false — жодного мережевого виклику взагалі не
+  // відбувається, sessionChecked одразу true, тож гість, що не
+  // користується акаунтом, нічого не помічає (нуль затримки).
   const [sessionChecked, setSessionChecked] = useState(!AUTH_ENABLED);
   const [activeLevel, setActiveLevel] = useState(null);
   const [raceDifficulty, setRaceDifficulty] = useState(null);
@@ -93,12 +95,13 @@ export default function App() {
   }, []);
 
   // Відновлення дорослої сесії при старті (Крок 4, див. коментар біля
-  // sessionChecked вище) — якщо токен у localStorage ще дійсний, гравець
-  // одразу залогінений без повторного вводу пароля; якщо прострочений/
-  // недійсний, fetchMe() сама тихо чистить токен і повертає null (без
+  // sessionChecked вище) — якщо refresh-cookie з минулого разу ще дійсна,
+  // гравець одразу залогінений без повторного вводу пароля (fetchMe()
+  // сама отримує новий access-токен через POST /refresh); якщо cookie
+  // нема/прострочена/відкликана — fetchMe() тихо повертає null (без
   // тривожних помилок дитині). Мережева помилка (сервер тимчасово
-  // недоступний тощо) — токен НЕ чиститься, просто цього разу лишаємось
-  // гостем поточного сеансу; наступний запуск спробує знову.
+  // недоступний тощо) — не трактується як "сесії нема", просто цього
+  // разу лишаємось гостем поточного сеансу; наступний запуск спробує знову.
   useEffect(() => {
     if (!AUTH_ENABLED) return;
     let cancelled = false;

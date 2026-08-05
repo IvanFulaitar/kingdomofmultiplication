@@ -1,9 +1,11 @@
 import jwt from "jsonwebtoken";
 
-// MVP: один довгоживучий токен, без refresh-flow (backend-mvp-plan.md,
-// розділ 8 — свідоме обмеження, додати короткоживучі access+refresh
-// пізніше, коли з'явиться реальна потреба).
-const JWT_EXPIRES_IN = "30d";
+// roles-and-architecture-plan.md, розділ 12.2 — короткоживучий
+// access-токен: якщо його вкрадуть (XSS, лог тощо), шкода обмежена
+// кількома хвилинами, а не місяцем. Довгий "sesion" тепер живе окремо —
+// у user_sessions (refresh-токен у HttpOnly cookie, server/src/routes/
+// auth.js: POST /refresh), який і продовжує сесію непомітно для дитини.
+const JWT_EXPIRES_IN = "15m";
 
 function getSecret() {
   const secret = process.env.JWT_SECRET;

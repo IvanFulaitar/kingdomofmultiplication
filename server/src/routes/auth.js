@@ -24,12 +24,9 @@ function toPublicUser(user) {
 // Викликається і з /register, і з /login — та сама логіка видачі сесії
 // незалежно від того, як людина щойно потрапила в акаунт.
 //
-// НАРАЗІ це чисто адитивна зміна: сам access-токен (signToken нижче)
-// і далі 30-денний, як і був — фронтенд ще не вміє викликати /refresh,
-// тож скорочувати його строк життя зараз означало б тихо розлогінювати
-// щойно за 30 хвилин без way відновити сесію. Коротший access +
-// перехід фронтенду на нову модель — окремий наступний крок
-// (roles-and-architecture-plan.md, розділ 40, крок 2, продовження).
+// Access-токен (signToken нижче) тепер короткоживучий (15 хв, server/
+// src/utils/jwt.js) — фронтенд (src/game/auth.js) при старті й на 401
+// сам звертається сюди по новий, тож дитина цього не помічає.
 async function issueRefreshSession(req, res, userId) {
   const refreshToken = generateRefreshToken();
   await prisma.userSession.create({

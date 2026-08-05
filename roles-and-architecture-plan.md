@@ -2491,12 +2491,19 @@ payload, не через призначений ендпоінт); неправ�
    ЦЕ і є момент заміни поточного MVP0 `localStorage`-JWT, а не окремий
    пізніший крок, бо відкладати зміну моделі сесій до появи ролей
    означало б мігрувати вже активних користувачів пізніше, з реальними
-   сесіями на кону.
-   *Frontend:* `AuthContext`, форма видима. *Backend:* `/auth/refresh`,
-   `/auth/logout`, `user_sessions` таблиця, cookie-видача.
-   *DB migration:* так (`user_sessions`). *Flag:* `AUTH_ENABLED`.
+   сесіями на кону. ✅ зроблено (backend + сесійна модель фронтенду):
+   `user_sessions` таблиця, `POST /auth/refresh`/`POST /auth/logout`,
+   `src/game/auth.js` тримає access-токен у пам'яті й сам звертається
+   по refresh при старті. Форма входу (`AuthScreen.jsx`) і далі
+   прихована — `AUTH_ENABLED=false`, нуль впливу на поточних гравців.
+   *Frontend:* `AuthContext` — лишається, це крок 3 нижче.
+   *DB migration:* так (`user_sessions`), застосована. *Flag:*
+   `AUTH_ENABLED` (усе ще `false`).
    *Ризик:* середній (зміна моделі сесій — ретельне тестування logout/
-   refresh/expiry, розділ 38.2).
+   refresh/expiry, розділ 38.2) — покрито unit-тестами reducers.js;
+   сам `/refresh`/`/logout` вручну не протестовано наживо (потребує
+   `AUTH_ENABLED=true` і реального акаунта), лишається зробити перед
+   вмиканням прапорця.
 3. **Контексти.** `AuthContext` замінює прямий `user`-`useState` в
    `App.jsx` (та сама поведінка, інша труба).
    *Ризик:* низький.

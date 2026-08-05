@@ -38,6 +38,12 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
     response = await fetch(`${BASE_URL}${path}`, {
       method,
       headers,
+      // roles-and-architecture-plan.md, розділ 12.2 — потрібно для
+      // refresh-cookie (HttpOnly, server/src/utils/cookies.js): без
+      // цього браузер не додасть її до крос-доменного запиту (Railway-
+      // бекенд і Cloudflare-фронтенд — різні домени). Для ендпоінтів, що
+      // взагалі не ставлять cookie, це просто нічого не робить.
+      credentials: "include",
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch (cause) {
