@@ -19,8 +19,35 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   sessions UserSession[]
+  roles    UserRole[]
 
   @@map("users")
+}
+
+// roles-and-architecture-plan.md, розділ 7.1 — навмисно НЕ users.role
+// enum (один на юзера): та сама людина реалістично буває і батьком
+// удома, і вчителькою в класі. Багато-до-багатьох замість цього.
+enum UserRoleName {
+  PARENT
+  TEACHER
+}
+
+// roles-and-architecture-plan.md, розділ 7.1/8.5 — один users-рядок
+// може мати 0, 1 чи 2 записи тут. Роль з'являється ЛИШЕ явною дією
+// ("Додати дитину" -> PARENT, "Створити клас" -> TEACHER), НЕ при
+// реєстрації (розділ 8.3) — тому ця міграція свідомо нічого не
+// бекфілить: наявні users отримують нуль записів, так само як і нові,
+// доки не виконають одну з цих дій (яких ще не існує на цьому кроці
+// rollout-плану, розділ 40 — сама таблиця йде окремим, першим,
+// найменшим підкроком Stage B).
+model UserRole {
+  userId    String       @map("user_id")
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      UserRoleName
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@id([userId, role])
+  @@map("user_roles")
 }
 
 // roles-and-architecture-plan.md, розділ 12.2/14 — довгоживучий

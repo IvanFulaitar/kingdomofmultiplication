@@ -2517,9 +2517,19 @@ payload, не через призначений ендпоінт); неправ�
    `profile_guardians`, `profile_devices`, розділ 14), нові ендпоінти
    (розділ 16), `ProfileSwitcherScreen`, `AdultHomeScreen`/
    `WorkspaceSelectionShell` (розділ 18), `RequireRole`-гейти (розділ
-   20.2).
+   20.2). Сама по собі велика — розбита на дрібніші підкроки, той самий
+   принцип, що й Стадія A.
+   🔶 підкрок 1 з N — ✅ зроблено: таблиця `user_roles` (`UserRole`,
+   розділ 7.1) — лише схема + міграція, нічого не бекфілить (розділ
+   8.5), жодних нових ендпоінтів чи UI ще немає (немає жодної дії, що
+   присвоює роль — та й ще нема кому, `profiles` ще не існує). Наступні
+   підкроки: `profiles` + `profile_guardians` (розділ 9-10), нові
+   ендпоінти (розділ 16), `ProfileSwitcherScreen`/`AdultHomeScreen`
+   (розділ 18), `RequireRole`-гейти (розділ 20.2), `classrooms`
+   (розділ 11) — кожен окремим коміто-кроком.
    *DB migration:* так, велика (розділ 8.5 — стратегія для наявних
-   users). *Flag:* `ROLES_ENABLED`, `PARENT_PROFILES_ENABLED`.
+   users), застосовується частинами. *Flag:* `ROLES_ENABLED`,
+   `PARENT_PROFILES_ENABLED`.
    *Ризик:* середній.
 6. **Стадія C — опційна синхронізація.** `claim-local-progress`
    (розділ 25.1), офлайн-чергу (розділ 25.4-25.6), кнопку
