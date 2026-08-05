@@ -11,3 +11,15 @@ export const authRateLimit = rateLimit({
   legacyHeaders: false,
   message: { error: "Забагато спроб. Спробуй ще раз через кілька хвилин.", code: "TOO_MANY_REQUESTS" },
 });
+
+// /refresh викликається автоматично застосунком (не людиною, що вводить
+// пароль) — може легітимно спрацювати частіше за 10/15хв, якщо в сім'ї
+// кілька вкладок/пристроїв одночасно. Щедріший ліміт, той самий захист
+// від грубого зловживання, не від нормального використання.
+export const refreshRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Забагато спроб. Спробуй ще раз через кілька хвилин.", code: "TOO_MANY_REQUESTS" },
+});

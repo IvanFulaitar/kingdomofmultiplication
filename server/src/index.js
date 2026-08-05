@@ -8,6 +8,13 @@ import authRouter from "./routes/auth.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Railway (і будь-який reverse proxy) термінує HTTPS сам і проксіює
+// запит до застосунку звичайним HTTP — без цього req.secure завжди
+// false, і refresh-cookie (server/src/utils/cookies.js) неправильно
+// вирішувала б, що з'єднання не захищене, ставлячи Secure/SameSite не
+// туди. "1" — довіряти рівно одному "стрибку" проксі (сам Railway).
+app.set("trust proxy", 1);
+
 // Базові безпечні HTTP-заголовки — перед усім іншим.
 app.use(helmet());
 
